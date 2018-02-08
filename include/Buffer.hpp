@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 
 #include "Cursor.hpp"
@@ -73,6 +74,17 @@ class Buffer
                                 // even though the buffer is not of size 1
     }
 
+    // save to text file
+    void Save(const std::string& filename)
+    {
+        std::cout << "SAVE" << std::endl;
+        std::ofstream ofs(filename, std::ios::out | std::ios::trunc);
+        const std::string stream_data{Get()};
+        ofs.write(stream_data.data(), stream_data.size());
+        ofs.flush();
+        ofs.close();
+    }
+
     // get reference 
     const std::string& Get()
     {
@@ -124,6 +136,7 @@ class Buffer
         CursorPos_t c_line{_cursor_.GetPosLine()};
         CursorPos_t c_col{_cursor_.GetPosCol()};
 
+        std::cout << "c_col=" << c_col << std::endl;
         // use at() here in case we did something wrong
         // when updating the cursor
         #if DEBUG

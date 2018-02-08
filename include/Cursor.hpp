@@ -54,7 +54,7 @@ class Cursor
     void Right(const CursorPos_t line_size)
     {
         // TODO
-        if(_col_ < line_size - 1)
+        if(_col_ < line_size) // cursor can scroll 1 char past the end!
             ++ _col_;
     }
 
