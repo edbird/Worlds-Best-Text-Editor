@@ -67,7 +67,10 @@ class Buffer
         // TODO: NO LONGER MOVE BY MINUS 1, SIMPLY ADJUST LINE NUMBERS
 
         // TODO: implement
-        _cursor_.SetPos(0, 0);
+        _cursor_.SetPos(0, 0);  // the cursor is always drawn in the location where the next
+                                // character will be inserted: the buffer starts with zero
+                                // size however the cursor will be drawn at position 0
+                                // even though the buffer is not of size 1
     }
 
     // get reference 
@@ -81,9 +84,36 @@ class Buffer
         return _data_;
     }
 
+    /*
     Cursor& MutableCursor()
     {
         return _cursor_;
+    
+    }
+    */
+
+    void CursorLeft()
+    {
+        _cursor_.Left();
+    }
+
+    void CursorRight()
+    {
+        // TODO DEBUG
+        _cursor_.Right(_line_text_.at(_cursor_.GetPosLine()).size()); // TODO
+    }
+
+    void CursorUp()
+    {
+        _cursor_.Up();
+    }
+
+    void CursorDown()
+    {
+        //if(_cursor_.GetPosLine() < _line_text_.size())
+        //{
+        _cursor_.Down(_line_text_.size()); // TODO
+        //}
     }
 
     void InsertAtCursor(const char ch)
@@ -107,6 +137,47 @@ class Buffer
         // TODO: not all chars increment?
         // incrementing is done by the sdl event loop
         std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
+    }
+
+    bool BackspaceAtCursor()
+    {
+        _modified_ = true;
+
+        // current line and col
+        CursorPos_t c_line{_cursor_.GetPosLine()};
+        CursorPos_t c_col{_cursor_.GetPosCol()};
+
+        std::cout << "BS: c_col=" << c_col << std::endl;
+
+        if(c_col > 0)
+        {
+            //-- c_col; // decrement to erase correct character
+
+            // use at() here in case we did something wrong
+            // when updating the cursor
+            #if DEBUG
+                //_line_.at(c_line).InsertChar(ch, c_col);
+                _line_text_.at(c_line).erase(_line_text_.at(c_line).begin() + c_col - 1);
+            #else
+                //_line_[c_line].InsertChar(ch, c_col);
+                _line_text_[c_line].erase(_line_text_[c_line].begin() + c_col - 1);
+            #endif
+
+            // TODO: not all chars increment?
+            // incrementing is done by the sdl event loop
+            std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
+        
+            // TODO: i suspect that the cursor does not get moved correctly!
+            //if(c_col > 0)
+            //{
+                return true;
+            //}
+            //else
+            //{
+            //    return false;
+            //}
+        }
+        return false;
     }
 
     private:

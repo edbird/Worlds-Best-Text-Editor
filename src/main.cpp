@@ -97,6 +97,13 @@ class Window
                     {
                         // TODO: mappings
 
+                        #define SDLK_KEY_CASE_MACRO(X, Y) \
+                        {\
+                        case X: \
+                            _buffer_.InsertAtCursor(Y); \
+                            _buffer_.CursorRight(); \
+                            break;\
+                        }
 
                         case SDLK_UP:
                             _buffer_.MutableCursor().Up();        
@@ -122,6 +129,44 @@ class Window
                             _buffer_.InsertAtCursor('a');
                             _buffer_.MutableCursor().Right();
                             break;
+
+                        SDLK_KEY_CASE_MACRO(SDLK_b, 'b');
+                        SDLK_KEY_CASE_MACRO(SDLK_c, 'c');
+                        SDLK_KEY_CASE_MACRO(SDLK_d, 'd');
+                        SDLK_KEY_CASE_MACRO(SDLK_e, 'e');
+                        SDLK_KEY_CASE_MACRO(SDLK_f, 'f');
+                        SDLK_KEY_CASE_MACRO(SDLK_g, 'g');
+                        SDLK_KEY_CASE_MACRO(SDLK_h, 'h');
+                        SDLK_KEY_CASE_MACRO(SDLK_i, 'i');
+                        SDLK_KEY_CASE_MACRO(SDLK_j, 'j');
+                        SDLK_KEY_CASE_MACRO(SDLK_k, 'k');
+                        SDLK_KEY_CASE_MACRO(SDLK_l, 'l');
+                        SDLK_KEY_CASE_MACRO(SDLK_m, 'm');
+                        SDLK_KEY_CASE_MACRO(SDLK_n, 'n');
+                        SDLK_KEY_CASE_MACRO(SDLK_o, 'o');
+                        SDLK_KEY_CASE_MACRO(SDLK_p, 'p');
+                        SDLK_KEY_CASE_MACRO(SDLK_q, 'q');
+                        SDLK_KEY_CASE_MACRO(SDLK_r, 'r');
+                        SDLK_KEY_CASE_MACRO(SDLK_s, 's');
+                        SDLK_KEY_CASE_MACRO(SDLK_t, 't');
+                        SDLK_KEY_CASE_MACRO(SDLK_u, 'u');
+                        SDLK_KEY_CASE_MACRO(SDLK_v, 'v');
+                        SDLK_KEY_CASE_MACRO(SDLK_w, 'w');
+                        SDLK_KEY_CASE_MACRO(SDLK_x, 'x');
+                        SDLK_KEY_CASE_MACRO(SDLK_y, 'y');
+                        SDLK_KEY_CASE_MACRO(SDLK_z, 'z');
+                        SDLK_KEY_CASE_MACRO(SDLK_SPACE, ' ');
+
+                        case SDLK_BACKSPACE:
+                            // only move if the buffer could execute the backspace
+                            // command; ie if a char was deleted
+                            if(_buffer_.BackspaceAtCursor() == true)
+                            {
+                                std::cout << "moving cursor left" << std::endl;
+                                _buffer_.CursorLeft();
+                            }
+                            break;
+
 
                         default:
                             std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;

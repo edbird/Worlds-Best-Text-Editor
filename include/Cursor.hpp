@@ -34,25 +34,27 @@ class Cursor
 
     void Up()
     {
-        if(_line_ > 1)
+        if(_line_ > 0)
             -- _line_;
     }
 
-    void Down()
+    void Down(const CursorPos_t line_count)
     {
-        if(_line_ < - 1)
+        // TODO
+        if(_line_ < line_count - 1)
             ++ _line_;
     }
 
     void Left()
     {
-        if(_col_ > 1)
+        if(_col_ > 0)
             -- _col_;
     }
 
-    void Right()
+    void Right(const CursorPos_t line_size)
     {
-        if(_col_ < - 1)
+        // TODO
+        if(_col_ < line_size - 1)
             ++ _col_;
     }
 
