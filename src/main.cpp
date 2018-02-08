@@ -25,7 +25,7 @@ class Window
 
     Window()
         : _window_(nullptr, SDL_DestroyWindow)
-        , _surface_(nullptr)
+        , _surface_{nullptr}
     {
         // TODO: should go elsewhere?
         // TODO: error message
@@ -48,10 +48,12 @@ class Window
             }
             else
             {
-                _surface_.reset(SDL_GetWindowSurface(_window_.get()));
+                //_surface_.reset(SDL_GetWindowSurface(_window_.get()));
+                _surface_ = SDL_GetWindowSurface(_window_.get());
                 //_surface_ = SDL_GetWindowSurface(_window_);
 
-                SDL_FillRect(_surface_.get(), nullptr, SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF));
+                //SDL_FillRect(_surface_.get(), nullptr, SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF));
+                SDL_FillRect(_surface_, nullptr, SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF));
                 //SDL_FillRect(_surface_, nullptr, SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF));
 
                 SDL_UpdateWindowSurface(_window_.get());
@@ -146,7 +148,8 @@ class Window
     const int32_t _HEIGHT_{400};
 
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> _window_;
-    std::unique_ptr<SDL_Surface> _surface_;
+    //std::unique_ptr<SDL_Surface> _surface_;
+    SDL_Surface* _surface_;
 
     //SDL_Window *_window_;
     //SDL_Surface *_surface_;

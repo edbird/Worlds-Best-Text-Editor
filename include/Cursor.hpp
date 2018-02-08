@@ -15,6 +15,13 @@ class Cursor
         
     }
 
+    // TODO: what if an invalid value is given?
+    void SetPos(const CursorPos_t line, const CursorPos_t col)
+    {
+        _line_ = line;
+        _col_ = col;
+    }
+
     CursorPos_t GetPosLine() const
     {
         return _line_;
