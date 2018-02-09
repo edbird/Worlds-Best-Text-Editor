@@ -95,7 +95,7 @@ class Window
                 //COLOR_BACKGROUND = SDL_MapRGB(_surface_->format, 0x00, 0x00, 0x00);
                 //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
                 //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
-                COLOR_BACKGROUND = {0, 0, 0};
+                COLOR_BACKGROUND = {0x00, 0x00, 0x00};
                 COLOR_TEXT_DEFAULT = {0xFF, 0xFF, 0xFF};
                 COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
 
@@ -172,7 +172,14 @@ class Window
 
     int run()
     {
-        
+        // TODO
+        // regarding keyboard input it would be better to have a unified
+        // interface using function pointers
+        // so that the Keyboard class has a pair of maps
+        // which map SDLK_keys to function pointers
+        // these functions modify the buffer as they should
+
+
         bool quit{false};
         for(;;)
         {
@@ -182,6 +189,10 @@ class Window
 
             while(SDL_PollEvent(&event) != 0)
             {
+                
+                // send data to Keyboard class
+                _keyboard_.ProcessEvent(event);
+
                 // user request quit
                 if(event.type == SDL_QUIT)
                 {
@@ -189,20 +200,42 @@ class Window
                 }
 
                 // keypress events
-                else if(event.type == SDL_KEYDOWN)
+                else if((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
                 {
 
                     // get the modifier state
                     // split into different modifier constants
-                    const SDL_Keymod MOD{SDL_GetModState()};
-                    const bool MOD_SHIFT{MOD & KMOD_SHIFT == KMOD_SHIFT};
-                    const bool MOD_CTRL{MOD & KMOD_CTRL == KMOD_CTRL};
-                    const bool MOD_ALT{MOD & KMOD_ALT == KMOD_ALT};
-                    const bool MOD_LSHIFT{MOD & KMOD_LSHIFT == KMOD_LSHIFT};
-                    const bool MOD_NONE{MOD == KMOD_NONE};
-                    if(MOD_NONE) std::cout << "NONE" << std::endl;
+                    //const SDL_Keymod MOD{SDL_GetModState()};
+                    //if(MOD & KMOD_SHIFT == KMOD_SHIFT)
+                    if(_keyboard_.ShiftState())
+                    {
+                        std::cout << "!!! KMOD_SHIFT !!!" << std::endl;
+                    }
+                    //if(MOD == KMOD_NONE)
+                    if(_keyboard_.ModState() == false)
+                    {
+                        std::cout << "NO KMOD" << std::endl;
+                    }
+                    //std::cout << (int)MOD << std::endl;
+                    //const bool MOD_SHIFT{MOD & KMOD_SHIFT == KMOD_SHIFT};
+                    //const bool MOD_CTRL{MOD & KMOD_CTRL == KMOD_CTRL};
+                    //const bool MOD_ALT{MOD & KMOD_ALT == KMOD_ALT};
+                    //const bool MOD_LSHIFT{MOD & KMOD_LSHIFT == KMOD_LSHIFT};
+                    //const bool MOD_NONE{MOD == KMOD_NONE};
+                    const bool MOD_SHIFT{_keyboard_.ShiftState()};
+                    const bool MOD_CTRL{_keyboard_.CTRLState()};
+                    const bool MOD_ALT{_keyboard_.AltState()};
+                    const bool MOD_LSHIFT{_keyboard_.LShiftState()};
+                    const bool MOD_NONE{!_keyboard_.ModState()};
                     if(MOD_SHIFT) std::cout << "SHIFT" << std::endl;
                     if(MOD_CTRL) std::cout << "CTRL" << std::endl;
+                    if(MOD_NONE) std::cout << "NONE" << std::endl;
+
+                    // TODO: this is a hack!
+                    // check if any "detected" modifier is pressed, if so then
+                    // invert to get MOD_NONE
+                    //const bool MOD_NONE{!(MOD_SHIFT || MOD_CTRL || MOD_ALT)};
+                    //if(MOD_NONE) std::cout << "NONE" << std::endl;
 
                     // use map to process printable characters
                     // (insertable characters - any character
@@ -398,7 +431,8 @@ class Window
     Buffer _buffer_;
     //Cursor _cursor_;
 
-    KeyMap _keymap_;
+    Keyboard _keyboard_;
+    KeyMap _keymap_; // TODO: what do I do with this now?
 
     /*
     uint32_t COLOR_BACKGROUND;
