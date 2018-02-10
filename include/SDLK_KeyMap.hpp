@@ -1,6 +1,7 @@
 #ifndef SDLK_KEYMAP
 #define SDLK_KEYMAP
 
+
 class SDLK_KeyMap
 {
 
@@ -250,9 +251,21 @@ class SDLK_KeyMap
     {
     }
 
+    bool Find(const SDL_Keycode input, SDL_Keycode& output) const
+    {
+        SDLKKeyMapConstIterator_t it{_sdlk_keymap_.find(input)};
+        if(it != _sdlk_keymap_.end())
+        {
+            output = it->second;
+            return true;
+        }
+        return false;
+    }
+
     private:
 
     std::map<const SDL_Keycode, const SDL_Keycode> _sdlk_keymap_;
+    typedef std::map<const SDL_Keycode, const SDL_Keycode>::const_iterator SDLKKeyMapConstIterator_t;
 
 };
 

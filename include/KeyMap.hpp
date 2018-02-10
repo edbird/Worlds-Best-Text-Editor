@@ -5,8 +5,14 @@
 
 #include <SDL.h>
 
+
+class KeyMap;
+
+
 class KeyMapBase
 {
+
+    friend class KeyMap;
 
     //bool operator<(const SDL_Keysym l, const SDL_Keysym r)
     //{
@@ -67,6 +73,22 @@ class KeyMapBase
                 const char SDLK_RIGHTBRACKET_ch,
                 const char SDLK_EQUALS_ch,
                 const char SDLK_MINUS_ch,
+
+                const char SDLK_KP_1_ch,
+                const char SDLK_KP_2_ch,
+                const char SDLK_KP_3_ch,
+                const char SDLK_KP_4_ch,
+                const char SDLK_KP_5_ch,
+                const char SDLK_KP_6_ch,
+                const char SDLK_KP_7_ch,
+                const char SDLK_KP_8_ch,
+                const char SDLK_KP_9_ch,
+                const char SDLK_KP_0_ch,
+                const char SDLK_KP_DIVIDE_ch,
+                const char SDLK_KP_MULTIPLY_ch,
+                const char SDLK_KP_PERIOD_ch,
+                const char SDLK_KP_PLUS_ch,
+                const char SDLK_KP_MINUS_ch
                 )
         : _keymap_
         {
@@ -110,7 +132,7 @@ class KeyMapBase
             
             {SDLK_SPACE, SDLK_SPACE_ch},
             {SDLK_TAB, SDLK_TAB_ch},
-            {SDLK_BACKSLASH, SDLK_BACKSLASH_ch}
+            {SDLK_BACKSLASH, SDLK_BACKSLASH_ch},
             {SDLK_SLASH, SDLK_SLASH_ch},
             {SDLK_COMMA, SDLK_COMMA_ch},
             {SDLK_PERIOD, SDLK_PERIOD_ch},
@@ -118,7 +140,7 @@ class KeyMapBase
             {SDLK_QUOTE, SDLK_QUOTE_ch},
             {SDLK_BACKQUOTE, SDLK_BACKQUOTE_ch},
             {SDLK_LEFTBRACKET, SDLK_LEFTBRACKET_ch},
-            {SDLK_RIGHTBRACKET, SDLK_RIGHTBRACKET_ch}
+            {SDLK_RIGHTBRACKET, SDLK_RIGHTBRACKET_ch},
             {SDLK_EQUALS, SDLK_EQUALS_ch},
             {SDLK_MINUS, SDLK_MINUS_ch},
 
@@ -137,6 +159,7 @@ class KeyMapBase
             {SDLK_KP_PERIOD, SDLK_KP_PERIOD_ch},
             {SDLK_KP_PLUS, SDLK_KP_PLUS_ch},
             {SDLK_KP_MINUS, SDLK_KP_MINUS_ch}
+        }
     {
     }
     
@@ -184,7 +207,7 @@ class KeyMapBase
             
             {SDLK_SPACE, ' '},
             {SDLK_TAB, '\t'},
-            {SDLK_BACKSLASH, '\\'}
+            {SDLK_BACKSLASH, '\\'},
             {SDLK_SLASH, '/'},
             {SDLK_COMMA, ','},
             {SDLK_PERIOD, '.'},
@@ -192,7 +215,7 @@ class KeyMapBase
             {SDLK_QUOTE, '\''},
             {SDLK_BACKQUOTE, '`'},
             {SDLK_LEFTBRACKET, '['},
-            {SDLK_RIGHTBRACKET, ']'}
+            {SDLK_RIGHTBRACKET, ']'},
             {SDLK_EQUALS, '='},
             {SDLK_MINUS, '-'},
 
@@ -211,36 +234,60 @@ class KeyMapBase
             {SDLK_KP_PERIOD, '.'},
             {SDLK_KP_PLUS, '+'},
             {SDLK_KP_MINUS, '-'}
+        }
     {
     }
     
-    std::map<const SDL_Keycode, const char> & GetMap()
+    std::map<const SDL_Keycode, const char> const & GetMap() const
     {
         return _keymap_;
     }
-    
+
+    std::map<const SDL_Keycode, const char> & MutableMap()
+    {
+        return _keymap_;
+    }
+
+    /*
+    KeyMapConstIterator_t Find(const SDL_Keycode keycode)
+    {
+        return _keymap_.find(keycode);
+    }
+
+    KeyMapConstIterator_t End() const
+    {
+        return _keymap_.end();
+    }
+    */
 
     private:
 
     std::map<const SDL_Keycode, const char> _keymap_;
     //std::map<const SDL_Keycode, const char> _keymap_shift_;
+
+    public:
+
     typedef std::map<const SDL_Keycode, const char>::const_iterator KeyMapConstIterator_t;
 
 };
 
 
-class KeyMapDefaultMap : protected KeyMapBase
+class KeyMapDefaultMap : public KeyMapBase
 {
+
+    public:
 
     KeyMapDefaultMap()
         : KeyMapBase() // call default - default keys
     {
     }
     
-}
+};
 
-class KeyMapShiftMap : protected KeyMapBase
+class KeyMapShiftMap : public KeyMapBase
 {
+
+    public:
 
     KeyMapShiftMap()
         : KeyMapBase('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', \
@@ -249,25 +296,31 @@ class KeyMapShiftMap : protected KeyMapBase
                      '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', \
                      ' ', '\t','|', '?', '<', '>', ':', '"', '~', '{', '}', \
                      '+', '_', \
-                     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' \
+                     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', \
                      '/', '*', '.', '+', '-')
     {
     }
 
-}
+};
 
+
+// TODO: not sure if this is the most sensible way to organize
 class KeyMap
 {
 
+    public:
 
+    KeyMap()
+    {
+    }
 
     // find keycode and return correct character
     bool Find(const SDL_Keycode keycode, char &ch, const bool shift_state = false) const
     { 
         if(shift_state == false)
         {
-            KeyMapConstIterator_t it{_keymap_.find(keycode)};
-            if(it != _keymap_.end())
+            KeyMapBase::KeyMapConstIterator_t it{_default_keymap_._keymap_.find(keycode)};
+            if(it != _default_keymap_._keymap_.end())
             {
                 ch = it->second;
                 return true;
@@ -275,8 +328,8 @@ class KeyMap
         }
         else if(shift_state == true)
         {
-            KeyMapConsIterator_t it{_keymap_shift_.find(keycode)};
-            if(it != _keymap_shift_.end())
+            KeyMapBase::KeyMapConstIterator_t it{_shift_keymap_._keymap_.find(keycode)};
+            if(it != _shift_keymap_._keymap_.end())
             {
                 ch = it->second;
                 return true;
@@ -286,8 +339,13 @@ class KeyMap
     }
 
 
+    private:
 
-}
+    KeyMapDefaultMap _default_keymap_;
+    KeyMapShiftMap _shift_keymap_;
+
+
+};
 
 
 #endif // KEYMAP_HPP
