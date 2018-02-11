@@ -1,12 +1,14 @@
 #ifndef CURSOR_HPP
 #define CURSOR_HPP
 
-typedef uint32_t CursorPos_t;
 
 class Cursor
 {
-
+    
     public:
+
+    typedef uint32_t CursorPos_t;
+
 
     Cursor()
         : _line_(1)
@@ -67,6 +69,7 @@ class Cursor
 
     CursorPos_t _line_;
     CursorPos_t _col_;
+
 
 };
 

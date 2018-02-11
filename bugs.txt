@@ -1,0 +1,7 @@
+list of bugs:
+
+if the cursor moves off the end of the screen
+then it can't be seen
+
+also pressing backspace in a multiline (wrapped) line
+causes a segfault

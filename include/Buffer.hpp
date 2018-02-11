@@ -20,7 +20,7 @@ class BufferLine
         return _text_;
     }
 
-    void InsertChar(const char ch, CursorPos_t position)
+    void InsertChar(const char ch, Cursor::CursorPos_t position)
     {
         // decrement position as values run from 1
         -- position;
@@ -109,12 +109,12 @@ class Buffer
     }
     */
 
-    CursorPos_t GetCursorLine() const
+    Cursor::CursorPos_t GetCursorLine() const
     {
         return _cursor_.GetPosLine();
     }
 
-    CursorPos_t GetCursorCol() const
+    Cursor::CursorPos_t GetCursorCol() const
     {
         return _cursor_.GetPosCol();
     }
@@ -153,10 +153,10 @@ class Buffer
         _modified_ = true;
 
         // current line and col
-        CursorPos_t c_line{_cursor_.GetPosLine()};
-        CursorPos_t c_col{_cursor_.GetPosCol()};
+        Cursor::CursorPos_t c_line{_cursor_.GetPosLine()};
+        Cursor::CursorPos_t c_col{_cursor_.GetPosCol()};
 
-        std::cout << "c_col=" << c_col << std::endl;
+        //std::cout << "c_col=" << c_col << std::endl;
         // use at() here in case we did something wrong
         // when updating the cursor
         #if DEBUG
@@ -169,7 +169,7 @@ class Buffer
 
         // TODO: not all chars increment?
         // incrementing is done by the sdl event loop
-        std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
+        //std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
     }
 
     void ReturnAtCursor()
@@ -177,8 +177,8 @@ class Buffer
         _modified_ = true;
 
         // current line and col
-        CursorPos_t c_line{_cursor_.GetPosLine()};
-        CursorPos_t c_col{_cursor_.GetPosCol()};
+        Cursor::CursorPos_t c_line{_cursor_.GetPosLine()};
+        Cursor::CursorPos_t c_col{_cursor_.GetPosCol()};
 
         //std::cout << "c_col=" << c_col << std::endl;
         // use at() here in case we did something wrong
@@ -200,10 +200,8 @@ class Buffer
         _modified_ = true;
 
         // current line and col
-        CursorPos_t c_line{_cursor_.GetPosLine()};
-        CursorPos_t c_col{_cursor_.GetPosCol()};
-
-        std::cout << "BS: c_col=" << c_col << std::endl;
+        Cursor::CursorPos_t c_line{_cursor_.GetPosLine()};
+        Cursor::CursorPos_t c_col{_cursor_.GetPosCol()};
 
         if(c_col > 0)
         {
@@ -221,7 +219,7 @@ class Buffer
 
             // TODO: not all chars increment?
             // incrementing is done by the sdl event loop
-            std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
+            //std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
         
             // TODO: i suspect that the cursor does not get moved correctly!
             //if(c_col > 0)
@@ -238,6 +236,11 @@ class Buffer
             // c_col is zero
             // delete the c_line
             _line_text_.erase(_line_text_.begin() + c_line);
+            //_cursor_.SetPos(, );
+            //_cursor_.CR(); // TODO might be needed see below comment
+            //_cursor_.Up(); // TODO this will not work if the lines are different lengths
+            Cursor::CursorPos_t goto_line{_cursor_.GetPosLine() - 1};
+            _cursor_.SetPos(goto_line, _line_text_.at(goto_line).size());
         }
         return false;
     }
@@ -251,8 +254,8 @@ class Buffer
         {
             //std::cout << "modified is true" << std::endl;
             _data_.clear();
-            //for(CursorPos_t line{1}; line < _line_count_; ++ line)
-            for(CursorPos_t line{0}; line < _line_text_.size(); ++ line)
+            //for(Cursor::CursorPos_t line{1}; line < _line_count_; ++ line)
+            for(Cursor::CursorPos_t line{0}; line < _line_text_.size(); ++ line)
             {
                 //_data_ += _line_[line].GetString();
                 _data_ += _line_text_[line];
@@ -270,8 +273,8 @@ class Buffer
     Cursor _cursor_;
 
     // TODO: don't need this variable, or the one below
-    //CursorPos_t _line_count_; // not maintained yet
-    //std::vector<CursorPos_t> _line_size_; // not maintained yet
+    //Cursor::CursorPos_t _line_count_; // not maintained yet
+    //std::vector<Cursor::CursorPos_t> _line_size_; // not maintained yet
     //std::vector<BufferLine> _line_;
     std::vector<std::string> _line_text_;
 

@@ -107,7 +107,8 @@ class Window
 
 
                 //Open the font
-                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 11);
+                //_font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 11);
+                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", _config_.Get("fontsize"));
                 if(_font_ == nullptr)
                 {
                     std::cout << TTF_GetError() << std::endl;
@@ -177,12 +178,11 @@ class Window
 
         //SDL_Surface* cursor_surface_normal = TTF_RenderText_Solid(_font_, cursor_string_normal, COLOR_CURSOR);
         //SDL_FillRect(cursor_surface_normal,
-        Uint32 width{_texture_chars_size_[' '].w};
-        Uint32 height{_texture_chars_size_[' '].h};
-        std::cout << width << " " << height << std::endl;
-        SDL_Surface* cursor_surface_normal = \
-            SDL_CreateRGBSurface(0, width, height, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
-            //SDL_CreateRGBSurface(0, _texture_chars_size_[' '].w, _texture_chars_size_[' '].h, 32, 0xFF, 0x00, 0xFF, 0x00);
+        //Uint32 width{_texture_chars_size_[' '].w};
+        //Uint32 height{_texture_chars_size_[' '].h};
+        //SDL_Surface* cursor_surface_normal = \
+        //    SDL_CreateRGBSurface(0, width, height, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+        SDL_Surface* cursor_surface_normal = SDL_CreateRGBSurface(0, _texture_chars_size_[' '].w, _texture_chars_size_[' '].h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
         if(cursor_surface_normal == nullptr)
         {
             std::cout << SDL_GetError() << std::endl;
@@ -302,11 +302,13 @@ class Window
                     const bool MOD_GUI{_keyboard_.GUIState()};
                     const bool MOD_LSHIFT{_keyboard_.LShiftState()};
                     const bool MOD_NONE{!_keyboard_.ModState()};
+                    /*
                     if(MOD_SHIFT) std::cout << "SHIFT" << std::endl;
                     if(MOD_CTRL) std::cout << "CTRL" << std::endl;
                     if(MOD_ALT) std::cout << "ALT" << std::endl;
                     if(MOD_GUI) std::cout << "GUI" << std::endl;
                     if(MOD_NONE) std::cout << "NONE" << std::endl;
+                    */
 
 
                     // TODO: this is a hack!
@@ -423,6 +425,7 @@ class Window
                                 _buffer_.CursorRight();
                                 break;
                         
+
                             case SDLK_RETURN:
                                 _buffer_.ReturnAtCursor();
                                 _buffer_.CursorCR();
@@ -510,7 +513,7 @@ class Window
             // size of individual characters
             // position set to origin of screen and character 'a' (first
             // character in the character string)
-            SDL_Rect dst_rect{0, 0, 0, 0};
+            SDL_Rect dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
             //SDL_Rect src_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
 
             //std::cout << "texture_chars: " << _texture_chars_ << " size=" << _texture_chars_.size() << std::endl;
@@ -518,13 +521,16 @@ class Window
 
 
             // cursor position
-            CursorPos_t cursor_line{_buffer_.GetCursorLine()};
-            CursorPos_t cursor_col{_buffer_.GetCursorCol()};
-            CursorPos_t current_line{0};
-            CursorPos_t current_col{0};
+            Cursor::CursorPos_t cursor_line{_buffer_.GetCursorLine()};
+            Cursor::CursorPos_t cursor_col{_buffer_.GetCursorCol()};
+            Cursor::CursorPos_t current_line{0};
+            Cursor::CursorPos_t current_col{0};
 
             //std::cout << "cursor_line=" << cursor_line << " cursor_col=" << cursor_col << std::endl;
 
+            // TODO: rather than using this we should be using the cursor pos variables
+            // or add new variables to specify the position of the cursor on the screen
+            // as well as the position of the cursor in the buffer
             SDL_Rect cursor_texture_dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
 
             std::string::const_iterator it{_buffer_.Get().cbegin()};
@@ -579,72 +585,33 @@ class Window
                         }
                     }
 
-                    //Set clip rendering dimensions
-                    //SDL_Rect *clip{nullptr};
-                    //if(clip != nullptr)
-                    //{
-                    //    rect.w = clip->w;
-                    //    rect.h = clip->h;
-                    //}
-
-                    //Render to screen
-                    //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
-
-                    //Render texture to screen
+                    // render texture to screen
                     SDL_RenderCopy(_renderer_, texture, &src_rect, &dst_rect);
 
                     //dst_rect.x += dst_rect.w;
                     dst_rect.x += src_rect.w;
 
+                    //std::cout << "current_line=" << current_line << std::endl;
+                    //std::cout << "current_col=" << current_line << std::endl;
+                    //std::cout << "cursor_line=" << cursor_line << std::endl;
                     if(cursor_line == current_line)
                     {
-                        // advance position of where cursor is to be drawn
-                        cursor_texture_dst_rect.x += src_rect.w;
-                        //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << " " << cursor_texture_dst_rect.w << " " << cursor_texture_dst_rect.h << std::endl;
+                        if(current_col < cursor_col)
+                        {
+                            // advance position of where cursor is to be drawn
+                            cursor_texture_dst_rect.x += src_rect.w;
+                            //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << " " << cursor_texture_dst_rect.w << " " << cursor_texture_dst_rect.h << std::endl;
+                    
+                        }
                     }
 
+                    
+                    ++ current_col;
                 }
 
 
-                // print cursor
-                /*
-                if(current_line == cursor_line)
-                {
-                    std::cout << "current line is cursor line" << std::endl;
-                    if(
-                        (current_col == cursor_col) ||
-                        (it == _buffer_.Get().cend()) ||
-                                                             // order important to avoid segfault
-                        ((current_col + 1 == cursor_col) && (it + 1 == _buffer_.Get().cend() || (*(it + 1) == '\n')))
-                      )
-                    {
-                        //if(it == _buffer_.Get().cend())
-                        //{
-                        //    dst_rect.x += cursor_texture_src_rect.w;
-                        //}
-                        std::cout << "printing CURSOR" << std::endl;
-                        SDL_RenderCopy(_renderer_, cursor_texture.at(current_cursor), &cursor_texture_src_rect, &dst_rect);
-                        std::cout << dst_rect.x << std::endl;
-                    }
-                }
-                else
-                {
-                    std::cout << "current_line=" << current_line << " current_col=" << current_col << std::endl;
-                }
-                */
-
-                //if(current_line == cursor_line && current_col == cursor_col)
-                //{
-                //    std::cout << "printing CURSOR" << std::endl;
-                //    SDL_RenderCopy(_renderer_, cursor_texture[current_cursor], &cursor_texture_src_rect, &dst_rect);
-                //}
-
-                //std::cin.get();
-
-                ++ current_col;
-
-                if(it == _buffer_.Get().cend())
-                    break;
+                //if(it == _buffer_.Get().cend())
+                //    break;
 
             }
             //std::cin.get();
@@ -666,6 +633,7 @@ class Window
             {
                 std::cout << SDL_GetError() << std::endl;
             }
+            //std::cout << "Cursor Position: " << cursor_line << ":" << cursor_col << std::endl;
             //SDL_RenderCopy(_renderer_, _texture_chars_.at('x'), &src_rect, &dst_rect);
             //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << std::endl;
 
@@ -683,6 +651,9 @@ class Window
             
                                 
             if(quit == true) break;
+
+
+            //SDL_Delay(500);
 
         }
 

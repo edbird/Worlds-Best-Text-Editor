@@ -181,8 +181,6 @@ class Keyboard
         }
         else return -1;
 
-        std::cout << "ProcessEvent" << std::endl;
-
         // get the state KEYUP or KEYDOWN
         /*KeyboardKey::Keystate current_state{KeyboardKey::Keystate::UNDEFINED};
         if(event.type == SDL_KEYDOWN)
