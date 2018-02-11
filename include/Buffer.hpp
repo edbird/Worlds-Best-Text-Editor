@@ -53,6 +53,8 @@ class Buffer
         : _modified_{true} // ensure first call to create_data works
     {
         std::string blank_string;
+        _line_text_.push_back(blank_string); // this is left here to ensure first
+        // call to insert works without having to insert a blank line
 
         // line at index 0 is always blank - there is no line 0 in
         // text editors
@@ -62,7 +64,6 @@ class Buffer
         //_line_.push_back(blank_line); // start with a blank line
         //_line_size_.push_back(0); // start with a blank line
         //_line_text_.push_back(blank_string);
-        _line_text_.push_back(blank_string);
 
         // TODO: now NO zeroth line! we move the cursor index by -1
         // TODO: NO LONGER MOVE BY MINUS 1, SIMPLY ADJUST LINE NUMBERS
@@ -107,6 +108,16 @@ class Buffer
     
     }
     */
+
+    CursorPos_t GetCursorLine() const
+    {
+        return _cursor_.GetPosLine();
+    }
+
+    CursorPos_t GetCursorCol() const
+    {
+        return _cursor_.GetPosCol();
+    }
 
     void CursorLeft()
     {

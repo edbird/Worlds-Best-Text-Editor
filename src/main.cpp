@@ -13,6 +13,7 @@
 
 
 
+#include "Config.hpp"
 #include "Buffer.hpp"
 #include "Cursor.hpp"
 #include "KeyMap.hpp"
@@ -80,6 +81,7 @@ class Window
                 //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
                 //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
                 COLOR_BACKGROUND = {0xFF, 0xFF, 0xFF};
+                COLOR_CURSOR = {0x00, 0xFF, 0x00};
                 COLOR_TEXT_DEFAULT = {0x00, 0x00, 0x00};
                 COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
                 
@@ -105,7 +107,7 @@ class Window
 
 
                 //Open the font
-                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 10);
+                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 11);
                 if(_font_ == nullptr)
                 {
                     std::cout << TTF_GetError() << std::endl;
@@ -163,6 +165,61 @@ class Window
 
             }
         }
+
+        _timer_ = SDL_GetTicks();
+
+        // init cursor
+        //219
+        //const char cursor_string_normal[2]{(char), 0};
+        const char cursor_string_normal[2]{' ', 0};
+        const char cursor_string_insert[2]{'|', 0};
+        const char cursor_string_replace[2]{'_', 0};
+
+        //SDL_Surface* cursor_surface_normal = TTF_RenderText_Solid(_font_, cursor_string_normal, COLOR_CURSOR);
+        //SDL_FillRect(cursor_surface_normal,
+        Uint32 width{_texture_chars_size_[' '].w};
+        Uint32 height{_texture_chars_size_[' '].h};
+        std::cout << width << " " << height << std::endl;
+        SDL_Surface* cursor_surface_normal = \
+            SDL_CreateRGBSurface(0, width, height, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+            //SDL_CreateRGBSurface(0, _texture_chars_size_[' '].w, _texture_chars_size_[' '].h, 32, 0xFF, 0x00, 0xFF, 0x00);
+        if(cursor_surface_normal == nullptr)
+        {
+            std::cout << SDL_GetError() << std::endl;
+        }
+        SDL_FillRect(cursor_surface_normal, nullptr, SDL_MapRGBA(cursor_surface_normal->format, 0x00, 0xFF, 0x00, 0xFF));
+        SDL_Surface* cursor_surface_insert = TTF_RenderText_Solid(_font_, cursor_string_insert, COLOR_TEXT_DEFAULT);
+        SDL_Surface* cursor_surface_replace = TTF_RenderText_Solid(_font_, cursor_string_replace, COLOR_TEXT_DEFAULT);
+
+        /*
+        for(Uint32 y{0}; y < cursor_surface_normal->h; ++ y)
+        {
+            for(Uint32 x{0}; x < cursor_surface_normal->w; ++ x)
+            {
+                putpixel(cursor_surface_normal, x, y, getpixel(cursor_surface_normal, x, y));
+            }
+        }
+        */
+
+        SDL_Texture* cursor_texture_normal = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_normal);
+        SDL_Texture* cursor_texture_insert = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_insert);
+        SDL_Texture* cursor_texture_replace = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_replace);
+
+        SDL_FreeSurface(cursor_surface_normal);
+        SDL_FreeSurface(cursor_surface_insert);
+        SDL_FreeSurface(cursor_surface_replace);
+        
+        _cursor_texture_.push_back(cursor_texture_normal);
+        _cursor_texture_.push_back(cursor_texture_insert);
+        _cursor_texture_.push_back(cursor_texture_replace);
+        //cursor_texture.push_back(cursor_texture_)
+        
+        _current_cursor_ = 0;
+        _cursor_texture_src_rect_.x = 0;
+        _cursor_texture_src_rect_.y = 0;
+        _cursor_texture_src_rect_.w = cursor_surface_normal->w;
+        _cursor_texture_src_rect_.h = cursor_surface_normal->h;
+        
     }
 
     ~Window()
@@ -453,33 +510,53 @@ class Window
             // size of individual characters
             // position set to origin of screen and character 'a' (first
             // character in the character string)
-            SDL_Rect ds_rect{0, 0, 0, 0};
+            SDL_Rect dst_rect{0, 0, 0, 0};
             //SDL_Rect src_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
 
             //std::cout << "texture_chars: " << _texture_chars_ << " size=" << _texture_chars_.size() << std::endl;
             //std::cout << "src_rect.w=" << src_rect.w << std::endl;
 
+
+            // cursor position
+            CursorPos_t cursor_line{_buffer_.GetCursorLine()};
+            CursorPos_t cursor_col{_buffer_.GetCursorCol()};
+            CursorPos_t current_line{0};
+            CursorPos_t current_col{0};
+
+            //std::cout << "cursor_line=" << cursor_line << " cursor_col=" << cursor_col << std::endl;
+
+            SDL_Rect cursor_texture_dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+
             std::string::const_iterator it{_buffer_.Get().cbegin()};
+            //for(; it != _buffer_.Get().cend(); ++ it)
             for(; it != _buffer_.Get().cend(); ++ it)
             {
 
+                //std::cout << "line=" << current_line << " col=" << current_col << std::endl;
+
+                // print char if not at end
                 const char ch{*it};
                  
                 if(ch == '\n')
                 {
                     // TODO: ERROR IF h CHANGES!!!
-                    ds_rect.y += ds_rect.h;
-                    ds_rect.x = 0;
+                    dst_rect.y += dst_rect.h;
+                    dst_rect.x = 0;
+
+                    current_col = 0;
+                    ++ current_line;
+
+                    cursor_texture_dst_rect.y += dst_rect.h;
                 }
                 else
                 {
                     
                     // source rect origin always 0, 0
                     // set the width and height on a per character basis using the map _texture_chars_size_
-                    SDL_Rect src_rect{0, 0, _texture_chars_size_.at(ch).w, _texture_chars_size_[ch].h};
-                    // set the ds_rect to have same size
-                    ds_rect.w = src_rect.w;
-                    ds_rect.h = src_rect.h;
+                    SDL_Rect src_rect{0, 0, _texture_chars_size_.at(ch).w, _texture_chars_size_.at(ch).h};
+                    // set the dst_rect to have same size
+                    dst_rect.w = src_rect.w;
+                    dst_rect.h = src_rect.h;
                     // set the texture pointer
                     SDL_Texture *texture{_texture_chars_.at(ch)};
 
@@ -487,11 +564,19 @@ class Window
                     //src_rect.x = (ch - _texture_chars_.at(0)) * src_rect.w;
 
                     //Render current frame
-                    if(ds_rect.x + ds_rect.w >= _WIDTH_)
+                    if(dst_rect.x + dst_rect.w >= _WIDTH_)
                     {
-                        ds_rect.x = 0;
+                        dst_rect.x = 0;
                         // TODO: ERROR IF h CHANGES!!!
-                        ds_rect.y += ds_rect.h;
+                        dst_rect.y += dst_rect.h;
+
+
+                        if(cursor_line == current_line)
+                        {
+                            // advance position of where cursor is to be drawn
+                            cursor_texture_dst_rect.x = 0;
+                            cursor_texture_dst_rect.y += dst_rect.h;
+                        }
                     }
 
                     //Set clip rendering dimensions
@@ -506,13 +591,91 @@ class Window
                     //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
 
                     //Render texture to screen
-                    SDL_RenderCopy(_renderer_, texture, &src_rect, &ds_rect);
+                    SDL_RenderCopy(_renderer_, texture, &src_rect, &dst_rect);
 
-                    //ds_rect.x += ds_rect.w;
-                    ds_rect.x += src_rect.w;
+                    //dst_rect.x += dst_rect.w;
+                    dst_rect.x += src_rect.w;
+
+                    if(cursor_line == current_line)
+                    {
+                        // advance position of where cursor is to be drawn
+                        cursor_texture_dst_rect.x += src_rect.w;
+                        //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << " " << cursor_texture_dst_rect.w << " " << cursor_texture_dst_rect.h << std::endl;
+                    }
 
                 }
+
+
+                // print cursor
+                /*
+                if(current_line == cursor_line)
+                {
+                    std::cout << "current line is cursor line" << std::endl;
+                    if(
+                        (current_col == cursor_col) ||
+                        (it == _buffer_.Get().cend()) ||
+                                                             // order important to avoid segfault
+                        ((current_col + 1 == cursor_col) && (it + 1 == _buffer_.Get().cend() || (*(it + 1) == '\n')))
+                      )
+                    {
+                        //if(it == _buffer_.Get().cend())
+                        //{
+                        //    dst_rect.x += cursor_texture_src_rect.w;
+                        //}
+                        std::cout << "printing CURSOR" << std::endl;
+                        SDL_RenderCopy(_renderer_, cursor_texture.at(current_cursor), &cursor_texture_src_rect, &dst_rect);
+                        std::cout << dst_rect.x << std::endl;
+                    }
+                }
+                else
+                {
+                    std::cout << "current_line=" << current_line << " current_col=" << current_col << std::endl;
+                }
+                */
+
+                //if(current_line == cursor_line && current_col == cursor_col)
+                //{
+                //    std::cout << "printing CURSOR" << std::endl;
+                //    SDL_RenderCopy(_renderer_, cursor_texture[current_cursor], &cursor_texture_src_rect, &dst_rect);
+                //}
+
+                //std::cin.get();
+
+                ++ current_col;
+
+                if(it == _buffer_.Get().cend())
+                    break;
+
             }
+            //std::cin.get();
+
+            // print cursor
+            _current_cursor_ = 0;
+            //SDL_RenderCopy(_renderer_, cursor_texture.at(current_cursor), &cursor_texture_src_rect, &cursor_texture_dst_rect);
+            SDL_Rect src_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+            cursor_texture_dst_rect.w = src_rect.w;
+            cursor_texture_dst_rect.h = src_rect.h;
+
+            //cursor_texture_dst_rect = dst_rect;
+
+            //std::cout << "PRINT" << std::endl;
+            //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << " " << cursor_texture_dst_rect.w << " " << cursor_texture_dst_rect.h << std::endl;
+            //std::cout << src_rect.x << " " << src_rect.y << " " << src_rect.w << " " << src_rect.h << std::endl;
+            //if(SDL_RenderCopy(_renderer_, _texture_chars_.at('x'), &src_rect, &cursor_texture_dst_rect) != 0)
+            if(SDL_RenderCopy(_renderer_, _cursor_texture_.at(_current_cursor_), &src_rect, &cursor_texture_dst_rect) != 0)
+            {
+                std::cout << SDL_GetError() << std::endl;
+            }
+            //SDL_RenderCopy(_renderer_, _texture_chars_.at('x'), &src_rect, &dst_rect);
+            //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << std::endl;
+
+
+            // when buffer empty print cursor at end
+            //if(_buffer_.Get().size() == 0)
+            //{
+
+            //}
+
 
 
             //Update screen
@@ -520,6 +683,7 @@ class Window
             
                                 
             if(quit == true) break;
+
         }
 
         return 0;
@@ -558,6 +722,11 @@ class Window
 
     Buffer _buffer_;
     //Cursor _cursor_;
+    // TODO: move into cursor class
+    // TODO: custom deleter
+    std::vector<SDL_Texture*> _cursor_texture_;
+    std::size_t _current_cursor_;
+    SDL_Rect _cursor_texture_src_rect_;
 
     Keyboard _keyboard_;
     KeyMap _keymap_; // TODO: what do I do with this now?
@@ -569,8 +738,15 @@ class Window
     */
 
     SDL_Color COLOR_BACKGROUND;
+    SDL_Color COLOR_CURSOR;
     SDL_Color COLOR_TEXT_DEFAULT;
     SDL_Color COLOR_CURRENT_LINE_BACKGROUND;
+
+    Uint32 _timer_;
+
+
+    // configuration options
+    Config _config_;
 
 };
 
