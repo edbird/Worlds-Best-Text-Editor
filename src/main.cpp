@@ -74,6 +74,16 @@ class Window
                 //SDL_Delay(1000);
 
 
+                // map colors
+                //COLOR_BACKGROUND = SDL_MapRGB(_surface_->format, 0x00, 0x00, 0x00);
+                //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
+                //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
+                COLOR_BACKGROUND = {0xFF, 0xFF, 0xFF};
+                COLOR_TEXT_DEFAULT = {0x00, 0x00, 0x00};
+                COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
+                
+                
+                // create renderer object
                 _renderer_ = SDL_CreateRenderer(_window_.get(), -1, SDL_RENDERER_ACCELERATED); // TODO vsync
                 if(_renderer_ == nullptr)
                 {
@@ -82,7 +92,7 @@ class Window
                 else
                 {
                     //Initialize renderer color
-                    SDL_SetRenderDrawColor(_renderer_, 0xFF, 0xFF, 0xFF, 0xFF);
+                    SDL_SetRenderDrawColor(_renderer_, COLOR_BACKGROUND.r, COLOR_BACKGROUND.g, COLOR_BACKGROUND.b, COLOR_BACKGROUND.a);
 
                     //Initialize PNG loading
                     /*int imgFlags = IMG_INIT_PNG;
@@ -92,16 +102,9 @@ class Window
                     }*/
                 }
 
-                // map colors
-                //COLOR_BACKGROUND = SDL_MapRGB(_surface_->format, 0x00, 0x00, 0x00);
-                //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
-                //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
-                COLOR_BACKGROUND = {0x00, 0x00, 0x00};
-                COLOR_TEXT_DEFAULT = {0xFF, 0xFF, 0xFF};
-                COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
 
                 //Open the font
-                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 8);
+                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 10);
                 if(_font_ == nullptr)
                 {
                     std::cout << TTF_GetError() << std::endl;
@@ -109,10 +112,9 @@ class Window
                 else
                 {
                     //Render text
-                    SDL_Color textColor = { 0, 0, 0 };
                 
                     // render text surface
-                    SDL_Surface* _text_surface_ = TTF_RenderText_Solid(_font_, "abcdef", COLOR_TEXT_DEFAULT);
+                    SDL_Surface* _text_surface_ = TTF_RenderText_Solid(_font_, "abcdefghijklmnopqrstuvwxyz", COLOR_TEXT_DEFAULT);
                     if(_text_surface_ == nullptr)
                     {
                         std::cout << TTF_GetError() << std::endl;
@@ -408,15 +410,30 @@ class Window
             //Clear screen
             SDL_RenderClear(_renderer_);
 
+            //Render current frame
+	        
+            //Set rendering space and render to screen
+	        //SDL_Rect rect = {0, 0, _WIDTH_, _HEIGHT_};
+            SDL_Rect ds_rect{0, 0, _texture_width_, _texture_height_};
+
+	        //Set clip rendering dimensions
+            //SDL_Rect *clip{nullptr};
+	        //if(clip != nullptr)
+	        //{
+		    //    rect.w = clip->w;
+		    //    rect.h = clip->h;
+	        //}
+
+	        //Render to screen
+	        //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
+
             //Render texture to screen
-            SDL_RenderCopy(_renderer_, _texture_, nullptr, nullptr);
+            SDL_RenderCopy(_renderer_, _texture_, nullptr, &ds_rect);
 
             //Update screen
             SDL_RenderPresent(_renderer_);
             
-                
-                
-                
+                                
             if(quit == true) break;
         }
 
@@ -442,6 +459,7 @@ class Window
     // texture
     SDL_Texture *_texture_;
 
+    // TODO why do I need these?
     unsigned short _texture_width_;
     unsigned short _texture_height_; // think short is ok?
 
