@@ -32,6 +32,11 @@ class Cursor
         return _col_;
     }
 
+    void CR()
+    {
+        _col_ = 0;
+    }
+
     void Up()
     {
         if(_line_ > 0)

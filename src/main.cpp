@@ -32,14 +32,6 @@ class Window
         //, COLOR_TEXT_DEFAULT{0xFFFFFFFF}
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
     {
-        // init printable characters
-        for(unsigned char ch{' '}; ; )
-        {
-            _texture_chars_.push_back(ch);
-
-            if(ch == '~') break;
-            ++ ch;
-        }
         
         // TODO: should go elsewhere?
         // TODO: error message
@@ -122,31 +114,45 @@ class Window
                 {
                     //Render text
                 
-                    // render text surface
-                    SDL_Surface* _text_surface_ = TTF_RenderText_Solid(_font_, _texture_chars_.c_str(), COLOR_TEXT_DEFAULT);
-                    if(_text_surface_ == nullptr)
+                    // init printable characters
+                    for(char ch{' '}; ; )
                     {
-                        std::cout << TTF_GetError() << std::endl;
-                    }
-                    else
-                    {
-                        // create texture from surface pixels
-                        _texture_ = SDL_CreateTextureFromSurface(_renderer_, _text_surface_);
-                        if(_texture_ == nullptr)
+                
+                        // render text surface
+                        const char ch_string[2]{ch, '\0'};
+                        SDL_Surface* text_surface = TTF_RenderText_Solid(_font_, ch_string /*_texture_chars_.c_str()*/, COLOR_TEXT_DEFAULT);
+                        if(text_surface == nullptr)
                         {
-                            std::cout << SDL_GetError() << std::endl;
+                            std::cout << TTF_GetError() << std::endl;
                         }
                         else
                         {
-                            //Get image dimensions
-                            _texture_width_ = _text_surface_->w;
-                            _texture_height_ = _text_surface_->h;
-                        }
+                            // create texture from surface pixels
+                            SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer_, text_surface);
+                            if(texture == nullptr)
+                            {
+                                std::cout << SDL_GetError() << std::endl;
+                            }
+                            else
+                            {
+                                //Get image dimensions
+                                //_texture_width_ = _text_surface_->w;
+                                //_texture_height_ = _text_surface_->h;
 
-                        //Get rid of old surface
-                        SDL_FreeSurface(_text_surface_);
-                    } 
+                                _texture_chars_[ch] = texture;
+                                _texture_chars_size_[ch].w = text_surface->w;
+                                _texture_chars_size_[ch].h = text_surface->h;
+                            }
+
+                            //Get rid of old surface
+                            SDL_FreeSurface(text_surface);
+                        } 
                 
+                        //_texture_chars_.push_back(ch);
+
+                        if(ch == '~') break;
+                        ++ ch;
+                    }
                 }
 
 
@@ -164,13 +170,21 @@ class Window
         //SDL_DestroyWindow(_window_.get());
         //SDL_DestroyWindow(_window_);
 
-        // TODO this check elsewhere
-        if(_texture_ != nullptr)
+        std::map<const char, SDL_Texture*>::iterator it{_texture_chars_.begin()};
+        for(; it != _texture_chars_.end(); ++ it)
         {
-            SDL_DestroyTexture(_texture_);
-            _texture_ = nullptr;
-            _texture_width_ = 0;
-            _texture_height_ = 0;
+            SDL_Texture *texture{it->second};
+
+            // TODO this check elsewhere
+            if(texture != nullptr)
+            {
+                SDL_DestroyTexture(texture);
+                //_texture_ = nullptr;
+                //_texture_width_ = 0;
+                //_texture_height_ = 0;
+            }
+
+            it->second = nullptr;
         }
 
         TTF_CloseFont(_font_);
@@ -309,8 +323,26 @@ class Window
                             //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
                             //    break;
                         }
+                
                     }
-                    else if(MOD_NONE && !MOD_SHIFT)
+                    
+                    if(MOD_NONE || MOD_SHIFT)
+                    {
+                        switch(event.key.keysym.sym)
+                        {
+                            case SDLK_BACKSPACE:
+                                // only move if the buffer could execute the backspace
+                                // command; ie if a char was deleted
+                                if(_buffer_.BackspaceAtCursor() == true)
+                                {
+                                    std::cout << "moving cursor left" << std::endl;
+                                    _buffer_.CursorLeft();
+                                }
+                                break;
+                        }
+                    }
+                    
+                    if(MOD_NONE && !MOD_SHIFT)
                     {
                         // movement keys
                         switch(event.key.keysym.sym)
@@ -334,17 +366,10 @@ class Window
                                 _buffer_.CursorRight();
                                 break;
                         
-                            case SDLK_BACKSPACE:
-                                std::cout << "BACK SPACE" << std::endl;
-                                // only move if the buffer could execute the backspace
-                                // command; ie if a char was deleted
-                                if(_buffer_.BackspaceAtCursor() == true)
-                                {
-                                    std::cout << "moving cursor left" << std::endl;
-                                    _buffer_.CursorLeft();
-                                }
-                                break;
-
+                            case SDLK_RETURN:
+                                _buffer_.ReturnAtCursor();
+                                _buffer_.CursorCR();
+                                _buffer_.CursorDown();
                         
                         }
                     }
@@ -428,8 +453,8 @@ class Window
             // size of individual characters
             // position set to origin of screen and character 'a' (first
             // character in the character string)
-            SDL_Rect ds_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
-            SDL_Rect src_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
+            SDL_Rect ds_rect{0, 0, 0, 0};
+            //SDL_Rect src_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
 
             //std::cout << "texture_chars: " << _texture_chars_ << " size=" << _texture_chars_.size() << std::endl;
             //std::cout << "src_rect.w=" << src_rect.w << std::endl;
@@ -439,27 +464,54 @@ class Window
             {
 
                 const char ch{*it};
-                //std::cout << "ch=" << (int)ch << " offset=" << (int)(ch - _texture_chars_.at(0)) * src_rect.w << std::endl;
-                src_rect.x = (ch - _texture_chars_.at(0)) * src_rect.w;
+                 
+                if(ch == '\n')
+                {
+                    // TODO: ERROR IF h CHANGES!!!
+                    ds_rect.y += ds_rect.h;
+                    ds_rect.x = 0;
+                }
+                else
+                {
+                    
+                    // source rect origin always 0, 0
+                    // set the width and height on a per character basis using the map _texture_chars_size_
+                    SDL_Rect src_rect{0, 0, _texture_chars_size_.at(ch).w, _texture_chars_size_[ch].h};
+                    // set the ds_rect to have same size
+                    ds_rect.w = src_rect.w;
+                    ds_rect.h = src_rect.h;
+                    // set the texture pointer
+                    SDL_Texture *texture{_texture_chars_.at(ch)};
 
-                //Render current frame
-	        
+                    //std::cout << "ch=" << (int)ch << " offset=" << (int)(ch - _texture_chars_.at(0)) * src_rect.w << std::endl;
+                    //src_rect.x = (ch - _texture_chars_.at(0)) * src_rect.w;
 
-                //Set clip rendering dimensions
-                //SDL_Rect *clip{nullptr};
-                //if(clip != nullptr)
-                //{
-                //    rect.w = clip->w;
-                //    rect.h = clip->h;
-                //}
+                    //Render current frame
+                    if(ds_rect.x + ds_rect.w >= _WIDTH_)
+                    {
+                        ds_rect.x = 0;
+                        // TODO: ERROR IF h CHANGES!!!
+                        ds_rect.y += ds_rect.h;
+                    }
 
-                //Render to screen
-                //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
+                    //Set clip rendering dimensions
+                    //SDL_Rect *clip{nullptr};
+                    //if(clip != nullptr)
+                    //{
+                    //    rect.w = clip->w;
+                    //    rect.h = clip->h;
+                    //}
 
-                //Render texture to screen
-                SDL_RenderCopy(_renderer_, _texture_, &src_rect, &ds_rect);
+                    //Render to screen
+                    //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
 
-                ds_rect.x += ds_rect.w;
+                    //Render texture to screen
+                    SDL_RenderCopy(_renderer_, texture, &src_rect, &ds_rect);
+
+                    //ds_rect.x += ds_rect.w;
+                    ds_rect.x += src_rect.w;
+
+                }
             }
 
 
@@ -490,14 +542,16 @@ class Window
     TTF_Font *_font_ = nullptr;
 
     // texture
-    SDL_Texture *_texture_;
+    //SDL_Texture *_texture_;
 
     // TODO why do I need these?
-    unsigned short _texture_width_;
-    unsigned short _texture_height_; // think short is ok?
+    //unsigned short _texture_width_;
+    //unsigned short _texture_height_; // think short is ok?
 
     //const std::string _texture_chars_{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "};
-    std::string _texture_chars_;
+    //std::string _texture_chars_;
+    std::map<const char, SDL_Texture*> _texture_chars_;
+    std::map<const char, SDL_Rect> _texture_chars_size_;
 
     //SDL_Window *_window_;
     //SDL_Surface *_surface_;

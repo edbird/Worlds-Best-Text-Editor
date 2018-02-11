@@ -132,6 +132,11 @@ class Buffer
         //}
     }
 
+    void CursorCR()
+    {
+        _cursor_.CR();
+    }
+
     void InsertAtCursor(const char ch)
     {
         _modified_ = true;
@@ -154,6 +159,29 @@ class Buffer
         // TODO: not all chars increment?
         // incrementing is done by the sdl event loop
         std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
+    }
+
+    void ReturnAtCursor()
+    {
+        _modified_ = true;
+
+        // current line and col
+        CursorPos_t c_line{_cursor_.GetPosLine()};
+        CursorPos_t c_col{_cursor_.GetPosCol()};
+
+        //std::cout << "c_col=" << c_col << std::endl;
+        // use at() here in case we did something wrong
+        // when updating the cursor
+        #if DEBUG
+            //_line_.at(c_line).InsertChar(ch, c_col);
+            //_line_text_.at(c_line).insert(_line_text_.at(c_line).begin() + c_col, '\n');
+        #else
+            //_line_[c_line].InsertChar(ch, c_col);
+            //_line_text_[c_line].insert(_line_text_[c_line].begin() + c_col, '\n');
+        #endif
+
+        // push back a new line (string)
+        _line_text_.push_back(std::string{});
     }
 
     bool BackspaceAtCursor()
@@ -193,6 +221,12 @@ class Buffer
             //{
             //    return false;
             //}
+        }
+        else if(c_line > 0)
+        {
+            // c_col is zero
+            // delete the c_line
+            _line_text_.erase(_line_text_.begin() + c_line);
         }
         return false;
     }
