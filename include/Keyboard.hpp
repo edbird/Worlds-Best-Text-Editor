@@ -14,6 +14,7 @@
 // keys. The SDLK_Key map maps SDLK_Keys from one value
 // to another.
 
+/*
 class KeyboardKey
 {
 
@@ -47,6 +48,7 @@ class KeyboardKey
     Keystate _state_;
 
 };
+*/
 
 class Keyboard
 {
@@ -68,9 +70,12 @@ class Keyboard
             {SDLK_CAPSLOCK, false},
             {SDLK_MODE, false},
         }
+        // TODO: don't need this _key_ object?
         //, _key_
         //{
-            // TODO ?
+        //    {SDLK_a, KeyboardKey{}},
+        //    {SDLK_b, KeyboardKey{}}
+        //
         //}
     {
         // check if SDL_init TODO
@@ -100,7 +105,8 @@ class Keyboard
         set_rctrl_state(MOD & KMOD_RCTRL);
         set_lalt_state(MOD & KMOD_LALT);
         set_ralt_state(MOD & KMOD_RALT);
-
+        set_lgui_state(MOD & KMOD_LGUI);
+        set_rgui_state(MOD & KMOD_RGUI);
 
     }
 
@@ -108,10 +114,31 @@ class Keyboard
     // edit: convert SDL_Keycode into ascii char
     // returns false if no ascii char
     // returns true if ascii char is valid
-    bool GetChar(SDL_Keycode keycode, char &return_ch) const
+    bool ConvertChar(SDL_Keycode keycode, char &return_ch) const
     {
         // map the keycode first
         SDL_Keycode mapped_keycode{keycode};
+        if(MapSDLKeycode(mapped_keycode))
+        {
+            char ch{0};
+            //if(_keymap_.Find(mapped_keycode, ch, _lshift_state_ || _rshift_state_))
+            if(_keymap_.Find(mapped_keycode, ch, ShiftState()))
+            {
+                // if true, keycode is in the map and the output character is ch
+                return_ch = ch;
+                return true;
+            }
+            // _keymap_ does not contain mapped_keycode, second map failed
+            return false;
+        }
+        // mapped_keycode is not valid, first map failed
+        return false;
+    }
+
+    bool GetChar(char &return_ch) const
+    {
+         // map the keycode first
+        SDL_Keycode mapped_keycode{_last_pressed_keycode_};
         if(MapSDLKeycode(mapped_keycode))
         {
             char ch{0};
@@ -142,16 +169,35 @@ class Keyboard
 
     int ProcessEvent(const SDL_Event& event)
     {
-        // get the state
-        KeyboardKey::Keystate current_state{KeyboardKey::Keystate::UNDEFINED};
+        // return codes:
+        // 0 = success
+        // -1 = not a keydown / keyup event, therefore function doesn't do anything
+        // -2 = input key does not map to output key, therefore function doesn't do anything
+        // -3 = mapped key is not in _key_, therefore function can't do anything
+
+        if((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
+        {
+            // only continue with function if this is true
+        }
+        else return -1;
+
+        std::cout << "ProcessEvent" << std::endl;
+
+        // get the state KEYUP or KEYDOWN
+        /*KeyboardKey::Keystate current_state{KeyboardKey::Keystate::UNDEFINED};
         if(event.type == SDL_KEYDOWN)
         {
+            std::cout << "KEYDOWN" << std::endl;
             current_state = KeyboardKey::Keystate::TRUE;
         }
         else if(event.type == SDL_KEYUP)
         {
+            std::cout << "KEYUP" << std::endl;
             current_state = KeyboardKey::Keystate::FALSE;
         }
+        */
+        bool current_state{event.type == SDL_KEYDOWN};
+
 
         // map the key using the keymap, then set the state in the second map
         SDL_Keycode mapped_keysym{event.key.keysym.sym};
@@ -160,19 +206,27 @@ class Keyboard
         //if(_sdlk_keymap_.Find(event.key.keysym.sym, mapped_keysym))
         //{
             // mapped_keysym contains the SDL_Keycode to process
-            KeyboardKeyIterator_t it{_key_.find(mapped_keysym)};
-            if(it != _key_.end())
-            {
-                it->second.Set(current_state); // TODO: this part might be better in another function
-            }
-            else
-            {
+            //KeyboardKeyIterator_t it{_key_.find(mapped_keysym)};
+            //if(it != _key_.end())
+            //{
+                // this variable only tracks the last pressed keycode which
+                // the ProcessEvent function knows how to process
+                // (this variable is set if the function returns 0)
+                //_last_pressed_keycode_ = mapped_keysym;
+                set_last_pressed_keycode(mapped_keysym, current_state);
+
+            //    it->second.Set(current_state); // TODO: this part might be better in another function
+            //}
+            //else
+            //{
                 // error, mapped_keysym is not in the list of keys!
-                std::cout << "keysym is not in _key_" << std::endl;
-            }
+            //    std::cout << "keysym is not in _key_" << std::endl;
+
+            //    return -3;
+            //}
 
             // set the state variables
-            set_mod_state();
+            set_mod_state(mapped_keysym, current_state);
 
         }
         else
@@ -181,8 +235,11 @@ class Keyboard
             // therefore this key is ignored
             // mapped_key is not valid!
             // this keysym is not in the map
+
+            return -2;
         }
 
+        return 0;
     }
 
     // return the state of any of the modifier keys
@@ -219,6 +276,11 @@ class Keyboard
         return _mod_key_.at(SDLK_LALT)   || _mod_key_.at(SDLK_RALT);
     }
 
+    bool GUIState() const
+    {
+        return _mod_key_.at(SDLK_LGUI)   || _mod_key_.at(SDLK_RGUI);
+    }
+
     bool LShiftState() const
     {
         return _mod_key_.at(SDLK_LSHIFT);
@@ -245,25 +307,47 @@ class Keyboard
     }
     */
 
+    void set_last_pressed_keycode(const SDL_Keycode keycode, const bool state)
+    {
+        if(state == true) // KEYDOWN
+        {
+            _last_pressed_keycode_ = keycode;
+        }
+    }
+
+    // NOTE: this function can only change one mod state at a time
+    // It doesn't work like you might expect where the complete modstate
+    // is passed and all states are set at once
+    void set_mod_state(const SDL_Keycode keycode, const bool state)
+    {
+        std::map<const SDL_Keycode, bool>::iterator it{_mod_key_.find(keycode)}; // TODO: use typedef'd object
+        if(it != _mod_key_.end())
+        {
+            it->second = state;
+        }
+    }
+
     // sets the mod keys state map using the regular key map
     void set_mod_state()
     {
         std::map<const SDL_Keycode, bool>::iterator it{_mod_key_.begin()}; // TODO: use typedef'd object
         for(; it != _mod_key_.end(); ++ it)
         {
-            KeyboardKeyConstIterator_t it2{_key_.find(it->first)};
-            if(it2 != _key_.end())
-            {
-                if(it2->second.Get() == KeyboardKey::Keystate::TRUE)
-                {
-                    it->second = true;
-                }
-                else
-                {
-                    it->second = false;
-                }
-            }
+            //KeyboardKeyConstIterator_t it2{_key_.find(it->first)};
+            //if(it2 != _key_.end())
+            //{
+            //    if(it2->second.Get() == KeyboardKey::Keystate::TRUE)
+            //    {
+            //        it->second = true;
+            //    }
+            //    else
+            //    {
+            //        it->second = false;
+            //    }
+            //}
             // else: the mod key should be in _key_ but isnt
+            // do not change the mod key state
+
         }
 
     }
@@ -298,6 +382,16 @@ class Keyboard
         _mod_key_.at(SDLK_RALT) = state;
     }
 
+    void set_lgui_state(const bool state)
+    {
+        _mod_key_.at(SDLK_LGUI) = state;
+    }
+
+    void set_rgui_state(const bool state)
+    {
+        _mod_key_.at(SDLK_RGUI) = state;
+    }
+
     /*
     bool _lshift_state_;
     bool _rshift_state_;
@@ -311,6 +405,9 @@ class Keyboard
     bool _clock_state_;
     bool _mode_state_;
     */
+
+    // last pressed key
+    SDL_Keycode _last_pressed_keycode_;
 
     // another map, this one just for modifier keys
     std::map<const SDL_Keycode, bool> _mod_key_;
@@ -329,9 +426,9 @@ class Keyboard
     // keycode to KeyboardKey object which holds the "true" / "false"
     // state of the key (pressed or not pressed)
     // the output of the above map is used as the input to this map
-    std::map<const SDL_Keycode, KeyboardKey> _key_; // the keyboard keys
-    typedef std::map<const SDL_Keycode, KeyboardKey>::const_iterator KeyboardKeyConstIterator_t; // TODO stupid name
-    typedef std::map<const SDL_Keycode, KeyboardKey>::iterator KeyboardKeyIterator_t; // TODO stupid name
+    //std::map<const SDL_Keycode, KeyboardKey> _key_; // the keyboard keys
+    //typedef std::map<const SDL_Keycode, KeyboardKey>::const_iterator KeyboardKeyConstIterator_t; // TODO stupid name
+    //typedef std::map<const SDL_Keycode, KeyboardKey>::iterator KeyboardKeyIterator_t; // TODO stupid name
 
 
     // keycode to ascii character map

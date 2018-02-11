@@ -217,11 +217,15 @@ class Window
                     const bool MOD_SHIFT{_keyboard_.ShiftState()};
                     const bool MOD_CTRL{_keyboard_.CTRLState()};
                     const bool MOD_ALT{_keyboard_.AltState()};
+                    const bool MOD_GUI{_keyboard_.GUIState()};
                     const bool MOD_LSHIFT{_keyboard_.LShiftState()};
                     const bool MOD_NONE{!_keyboard_.ModState()};
                     if(MOD_SHIFT) std::cout << "SHIFT" << std::endl;
                     if(MOD_CTRL) std::cout << "CTRL" << std::endl;
+                    if(MOD_ALT) std::cout << "ALT" << std::endl;
+                    if(MOD_GUI) std::cout << "GUI" << std::endl;
                     if(MOD_NONE) std::cout << "NONE" << std::endl;
+
 
                     // TODO: this is a hack!
                     // check if any "detected" modifier is pressed, if so then
@@ -229,59 +233,64 @@ class Window
                     //const bool MOD_NONE{!(MOD_SHIFT || MOD_CTRL || MOD_ALT)};
                     //if(MOD_NONE) std::cout << "NONE" << std::endl;
 
-                    // how the event loop works:
-                    // the most recently pressed/released key is always stored
-                    // in event.key.keysym.sym
-                    // The Keyboard class maintains the current state of the
-                    // keyboard, which could include several pressed keys.
-                    // The Keyboard class is also used to map a SDL_Keycode
-                    // to a printable character
-                    char ch;
-                    if(_keyboard_.GetChar(event.key.keysym.sym, ch))
-
-                    // use map to process printable characters
-                    // (insertable characters - any character
-                    // which can be put into the buffer)
-                    //char ch;
-                    //if(_keymap_.Find(event.key.keysym.sym, ch))
+                    // process printable characters
+                    // these either have shift or no modifier
+                    if(MOD_NONE || MOD_SHIFT)
                     {
-                        std::cout << "found" << std::endl;
-                        // anything here is "buffer insertable"
-                        //if(('a' <= ch) && (ch <= 'z'))
-                        //{
-                            // detect shift press
-                        //    if(MOD_SHIFT)
-                        //    {
-                        //        std::cout << "shift" << std::endl;
+                        // how the event loop works:
+                        // the most recently pressed/released key is always stored
+                        // in event.key.keysym.sym
+                        // The Keyboard class maintains the current state of the
+                        // keyboard, which could include several pressed keys.
+                        // The Keyboard class is also used to map a SDL_Keycode
+                        // to a printable character
+                        char ch;
+                        //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
+                        if(_keyboard_.GetChar(ch))
 
-                                // shift all caps letters
-                        //        const char CHAR_SHIFT_DIFF{'a' - 'A'};
-                        //        std::cout << (int)CHAR_SHIFT_DIFF << std::endl;
-                        //        const char shift_ch{ch - CHAR_SHIFT_DIFF};
-                        //        _buffer_.InsertAtCursor(shift_ch);
-                        //        _buffer_.InsertAtCursor(ch);
-                        //        _buffer_.CursorRight();
-                        //    }
-                        //    else if(MOD_NONE)
-                        //    {
-                        //        std::cout << "no shift" << std::endl;
+                        // use map to process printable characters
+                        // (insertable characters - any character
+                        // which can be put into the buffer)
+                        //char ch;
+                        //if(_keymap_.Find(event.key.keysym.sym, ch))
+                        {
+                            std::cout << "found char " << ch << std::endl;
+                            // anything here is "buffer insertable"
+                            //if(('a' <= ch) && (ch <= 'z'))
+                            //{
+                                // detect shift press
+                            //    if(MOD_SHIFT)
+                            //    {
+                            //        std::cout << "shift" << std::endl;
 
-                                // no modifier: insert unchanged character ch
-                                _buffer_.InsertAtCursor(ch);
-                                _buffer_.CursorRight();
-                        //    }
-                        //}
-                        //else
-                        //{
-                            // if not an a-z character, do not shift, just insert
-                        //    _buffer_.InsertAtCursor(ch);
-                        //    _buffer_.CursorRight();
-                        //}
+                                    // shift all caps letters
+                            //        const char CHAR_SHIFT_DIFF{'a' - 'A'};
+                            //        std::cout << (int)CHAR_SHIFT_DIFF << std::endl;
+                            //        const char shift_ch{ch - CHAR_SHIFT_DIFF};
+                            //        _buffer_.InsertAtCursor(shift_ch);
+                            //        _buffer_.InsertAtCursor(ch);
+                            //        _buffer_.CursorRight();
+                            //    }
+                            //    else if(MOD_NONE)
+                            //    {
+                            //        std::cout << "no shift" << std::endl;
+
+                                    // no modifier: insert unchanged character ch
+                                    _buffer_.InsertAtCursor(ch);
+                                    _buffer_.CursorRight();
+                            //    }
+                            //}
+                            //else
+                            //{
+                                // if not an a-z character, do not shift, just insert
+                            //    _buffer_.InsertAtCursor(ch);
+                            //    _buffer_.CursorRight();
+                            //}
+                        }
                     }
-                    // TODO: removed else here because CTRL-s did not work
-                    // due to pressing s being caught by the above code
-                    //else
+                    else if(MOD_CTRL)
                     {
+                        // process control keys
 
                         switch(event.key.keysym.sym)
                         {
@@ -295,31 +304,13 @@ class Window
                                 break;\
                             }
 
-                            case SDLK_UP:
-                                _buffer_.CursorUp();        
-                                break;
-
-
-                            case SDLK_DOWN:
-                                _buffer_.CursorDown();
-                                break;
-
-
-                            case SDLK_LEFT:
-                                _buffer_.CursorLeft();
-                                break;
-
-
-                            case SDLK_RIGHT:
-                                _buffer_.CursorRight();
-                                break;
-
                             // CTRL-S: save action
                             case SDLK_s:
                                 if(MOD_CTRL)
                                 {
                                     //save_action
                                     _buffer_.Save("buffer.txt");
+                                    std::cout << "File " << "buffer.txt" << " written, " << _buffer_.Size() << " bytes" << std::endl;
                                 }
                                 break;
                
@@ -373,6 +364,34 @@ class Window
                                 break;
                         }
                     }
+                    else if(MOD_NONE)
+                    {
+                        // movement keys
+                        switch(event.key.keysym.sym)
+                        {
+                            case SDLK_UP:
+                                _buffer_.CursorUp();        
+                                break;
+
+
+                            case SDLK_DOWN:
+                                _buffer_.CursorDown();
+                                break;
+
+
+                            case SDLK_LEFT:
+                                _buffer_.CursorLeft();
+                                break;
+
+
+                            case SDLK_RIGHT:
+                                _buffer_.CursorRight();
+                                break;
+                        
+                        
+                        }
+                    }
+
 
                     // print buffer for debug
                     std::cout << "buffer contents:" << std::endl;

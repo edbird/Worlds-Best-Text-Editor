@@ -74,10 +74,14 @@ class Buffer
                                 // even though the buffer is not of size 1
     }
 
-    // save to text file
-    void Save(const std::string& filename)
+    std::size_t Size() const
     {
-        std::cout << "SAVE" << std::endl;
+        return Get().size();
+    }
+
+    // save to text file
+    void Save(const std::string& filename) const
+    {
         std::ofstream ofs(filename, std::ios::out | std::ios::trunc);
         const std::string stream_data{Get()};
         ofs.write(stream_data.data(), stream_data.size());
@@ -86,7 +90,7 @@ class Buffer
     }
 
     // get reference 
-    const std::string& Get()
+    const std::string& Get() const
     {
         // check done in create_data()
         //if(_modified == true)
@@ -196,7 +200,7 @@ class Buffer
     private:
 
     // compile lines into complete buffer object inside std::string
-    void create_data()
+    void create_data() const
     {
         if(_modified_ == true)
         {
@@ -227,11 +231,11 @@ class Buffer
     std::vector<std::string> _line_text_;
 
     // "raw buffer" data emulation
-    std::string _data_;
+    mutable std::string _data_;
 
     // if buffer is modified, the create_data() function must be called
     // before Get()
-    bool _modified_;
+    mutable bool _modified_;
 
     // const
     const std::string _new_line_string_{std::string("\n")};
