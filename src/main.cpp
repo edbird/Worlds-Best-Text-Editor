@@ -32,6 +32,15 @@ class Window
         //, COLOR_TEXT_DEFAULT{0xFFFFFFFF}
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
     {
+        // init printable characters
+        for(unsigned char ch{' '}; ; )
+        {
+            _texture_chars_.push_back(ch);
+
+            if(ch == '~') break;
+            ++ ch;
+        }
+        
         // TODO: should go elsewhere?
         // TODO: error message
         if(SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -114,7 +123,7 @@ class Window
                     //Render text
                 
                     // render text surface
-                    SDL_Surface* _text_surface_ = TTF_RenderText_Solid(_font_, "abcdefghijklmnopqrstuvwxyz", COLOR_TEXT_DEFAULT);
+                    SDL_Surface* _text_surface_ = TTF_RenderText_Solid(_font_, _texture_chars_.c_str(), COLOR_TEXT_DEFAULT);
                     if(_text_surface_ == nullptr)
                     {
                         std::cout << TTF_GetError() << std::endl;
@@ -235,62 +244,7 @@ class Window
                     //const bool MOD_NONE{!(MOD_SHIFT || MOD_CTRL || MOD_ALT)};
                     //if(MOD_NONE) std::cout << "NONE" << std::endl;
 
-                    // process printable characters
-                    // these either have shift or no modifier
-                    if(MOD_NONE || MOD_SHIFT)
-                    {
-                        // how the event loop works:
-                        // the most recently pressed/released key is always stored
-                        // in event.key.keysym.sym
-                        // The Keyboard class maintains the current state of the
-                        // keyboard, which could include several pressed keys.
-                        // The Keyboard class is also used to map a SDL_Keycode
-                        // to a printable character
-                        char ch;
-                        //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
-                        if(_keyboard_.GetChar(ch))
-
-                        // use map to process printable characters
-                        // (insertable characters - any character
-                        // which can be put into the buffer)
-                        //char ch;
-                        //if(_keymap_.Find(event.key.keysym.sym, ch))
-                        {
-                            std::cout << "found char " << ch << std::endl;
-                            // anything here is "buffer insertable"
-                            //if(('a' <= ch) && (ch <= 'z'))
-                            //{
-                                // detect shift press
-                            //    if(MOD_SHIFT)
-                            //    {
-                            //        std::cout << "shift" << std::endl;
-
-                                    // shift all caps letters
-                            //        const char CHAR_SHIFT_DIFF{'a' - 'A'};
-                            //        std::cout << (int)CHAR_SHIFT_DIFF << std::endl;
-                            //        const char shift_ch{ch - CHAR_SHIFT_DIFF};
-                            //        _buffer_.InsertAtCursor(shift_ch);
-                            //        _buffer_.InsertAtCursor(ch);
-                            //        _buffer_.CursorRight();
-                            //    }
-                            //    else if(MOD_NONE)
-                            //    {
-                            //        std::cout << "no shift" << std::endl;
-
-                                    // no modifier: insert unchanged character ch
-                                    _buffer_.InsertAtCursor(ch);
-                                    _buffer_.CursorRight();
-                            //    }
-                            //}
-                            //else
-                            //{
-                                // if not an a-z character, do not shift, just insert
-                            //    _buffer_.InsertAtCursor(ch);
-                            //    _buffer_.CursorRight();
-                            //}
-                        }
-                    }
-                    else if(MOD_CTRL)
+                    if(MOD_CTRL)
                     {
                         // process control keys
 
@@ -350,23 +304,13 @@ class Window
                             SDLK_KEY_CASE_MACRO(SDLK_SPACE, ' ');
                             */
 
-                            case SDLK_BACKSPACE:
-                                // only move if the buffer could execute the backspace
-                                // command; ie if a char was deleted
-                                if(_buffer_.BackspaceAtCursor() == true)
-                                {
-                                    std::cout << "moving cursor left" << std::endl;
-                                    _buffer_.CursorLeft();
-                                }
-                                break;
 
-
-                            default:
-                                std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
-                                break;
+                            //default:
+                            //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
+                            //    break;
                         }
                     }
-                    else if(MOD_NONE)
+                    else if(MOD_NONE && !MOD_SHIFT)
                     {
                         // movement keys
                         switch(event.key.keysym.sym)
@@ -390,9 +334,79 @@ class Window
                                 _buffer_.CursorRight();
                                 break;
                         
+                            case SDLK_BACKSPACE:
+                                std::cout << "BACK SPACE" << std::endl;
+                                // only move if the buffer could execute the backspace
+                                // command; ie if a char was deleted
+                                if(_buffer_.BackspaceAtCursor() == true)
+                                {
+                                    std::cout << "moving cursor left" << std::endl;
+                                    _buffer_.CursorLeft();
+                                }
+                                break;
+
                         
                         }
                     }
+                    
+                    
+                    // process printable characters
+                    // these either have shift or no modifier
+                    
+                    if(MOD_NONE || MOD_SHIFT)
+                    {
+                        // how the event loop works:
+                        // the most recently pressed/released key is always stored
+                        // in event.key.keysym.sym
+                        // The Keyboard class maintains the current state of the
+                        // keyboard, which could include several pressed keys.
+                        // The Keyboard class is also used to map a SDL_Keycode
+                        // to a printable character
+                        char ch;
+                        //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
+                        if(_keyboard_.GetChar(ch))
+
+                        // use map to process printable characters
+                        // (insertable characters - any character
+                        // which can be put into the buffer)
+                        //char ch;
+                        //if(_keymap_.Find(event.key.keysym.sym, ch))
+                        {
+                            std::cout << "found char " << ch << std::endl;
+                            // anything here is "buffer insertable"
+                            //if(('a' <= ch) && (ch <= 'z'))
+                            //{
+                                // detect shift press
+                            //    if(MOD_SHIFT)
+                            //    {
+                            //        std::cout << "shift" << std::endl;
+
+                                    // shift all caps letters
+                            //        const char CHAR_SHIFT_DIFF{'a' - 'A'};
+                            //        std::cout << (int)CHAR_SHIFT_DIFF << std::endl;
+                            //        const char shift_ch{ch - CHAR_SHIFT_DIFF};
+                            //        _buffer_.InsertAtCursor(shift_ch);
+                            //        _buffer_.InsertAtCursor(ch);
+                            //        _buffer_.CursorRight();
+                            //    }
+                            //    else if(MOD_NONE)
+                            //    {
+                            //        std::cout << "no shift" << std::endl;
+
+                                    // no modifier: insert unchanged character ch
+                                    _buffer_.InsertAtCursor(ch);
+                                    _buffer_.CursorRight();
+                            //    }
+                            //}
+                            //else
+                            //{
+                                // if not an a-z character, do not shift, just insert
+                            //    _buffer_.InsertAtCursor(ch);
+                            //    _buffer_.CursorRight();
+                            //}
+                        }
+                    }
+
 
 
                     // print buffer for debug
@@ -410,25 +424,44 @@ class Window
             //Clear screen
             SDL_RenderClear(_renderer_);
 
-            //Render current frame
-	        
             //Set rendering space and render to screen
-	        //SDL_Rect rect = {0, 0, _WIDTH_, _HEIGHT_};
-            SDL_Rect ds_rect{0, 0, _texture_width_, _texture_height_};
+            // size of individual characters
+            // position set to origin of screen and character 'a' (first
+            // character in the character string)
+            SDL_Rect ds_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
+            SDL_Rect src_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
 
-	        //Set clip rendering dimensions
-            //SDL_Rect *clip{nullptr};
-	        //if(clip != nullptr)
-	        //{
-		    //    rect.w = clip->w;
-		    //    rect.h = clip->h;
-	        //}
+            //std::cout << "texture_chars: " << _texture_chars_ << " size=" << _texture_chars_.size() << std::endl;
+            //std::cout << "src_rect.w=" << src_rect.w << std::endl;
 
-	        //Render to screen
-	        //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
+            std::string::const_iterator it{_buffer_.Get().cbegin()};
+            for(; it != _buffer_.Get().cend(); ++ it)
+            {
 
-            //Render texture to screen
-            SDL_RenderCopy(_renderer_, _texture_, nullptr, &ds_rect);
+                const char ch{*it};
+                //std::cout << "ch=" << (int)ch << " offset=" << (int)(ch - _texture_chars_.at(0)) * src_rect.w << std::endl;
+                src_rect.x = (ch - _texture_chars_.at(0)) * src_rect.w;
+
+                //Render current frame
+	        
+
+                //Set clip rendering dimensions
+                //SDL_Rect *clip{nullptr};
+                //if(clip != nullptr)
+                //{
+                //    rect.w = clip->w;
+                //    rect.h = clip->h;
+                //}
+
+                //Render to screen
+                //SDL_RenderCopyEx(_renderer_, _texture_, clip, &rect, 0.0, nullptr, SDL_FLIP_NONE);
+
+                //Render texture to screen
+                SDL_RenderCopy(_renderer_, _texture_, &src_rect, &ds_rect);
+
+                ds_rect.x += ds_rect.w;
+            }
+
 
             //Update screen
             SDL_RenderPresent(_renderer_);
@@ -463,7 +496,8 @@ class Window
     unsigned short _texture_width_;
     unsigned short _texture_height_; // think short is ok?
 
-
+    //const std::string _texture_chars_{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "};
+    std::string _texture_chars_;
 
     //SDL_Window *_window_;
     //SDL_Surface *_surface_;
