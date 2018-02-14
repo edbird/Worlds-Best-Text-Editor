@@ -10,11 +10,22 @@
 class HContainerBase
 {
 
+    protected:
+
+    HContainerBase()
+        : _data_{nullptr}
+    {
+    }
+
+    virtual
+    ~HContainerBase() = 0;
 
     protected:
 
     void *_data_;
 };
+
+HContainerBase::~HContainerBase() {};
 
 
 template<typename T>
@@ -27,9 +38,31 @@ class HContainer : public HContainerBase
     HContainer()
     //    : HContainerBase::_data_{new T}
     {
-        HContainerBase::_data_ = new T;
+        HContainerBase::_data_ = static_cast<void* const>(new T);
     }
 
+    ~HContainer()
+    {
+        delete static_cast<T* const>(HContainerBase::_data_);
+    }
+
+    HContainer(const HContainer& other)
+    {
+        HContainerBase::_data_ = new T;
+        *_data_ = *other._data_;
+    }
+
+    HContainer(HContainer&& other)
+    {
+        HContainerBase::_data_ = other._data_;
+        other._data_ = nullptr;
+    }
+
+    HContainer& operator=(HContainer other)
+    {
+        std::swap(HContainerBase::_data_, other._data_);
+        return *this;
+    }
 
     T Get() const
     {
@@ -58,6 +91,7 @@ class HContainer : public HContainerBase
 };
 
 
+class HVector
 
 
 #endif

@@ -1,4 +1,0 @@
-set fontsize 11
-set cursorblinkrate 500 # millisecond
-some nonsense that produces an error
-# a comment which doesn't produce an error
