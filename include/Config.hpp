@@ -236,7 +236,7 @@ class Config
     //int _font_size_;
     //int _cursor_blink_rate_;
 
-    const std::string _filename_{"edit.rc"};
+    const std::string _filename_{"config.rc"};
 
     // map of commands to config options
     std::map<const std::string, ConfigOption<int>> _config_;
