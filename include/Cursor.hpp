@@ -22,6 +22,7 @@ class Cursor
     {
         _line_ = line;
         _col_ = col;
+        Print();
     }
 
     CursorPos_t GetPosLine() const
@@ -43,6 +44,7 @@ class Cursor
     {
         if(_line_ > 0)
             -- _line_;
+        Print();
     }
 
     void Down(const CursorPos_t line_count)
@@ -50,12 +52,15 @@ class Cursor
         // TODO
         if(_line_ < line_count - 1)
             ++ _line_;
+        Print();
     }
 
     void Left()
     {
         if(_col_ > 0)
             -- _col_;
+        _remember_col_ = _col_;
+        Print();
     }
 
     void Right(const CursorPos_t line_size)
@@ -63,6 +68,18 @@ class Cursor
         // TODO
         if(_col_ < line_size) // cursor can scroll 1 char past the end!
             ++ _col_;
+        _remember_col_ = _col_;
+        Print();
+    }
+
+    void Print() const
+    {
+        std::cout << _line_ << ',' << _col_ << std::endl;
+    }
+
+    CursorPos_t GetTargetCol() const
+    {
+        return _remember_col_;
     }
 
     private:
@@ -70,6 +87,8 @@ class Cursor
     CursorPos_t _line_;
     CursorPos_t _col_;
 
+    // remembers the "target" cursor pos col
+    CursorPos_t _remember_col_;
 
 };
 

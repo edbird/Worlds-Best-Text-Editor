@@ -552,7 +552,12 @@ class Window
                     current_col = 0;
                     ++ current_line;
 
-                    cursor_texture_dst_rect.y += dst_rect.h;
+                    // only advance cursor y position if the cursor line
+                    // is below the current line!
+                    // without this the cursor ALWAYS sits on the final line
+                    if(cursor_line >= current_line)
+                        cursor_texture_dst_rect.y += dst_rect.h;
+
                 }
                 else
                 {

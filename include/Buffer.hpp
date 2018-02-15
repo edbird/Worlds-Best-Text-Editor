@@ -119,27 +119,106 @@ class Buffer
         return _cursor_.GetPosCol();
     }
 
+    // TODO: should the buffer be responsible for setting the cursor
+    // position or should the cursor be responsible for setting its own
+    // bounds ?
     void CursorLeft()
     {
         _cursor_.Left();
+        //_cursor_.RememberPosCol(); // TODO: can be done by call to left / right
     }
 
     void CursorRight()
     {
         // TODO DEBUG
         _cursor_.Right(_line_text_.at(_cursor_.GetPosLine()).size()); // TODO
+        //_cursor_.RememberPosCol(); // TODO: can be done by call to left / right
     }
 
+    // TODO: remember target line position
+    // TODO: config: set rememberlineposition
     void CursorUp()
     {
-        _cursor_.Up();
+        if(_cursor_.GetPosLine() > 0)
+        {
+            std::size_t _line_size_{_line_text_.at(_cursor_.GetPosLine() - 1).size()};
+            Cursor::CursorPos_t _cursor_pos_{_cursor_.GetPosCol()};
+            Cursor::CursorPos_t _cursor_pos_target_{_cursor_.GetTargetCol()};
+            if(_cursor_pos_target_ > _line_size_)
+            {
+                // target position is too far along the line
+                // as the line is too short!
+                // check against the current cursor position
+                // rather than the target cursor position
+                // which is set whenever the user moves left / right
+                if(_cursor_pos_ > _line_size_)
+                {
+                    _cursor_pos_ = _line_size_;
+                }
+                else
+                {
+                    // _cursor_pos_ has the correct value
+                    // don't do anything
+                }
+            }
+            else
+            {
+                // target position is ok:
+                // set the cursor position to be the target position
+                _cursor_pos_ = _cursor_pos_target_;
+            }
+            _cursor_.SetPos(_cursor_.GetPosLine() - 1, _cursor_pos_);
+        }
+        else
+        {
+            // _line_ is 0, do nothing
+        }
+        //_cursor_.Up();
     }
 
     void CursorDown()
     {
+        std::cout << "cursor down" << std::endl;
+        if(_cursor_.GetPosLine() < _line_text_.size() - 1)
+        {
+            std::cout << "first if" << std::endl;
+            std::size_t _line_size_{_line_text_.at(_cursor_.GetPosLine() + 1).size()};
+            Cursor::CursorPos_t _cursor_pos_{_cursor_.GetPosCol()};
+            Cursor::CursorPos_t _cursor_pos_target_{_cursor_.GetTargetCol()};
+            if(_cursor_pos_target_ > _line_size_)
+            {
+                // target position is too far along the line
+                // as the line is too short!
+                // check against the current cursor position
+                // rather than the target cursor position
+                // which is set whenever the user moves left / right
+                if(_cursor_pos_ > _line_size_)
+                {
+                    _cursor_pos_ = _line_size_;
+                }
+                else
+                {
+                    // _cursor_pos_ has the correct value
+                    // don't do anything
+                }
+            }
+            else
+            {
+                // target position is ok:
+                // set the cursor position to be the target position
+                _cursor_pos_ = _cursor_pos_target_;
+            }
+            _cursor_.SetPos(_cursor_.GetPosLine() + 1, _cursor_pos_);
+        }
+        else
+        {
+            std::cout << "cannot go down" << std::endl;
+            // _line_ is the maximum line, cannot go down, do nothing
+        }
+
         //if(_cursor_.GetPosLine() < _line_text_.size())
         //{
-        _cursor_.Down(_line_text_.size()); // TODO
+        //_cursor_.Down(_line_text_.size()); // TODO
         //}
     }
 
