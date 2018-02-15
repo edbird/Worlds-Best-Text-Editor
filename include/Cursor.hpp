@@ -11,8 +11,9 @@ class Cursor
 
 
     Cursor()
-        : _line_(1)
-        , _col_(1)
+        : _line_{0}
+        , _col_{0}
+        , _cursor_type_{0}
     {
         
     }
@@ -82,6 +83,11 @@ class Cursor
         return _remember_col_;
     }
 
+    int GetCursorType() const
+    {
+        return _cursor_type_;
+    }
+
     private:
 
     CursorPos_t _line_;
@@ -89,6 +95,10 @@ class Cursor
 
     // remembers the "target" cursor pos col
     CursorPos_t _remember_col_;
+
+    // cursor type (drawing flag)
+    int _cursor_type_;
+
 
 };
 
