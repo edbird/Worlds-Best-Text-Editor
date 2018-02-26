@@ -207,9 +207,9 @@ class Config
         return std::stoi(line);
     }
 
-    int read_value_double(const std::string& line)
+    double read_value_double(const std::string& line)
     {
-        return std::stoi(line);
+        return std::stof(line);
     }
 
     std::string read_command(const std::string& line, std::string& substring)
