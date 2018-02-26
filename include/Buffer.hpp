@@ -94,6 +94,76 @@ class Buffer
         _not_saved_ = false;
     }
 
+    // this open method overwrites the buffer
+    // and sets the _not_saved_ flag to FALSE
+    void Open(const std::string& filename)
+    {
+        // clear old contents
+        _line_text_.clear();
+
+        std::ifstream ifs(filename, std::ios::in | std::ios::ate);
+        std::streampos fsize{ifs.tellg()};
+        //std::cout << "file size is " << fsize << ". read" << std::endl;
+        ifs.seekg(std::ios::beg);
+        char * const buf{new char[fsize + 1]};
+        char * buf_p0{buf}; // points to start of line
+        char * buf_p1{buf}; // points to 1 char beyond end of line
+        ifs.read(buf, fsize);
+        std::cout << buf << std::endl;
+        buf[fsize] = '\0';
+        ifs.close();
+        // TODO: use an iterator not ix!
+        //for(std::streampos ix{0}; ix < fsize; ++ ix)
+        for(;;)
+        {
+            // only store printable chars
+            if((*buf_p1 >= 0x20 && *buf_p1 <= 0x7E) || *buf_p1 == '\t') // printable characters (valid)
+            {
+                ++ buf_p1;
+            }
+            else if(*buf_p1 == 0x0A || *buf_p1 == 0x0D) // CRLF characters (valid)
+            {
+                // push back new line
+                std::string line(buf_p0, buf_p1);
+                std::cout << "found new line: line is line=" << line << " size=" << line.size() << std::endl;
+                _line_text_.push_back(line);
+
+                ++ buf_p1;
+
+                // check next character is not one of 0x0A, 0x0D
+                //++ ix;
+                if(*buf_p1 == 0x0A || *buf_p1 == 0x0D)
+                {
+                    ++ buf_p1;
+                }
+                
+                // reset the p0 pointer
+                buf_p0 = buf_p1;
+            }
+            else if(*buf_p1 == '\0')
+            {
+                // push back new line
+                // this might be a zero terminated file or it might have a
+                // new line before the zero terminator
+                if(buf_p0 != buf_p1)
+                {
+                    std::string line(buf_p0, buf_p1);
+                    std::cout << "found 0: line is line=" << line << " size=" << line.size() << std::endl;
+                    _line_text_.push_back(line);
+                }
+
+                //++ buf_p1;
+                // abort
+                break;
+            }
+        }
+        delete [] buf;
+
+        // just read from file therefore file is already "saved"
+        _not_saved_ = false;
+        _modified_ = true; // without this there is a crash TODO why
+    }
+
     // 
     bool NotSaved() const
     {

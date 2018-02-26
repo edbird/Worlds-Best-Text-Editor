@@ -388,6 +388,14 @@ class Window
                                 }
                                 break;
 
+                            case SDLK_o:
+                                if(MOD_CTRL) // not needed
+                                {
+                                    //open_action
+                                    _buffer_.Open("buffer.txt");
+                                    std::cout << "File " << "buffer.txt" << " read, " << _buffer_.Size() << " bytes" << std::endl;
+                                }
+                                break;
 
                             //default:
                             //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
