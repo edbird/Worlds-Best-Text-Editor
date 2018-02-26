@@ -133,6 +133,12 @@ class Buffer
         return _data_;
     }
 
+    // get number of lines in buffer (line count)
+    int GetLineCount() const
+    {
+        return _line_text_.size();
+    }
+
     /*
     Cursor& MutableCursor()
     {

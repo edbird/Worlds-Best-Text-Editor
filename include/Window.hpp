@@ -16,6 +16,7 @@
 
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <memory>
 
@@ -530,24 +531,120 @@ class Window
 
 
     private:
-    
-    void draw_window()
+
+    // Convert line number to string
+    std::string line_number_to_string(const int line_number, const int line_number_width)
     {
-    
-        // do graphics drawing
-        //SDL_FillRect(_surface_, nullptr, COLOR_BACKGROUND);
+        std::ostringstream ss;
+        ss << std::setw(line_number_width) << std::setfill('0') << line_number;
+        std::string line_number_str{ss.str()};
+        return line_number_str;
+    }
         
-        //SDL_UpdateWindowSurface(_window_.get());
 
-        //Clear screen
-        SDL_RenderClear(_renderer_);
+    // TODO: pass dst_rect by reference and modify within function
+    void print_line_number(const int line_number, const int line_number_width, SDL_Rect &dst_rect)
+    {
+        std::string line_number_str{line_number_to_string(line_number, line_number_width)};
+        //SDL_Rect dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+        std::string::const_iterator it{line_number_str.cbegin()};
+        for(; it != line_number_str.cend(); ++ it)
+        {
+            char ch{*it};
+            SDL_Texture *texture{_texture_chars_.at(ch)};
+            SDL_Rect src_rect{0, 0, _texture_chars_size_.at(ch).w, _texture_chars_size_.at(ch).h};
+            dst_rect.w = src_rect.w;
+            dst_rect.h = src_rect.h;
+            SDL_RenderCopy(_renderer_, texture, &src_rect, &dst_rect);
+            dst_rect.x += src_rect.w;
+        }
+    }
 
-        //Set rendering space and render to screen
+
+    ////////////////////////////////////////////////////////////////////////////
+    // DRAW BUFFER TEXT
+    ////////////////////////////////////////////////////////////////////////////
+    void draw_buffer_contents()
+    {
+
+
+        bool line_number_enabled{false};
+        int line_number_width{0};
+        // Note: only 1 is true, any other integer is false
+        if(_config_.GetInt("linenumber") == 1)
+        {
+            line_number_enabled = true;
+
+            // set line number character count
+            int line_count{_buffer_.GetLineCount()};
+            for(;;)
+            {
+                ++ line_number_width;
+                line_count = line_count / 10;
+                if(line_count > 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    break;
+                    // line_number_char_count contains correct value
+                    // line_count is invalid
+                }
+            }
+        }
+
+
+        // Draw line numbers
+        // Create vector of line numbers
+        //std::vector<std::string> line_number_str_vec;
+        //const int line_count{_buffer_.GetLineCount()};
+        //SDL_Rect dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+        //for(int line{1}; line < line_count; ++ line)
+        //{
+        //    std::ostringstream ss;
+        //    ss << std::setw(line_number_char_count) << std::setfill('0') << line;
+        //    std::string line_number_str{ss.str()};
+        //    //line_number_str_vec.push_back(line_number_str);
+        //    std::string::const_iterator it{line_number_str.cbegin()};
+        //    for(; it != line_number_str.cend(); ++ it)
+        //    {
+        //        char ch{*it};
+        //        SDL_Texture *texture{_texture_chars_.at(ch)};
+        //        SDL_Rect src_rect{0, 0, _texture_chars_size_.at(ch).w, _texture_chars_size_.at(ch).h};
+        //        dst_rect.w = src_rect.w;
+        //        dst_rect.h = src_rect.h;
+        //        SDL_RenderCopy(_renderer_, texture, &src_rect, &dst_rect);
+        //        dst_rect.x += src_rect.w;
+        //
+        //    }
+        //    dst_rect.y += dst_rect.h;
+        //    dst_rect.x = 0;
+        //}
+
+        // Set rendering space and render to screen
         // size of individual characters
         // position set to origin of screen and character 'a' (first
         // character in the character string)
+        int dst_rect_origin_x{0};
+        // Move dst_rect_origin_x if line numbers are enabled
+        if(line_number_enabled == true)
+        {
+            dst_rect_origin_x += line_number_width * _texture_chars_size_.at(' ').w;
+        }
+
+        int line_number{1};
+        
+        // Initialize destination rect for character printing
         SDL_Rect dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+        //dst_rect = {0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+        //dst_rect.x = dst_rect_origin_x;
         //SDL_Rect src_rect{0, 0, _texture_width_ / _texture_chars_.size(), _texture_height_};
+
+        // Print line number zero
+        print_line_number(line_number, line_number_width, dst_rect);
+        //dst_rect.x = dst_rect_origin_x; // move dst_rect to correct startpoint
+
 
         //std::cout << "texture_chars: " << _texture_chars_ << " size=" << _texture_chars_.size() << std::endl;
         //std::cout << "src_rect.w=" << src_rect.w << std::endl;
@@ -565,6 +662,7 @@ class Window
         // or add new variables to specify the position of the cursor on the screen
         // as well as the position of the cursor in the buffer
         SDL_Rect cursor_texture_dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+        cursor_texture_dst_rect.x = dst_rect_origin_x; // shift the cursor dst rect by the same ammount
 
         std::string::const_iterator it{_buffer_.Get().cbegin()};
         //for(; it != _buffer_.Get().cend(); ++ it)
@@ -578,9 +676,15 @@ class Window
              
             if(ch == '\n')
             {
+
                 // TODO: ERROR IF h CHANGES!!!
                 dst_rect.y += dst_rect.h;
                 dst_rect.x = 0;
+                //dst_rect.x = dst_rect_origin_x;
+                
+                ++ line_number;
+                print_line_number(line_number, line_number_width, dst_rect);
+                //dst_rect.x = dst_rect_origin.x; // below
 
                 current_col = 0;
                 ++ current_line;
@@ -610,15 +714,17 @@ class Window
                 //Render current frame
                 if(dst_rect.x + dst_rect.w >= _WIDTH_)
                 {
-                    dst_rect.x = 0;
                     // TODO: ERROR IF h CHANGES!!!
                     dst_rect.y += dst_rect.h;
+                    dst_rect.x = 0;
+                    dst_rect.x = dst_rect_origin_x; // this is only needed here because the line is split across multiple lines
 
 
                     if(cursor_line == current_line)
                     {
                         // advance position of where cursor is to be drawn
                         cursor_texture_dst_rect.x = 0;
+                        cursor_texture_dst_rect.x = dst_rect_origin_x; // shift the cursor dst rect by the same ammount
                         cursor_texture_dst_rect.y += dst_rect.h;
                     }
                 }
@@ -653,11 +759,11 @@ class Window
 
         }
         //std::cin.get();
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Print cursor
+        ////////////////////////////////////////////////////////////////////////
 
-    
-        // reset timer for cursor
-        // TODO: move to top of loop
-        _timer_ = SDL_GetTicks();
         
         // print cursor
         _current_cursor_ = 0;
@@ -667,8 +773,6 @@ class Window
         cursor_texture_dst_rect.h = src_rect.h;
 
         //cursor_texture_dst_rect = dst_rect;
-
-
 
 
         // make cursor blink (TODO: use config option)
@@ -709,8 +813,27 @@ class Window
         //{
 
         //}
+    }
 
 
+
+    void draw_window()
+    {
+    
+        // reset timer for cursor
+        _timer_ = SDL_GetTicks();
+        
+        // do graphics drawing
+        //SDL_FillRect(_surface_, nullptr, COLOR_BACKGROUND);
+        
+        //SDL_UpdateWindowSurface(_window_.get());
+
+        //Clear screen
+        SDL_RenderClear(_renderer_);
+
+        // draw the text buffer contents
+        draw_buffer_contents();
+    
 
         //Update screen
         SDL_RenderPresent(_renderer_);
