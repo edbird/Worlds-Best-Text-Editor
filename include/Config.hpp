@@ -104,13 +104,18 @@ class Config
 
                 if(command == std::string("set"))
                 {
+                    // read the name of the config option following "set"
                     std::string next_substring;
                     std::string name{read_command(substring, next_substring)};
 
                     // find name
+                    // TODO: now have problem where name could occur in multiple option types! (multiple maps)
+                    bool found{false};
                     ConfigIterator_t it{_config_.find(name)};
                     if(it != _config_.end())
                     {
+                        found = true;
+
                         // read value
                         int value{read_value_int(next_substring)};
 
@@ -126,7 +131,36 @@ class Config
                     //{
 
                     }
-                    else
+
+                    if(found == false)
+                    {
+                        ConfigIntOptionMapIterator_t it{_config_int_option_map_.find(name)};
+                        if(it != _config_int_option_map_.end())
+                        {
+                            found = true;
+
+                            // read value
+                            int value{read_value_int(next_substring)};
+                            it->second.Set(value);
+                            std::cout << "property " << name << " set to value " << value << " (int)" << std::endl;
+                        }
+                    }
+                    
+                    if(found == false)
+                    {
+                        ConfigFloatOptionMapIterator_t it{_config_float_option_map_.find(name)};
+                        if(it != _config_float_option_map_.end())
+                        {
+                            found = true;
+
+                            // read value
+                            double value{read_value_double(next_substring)};
+                            it->second.Set(value);
+                            std::cout << "property " << name << " set to value " << value << " (double)" << std::endl;
+                        }
+                    }
+
+                    if(found == false)
                     {
                         std::cerr << "Error in config file " << _filename_ << " line " << line_number << " unrecognized name " << name << std::endl;
                     }
@@ -147,15 +181,33 @@ class Config
         }
     }
 
+    /*
     int Get(const std::string& name) const
     {
         return _config_.at(name).Get();
     }
+    */
 
+    // New code
+    int GetInt(const std::string& name) const
+    {
+        return _config_int_option_map_.at(name).Get();
+    }
+
+    // New code
+    double GetFloat(const std::string& name) const
+    {
+        return _config_float_option_map_.at(name).Get();
+    }
 
     private:
 
     int read_value_int(const std::string& line)
+    {
+        return std::stoi(line);
+    }
+
+    int read_value_double(const std::string& line)
     {
         return std::stoi(line);
     }
@@ -179,9 +231,15 @@ class Config
 
     void initialize()
     {
-        _config_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
-        _config_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkrate", ConfigOption<int>("cursorblinkrate", 500, "set cursorblinkrate 500 # milliseconds")));
+        //_config_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
+        //_config_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkrate", ConfigOption<int>("cursorblinkrate", 500, "set cursorblinkrate 500 # milliseconds")));
 
+        // TODO: name appears twice!
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkrate", ConfigOption<int>("cursorblinkrate", 500, "set cursorblinkrate 500 # milliseconds")));
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("linenumber", ConfigOption<int>("linenumber", 0, "set linenumber 0 # false (off)")));
+        //_config_float_option_map_.insert(std::map<const std::string, ConfigOption<double>>::value_type("")); // double not float
+        
 
     }
 
@@ -213,6 +271,7 @@ class Config
     const std::string get_default_config_file()
     {
         // create a default config file
+        /*
         std::string default_config_string; //("set fontsize 11\nset cursorblinkrate 500 # millisecond");
         for(ConfigIterator_t it{_config_.begin()}; it != _config_.end(); ++ it)
         {
@@ -220,6 +279,25 @@ class Config
         }
         default_config_string.pop_back(); // remove final new line
         return default_config_string;
+        */
+
+        // New code
+        std::string default_config_string;
+
+        for(ConfigIntOptionMapIterator_t it{_config_int_option_map_.begin()}; it != _config_int_option_map_.end(); ++ it)
+        {
+            default_config_string += it->second.GetStringDefault() + std::string("\n");
+        }
+
+        for(ConfigIntOptionMapIterator_t it{_config_int_option_map_.begin()}; it != _config_int_option_map_.end(); ++ it)
+        {
+            default_config_string += it->second.GetStringDefault() + std::string("\n");
+        }
+
+        default_config_string.pop_back();
+
+        return default_config_string;
+
     }
 
     void set_defaults()
@@ -227,10 +305,26 @@ class Config
         //_font_size_ = _DEFAULT_font_size_;
         //_cursor_blink_rate_ = 500; // millisecond
 
+        /*
         for(ConfigIterator_t it{_config_.begin()}; it != _config_.end(); ++ it)
         {
             it->second.SetDefault();
         }
+        */
+
+        // New code
+        for(ConfigIntOptionMapIterator_t it{_config_int_option_map_.begin()}; it != _config_int_option_map_.end(); ++ it)
+        {
+            it->second.SetDefault();
+        }
+        
+        // New code
+        for(ConfigIntOptionMapIterator_t it{_config_int_option_map_.begin()}; it != _config_int_option_map_.end(); ++ it)
+        {
+            it->second.SetDefault();
+        }
+
+
     }
 
     //int _font_size_;
@@ -242,6 +336,17 @@ class Config
     std::map<const std::string, ConfigOption<int>> _config_;
     typedef std::map<const std::string, ConfigOption<int>>::iterator ConfigIterator_t;
 
+
+    // New code, new "hack" to make multiple types work without hcontainer
+    // map to map
+    // maps string (name) to map containing the correct type
+    // second map maps string (name) to actual variable
+    // EDIT: changed to using void* because template types do not work!
+    std::map<const std::string, void*> _config_name_to_map_pointer_; // TODO: not used!
+    std::map<const std::string, ConfigOption<int>> _config_int_option_map_;
+    std::map<const std::string, ConfigOption<double>> _config_float_option_map_; // double not float
+    typedef std::map<const std::string, ConfigOption<int>>::iterator ConfigIntOptionMapIterator_t;
+    typedef std::map<const std::string, ConfigOption<double>>::iterator ConfigFloatOptionMapIterator_t;
 
 };
 

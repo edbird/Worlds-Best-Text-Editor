@@ -2,4 +2,4 @@ set fontsize 11
 set cursorblinkrate 500 # millisecond
 some nonsense that produces an error
 # a comment which doesn't produce an error
-set linenumber
+set linenumber 1 # TODO: would prefer "set linenumber" without the 1

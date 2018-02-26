@@ -108,7 +108,7 @@ class Window
 
                 //Open the font
                 //_font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", 11);
-                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", _config_.Get("fontsize"));
+                _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", _config_.GetInt("fontsize"));
                 if(_font_ == nullptr)
                 {
                     std::cout << TTF_GetError() << std::endl;
@@ -187,7 +187,16 @@ class Window
         {
             std::cout << SDL_GetError() << std::endl;
         }
+        
+        SDL_Surface* cursor_surface_normal_1 = SDL_CreateRGBSurface(0, _texture_chars_size_[' '].w, _texture_chars_size_[' '].h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+        if(cursor_surface_normal_1 == nullptr)
+        {
+            std::cout << SDL_GetError() << std::endl;
+        }
+        
         SDL_FillRect(cursor_surface_normal, nullptr, SDL_MapRGBA(cursor_surface_normal->format, 0x00, 0xFF, 0x00, 0xFF));
+        SDL_FillRect(cursor_surface_normal_1, nullptr, SDL_MapRGBA(cursor_surface_normal_1->format, 0x00, 0x80, 0x00, 0xA0));
+
         SDL_Surface* cursor_surface_insert = TTF_RenderText_Solid(_font_, cursor_string_insert, COLOR_TEXT_DEFAULT);
         SDL_Surface* cursor_surface_replace = TTF_RenderText_Solid(_font_, cursor_string_replace, COLOR_TEXT_DEFAULT);
 
@@ -202,16 +211,19 @@ class Window
         */
 
         SDL_Texture* cursor_texture_normal = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_normal);
+        SDL_Texture* cursor_texture_normal_1 = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_normal_1);
         SDL_Texture* cursor_texture_insert = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_insert);
         SDL_Texture* cursor_texture_replace = SDL_CreateTextureFromSurface(_renderer_, cursor_surface_replace);
 
         SDL_FreeSurface(cursor_surface_normal);
+        SDL_FreeSurface(cursor_surface_normal_1);
         SDL_FreeSurface(cursor_surface_insert);
         SDL_FreeSurface(cursor_surface_replace);
         
         _cursor_texture_.push_back(cursor_texture_normal);
         _cursor_texture_.push_back(cursor_texture_insert);
         _cursor_texture_.push_back(cursor_texture_replace);
+        _cursor_texture_.push_back(cursor_texture_normal_1);
         //cursor_texture.push_back(cursor_texture_)
         
         _current_cursor_ = 0;
@@ -651,6 +663,11 @@ class Window
             }
             //std::cin.get();
 
+        
+            // reset timer for cursor
+            // TODO: move to top of loop
+            _timer_ = SDL_GetTicks();
+            
             // print cursor
             _current_cursor_ = 0;
             //SDL_RenderCopy(_renderer_, cursor_texture.at(current_cursor), &cursor_texture_src_rect, &cursor_texture_dst_rect);
@@ -660,11 +677,34 @@ class Window
 
             //cursor_texture_dst_rect = dst_rect;
 
+
+
+
+            // make cursor blink (TODO: use config option)
+            int cursor_blink_rate{500}; // TODO
+            //if(_timer_ / 500 % 2 == 0)
+            //{
+            //    std::cout << "0" << std::endl;
+            //    SDL_FillRect(cursor_surface_normal, nullptr, SDL_MapRGBA(cursor_surface_normal->format, 0x00, 0xFF, 0x00, 0xFF));
+            //}
+            //else if(_timer_ / 500 % 2 == 1)
+            //{
+            //    std::cout << "1" << std::endl;
+            //    SDL_FillRect(cursor_surface_normal, nullptr, SDL_MapRGBA(cursor_surface_normal->format, 0x00, 0x80, 0x00, 0xA0));
+            //}
+
+            // TODO: MULTIPLE TEXTURES REQUIRED BECAUSE COLOR CHANGE!
+            SDL_Texture* _current_cursor_texture_ptr_{_cursor_texture_.at(_current_cursor_)};
+            if(_timer_ / 500 % 2 == 1)
+            {
+                _current_cursor_texture_ptr_ = _cursor_texture_.at(3); // TODO: FIX THIS SHOULD NOT BE A CONST!
+            }
+            
             //std::cout << "PRINT" << std::endl;
             //std::cout << cursor_texture_dst_rect.x << " " << cursor_texture_dst_rect.y << " " << cursor_texture_dst_rect.w << " " << cursor_texture_dst_rect.h << std::endl;
             //std::cout << src_rect.x << " " << src_rect.y << " " << src_rect.w << " " << src_rect.h << std::endl;
             //if(SDL_RenderCopy(_renderer_, _texture_chars_.at('x'), &src_rect, &cursor_texture_dst_rect) != 0)
-            if(SDL_RenderCopy(_renderer_, _cursor_texture_.at(_current_cursor_), &src_rect, &cursor_texture_dst_rect) != 0)
+            if(SDL_RenderCopy(_renderer_, _current_cursor_texture_ptr_, &src_rect, &cursor_texture_dst_rect) != 0)
             {
                 std::cout << SDL_GetError() << std::endl;
             }
