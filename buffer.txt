@@ -1,0 +1,16 @@
+hello world
+how are you today?
+this is my multiline text editor and the line numbers are now working!
+this is a very long line which will span over multiple lines. this is a very long line which will span over multiple lines
+oh no the line numbers didn't work for the very long line!
+let's add some new lines
+line 6
+line 7
+line 8
+9
+10
+11
+12
+I don't think the line numbers expand into double digits correctly!
+Also the line numbers start from zero not 1!
+hi
