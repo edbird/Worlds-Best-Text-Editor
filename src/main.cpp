@@ -279,7 +279,14 @@ class Window
                 // user request quit
                 if(event.type == SDL_QUIT)
                 {
-                    quit = true;
+                    if(_buffer_.NotSaved())
+                    {
+                        std::cout << "cannot quit, not saved" << std::endl;
+                    }
+                    else
+                    {
+                        quit = true;
+                    }
                 }
 
                 // keypress events
@@ -333,9 +340,32 @@ class Window
                                 break;\
                             }
 
+                            // CTRL-Q: quit action
+                            case SDLK_q:
+                                if(MOD_CTRL && MOD_SHIFT)
+                                {
+                                    quit = true;
+                                    break;
+                                }
+                                if(MOD_CTRL) // not needed
+                                {
+                                    //quit_action
+                                    if(_buffer_.NotSaved())
+                                    {
+                                        std::cout << "The buffer is not saved, cannot quit" << std::endl;
+                                        std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
+                                        // TODO: better interactive error message here
+                                    }
+                                    else
+                                    {
+                                        quit = true;
+                                    }
+                                }
+                                break;
+
                             // CTRL-S: save action
                             case SDLK_s:
-                                if(MOD_CTRL)
+                                if(MOD_CTRL) // not needed
                                 {
                                     //save_action
                                     _buffer_.Save("buffer.txt");
@@ -385,7 +415,7 @@ class Window
                 
                     }
                     
-                    if(MOD_NONE || MOD_SHIFT)
+                    if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
                     {
                         switch(event.key.keysym.sym)
                         {
@@ -401,7 +431,7 @@ class Window
                         }
                     }
                     
-                    if(MOD_NONE && !MOD_SHIFT)
+                    if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                     {
                         // movement keys
                         switch(event.key.keysym.sym)
@@ -438,7 +468,7 @@ class Window
                     // process printable characters
                     // these either have shift or no modifier
                     
-                    if(MOD_NONE || MOD_SHIFT)
+                    if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
                     {
                         // how the event loop works:
                         // the most recently pressed/released key is always stored

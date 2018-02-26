@@ -8,7 +8,7 @@
 #include <typeindex>
 
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // HETROGENEOUS CONTAINER
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -243,6 +243,43 @@ class HContainerPair
     //std::pair<std::type_info, std::unique_ptr<HContainerBase>> _data_;
     std::pair<std::type_index, HContainerBase*> _data_;
 };
+
+
+class HContainerMap
+{
+
+    public:
+
+    HContainerMap()
+    {
+        
+    }
+
+    template<typename T>
+    void Insert(const std::string& name, T* alloc)
+    {
+        HContainerPair hcp(alloc);
+        //_data_.insert(name, HContainerPair(alloc));
+        _data_.insert(std::make_pair(name, hcp));
+    }
+
+    template<typename T>
+    const T& operator[](const std::string& name) const
+    {
+        return _data_[name].Get();
+    }
+
+
+    private:
+
+    std::map<std::string, HContainerPair> _data_;
+
+};
+
+
+
+
+
 
 /*
 class HContainerPIMPL

@@ -51,6 +51,7 @@ class Buffer
     Buffer()
         //: _line_count_{0}
         : _modified_{true} // ensure first call to create_data works
+        , _not_saved_{true}
     {
         std::string blank_string;
         _line_text_.push_back(blank_string); // this is left here to ensure first
@@ -88,6 +89,37 @@ class Buffer
         ofs.write(stream_data.data(), stream_data.size());
         ofs.flush();
         ofs.close();
+
+        // set the saved flag
+        _not_saved_ = false;
+    }
+
+    // 
+    bool NotSaved() const
+    {
+        return _not_saved_;
+    }
+
+    // is the buffer in the "default" state - contains nothing, empty
+    bool IsEmpty() const
+    {
+        if(_line_text_.size() == 1)
+        {
+            if(_line_text_[0].size() == 0)
+            {
+                // contains only a single blank line
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if(_line_text_.size() == 0)
+        {
+            throw "Error in IsEmpty()";
+        }
+        return false;
     }
 
     // get reference 
@@ -230,6 +262,7 @@ class Buffer
     void InsertAtCursor(const char ch)
     {
         _modified_ = true;
+        _not_saved_ = true;
 
         // current line and col
         Cursor::CursorPos_t c_line{_cursor_.GetPosLine()};
@@ -254,6 +287,7 @@ class Buffer
     void ReturnAtCursor()
     {
         _modified_ = true;
+        _not_saved_ = true;
 
         // current line and col
         Cursor::CursorPos_t c_line{_cursor_.GetPosLine()};
@@ -277,6 +311,7 @@ class Buffer
     bool BackspaceAtCursor()
     {
         _modified_ = true;
+        _not_saved_ = true;
 
         // current line and col
         Cursor::CursorPos_t c_line{_cursor_.GetPosLine()};
@@ -363,6 +398,11 @@ class Buffer
     // if buffer is modified, the create_data() function must be called
     // before Get()
     mutable bool _modified_;
+
+    // not saved flag
+    // this flag is set to true when the buffer is modified but not saved
+    // when the buffer is saved, this flag is set to false
+    mutable bool _not_saved_;
 
     // const
     const std::string _new_line_string_{std::string("\n")};
