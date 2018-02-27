@@ -748,10 +748,13 @@ class Window
 
                     if(cursor_line == current_line)
                     {
-                        // advance position of where cursor is to be drawn
-                        cursor_texture_dst_rect.x = 0;
-                        cursor_texture_dst_rect.x = dst_rect_origin_x; // shift the cursor dst rect by the same ammount
-                        cursor_texture_dst_rect.y += dst_rect.h;
+                        if(current_col < cursor_col)
+                        {
+                            // advance position of where cursor is to be drawn
+                            cursor_texture_dst_rect.x = 0;
+                            cursor_texture_dst_rect.x = dst_rect_origin_x; // shift the cursor dst rect by the same ammount
+                            cursor_texture_dst_rect.y += dst_rect.h;
+                        }
                     }
                 }
 
