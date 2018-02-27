@@ -156,6 +156,13 @@ class Buffer
                 // abort
                 break;
             }
+            else
+            {
+                // some other character was found which is invalid
+                // abort
+                std::cerr << "Error opening file " << filename << "\nData corruption or invalid file type detected\nPosition: " << buf_p1 - buf << std::endl;
+                break; // abort immediate
+            }
         }
         delete [] buf;
 
