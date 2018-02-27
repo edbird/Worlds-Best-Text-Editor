@@ -13,6 +13,7 @@
 #include "Cursor.hpp"
 #include "KeyMap.hpp"
 #include "Keyboard.hpp"
+#include "ColorPalette.hpp"
 
 
 #include <iostream>
@@ -20,6 +21,15 @@
 #include <fstream>
 #include <memory>
 
+
+// VIM like editor modes
+enum class EditorMode
+{
+    NORMAL,
+    COMMAND,
+    INSERT,
+    REPLACE // TODO: Is this seperate from insert?
+};
 
 
 class Window
@@ -30,6 +40,7 @@ class Window
     Window()
         : _window_(nullptr, SDL_DestroyWindow)
         , _surface_{nullptr}
+        , _editor_mode_{EditorMode::NORMAL} // TODO: config file default mode
         //, COLOR_BACKGROUND{0x00000000}
         //, COLOR_TEXT_DEFAULT{0xFFFFFFFF}
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
@@ -81,10 +92,14 @@ class Window
                 //COLOR_BACKGROUND = SDL_MapRGB(_surface_->format, 0x00, 0x00, 0x00);
                 //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
                 //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
-                COLOR_BACKGROUND = {0xFF, 0xFF, 0xFF};
-                COLOR_CURSOR = {0x00, 0xFF, 0x00};
-                COLOR_TEXT_DEFAULT = {0x00, 0x00, 0x00};
-                COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
+                //COLOR_BACKGROUND = {0xFF, 0xFF, 0xFF};
+                //COLOR_CURSOR = {0x00, 0xFF, 0x00};
+                //COLOR_TEXT_DEFAULT = {0x00, 0x00, 0x00};
+                //COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
+                SDL_Color COLOR_BACKGROUND = _color_palette_.Get(ColorType::BACKGROUND);
+                SDL_Color COLOR_CURSOR = _color_palette_.Get("green"); // TODO
+                SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
+                SDL_Color COLOR_CURRENT_LINE_BACKGROUND = _color_palette_.Get("yellow");
                 
                 
                 // create renderer object
@@ -200,6 +215,8 @@ class Window
         // Create cursor surfaces (blank rect)
         SDL_FillRect(cursor_surface_normal, nullptr, SDL_MapRGBA(cursor_surface_normal->format, 0x00, 0xFF, 0x00, 0xFF));
         SDL_FillRect(cursor_surface_normal_1, nullptr, SDL_MapRGBA(cursor_surface_normal_1->format, 0x00, 0x80, 0x00, 0xFF));
+
+        const SDL_Color COLOR_TEXT_DEFAULT{_color_palette_.Get("black")};
 
         // Create cursor surfaces from font
         SDL_Surface* cursor_surface_insert = TTF_RenderText_Solid(_font_, cursor_string_insert, COLOR_TEXT_DEFAULT);
@@ -892,16 +909,21 @@ class Window
     uint32_t COLOR_CURRENT_LINE_BACKGROUND;
     */
 
-    SDL_Color COLOR_BACKGROUND;
-    SDL_Color COLOR_CURSOR;
-    SDL_Color COLOR_TEXT_DEFAULT;
-    SDL_Color COLOR_CURRENT_LINE_BACKGROUND;
+    //SDL_Color COLOR_BACKGROUND;
+    //SDL_Color COLOR_CURSOR;
+    //SDL_Color COLOR_TEXT_DEFAULT;
+    //SDL_Color COLOR_CURRENT_LINE_BACKGROUND;
+    ColorPalette _color_palette_;
+
 
     Uint32 _timer_;
 
 
     // configuration options
     Config _config_;
+
+    // Editor mode
+    EditorMode _editor_mode_;
 
 };
 

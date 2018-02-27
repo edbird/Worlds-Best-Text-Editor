@@ -98,6 +98,7 @@ class Buffer
     // and sets the _not_saved_ flag to FALSE
     void Open(const std::string& filename)
     {
+        // TODO: maximum memory useage (virtual machine memory)
         // clear old contents
         _line_text_.clear();
 

@@ -1,0 +1,3 @@
+max virtual machine memory (see Buffer::Open)
+default open mode (editor mode) (normal, insert, command)
+color pallet class
