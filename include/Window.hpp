@@ -405,6 +405,7 @@ class Window
                                 }
                                 break;
 
+                            // CTRL-O: open action
                             case SDLK_o:
                                 if(MOD_CTRL) // not needed
                                 {

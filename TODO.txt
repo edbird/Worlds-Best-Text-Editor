@@ -1,3 +1,8 @@
 max virtual machine memory (see Buffer::Open)
 default open mode (editor mode) (normal, insert, command)
 color pallet class
+move buffer drawing to seperate class, implement scrolling, do not print past end of screen window
+start in normal mode, add mode switching
+add statusbar / message bar
+add messagebox
+make window resizeable, set default size to multiple of char size, allow only resizing to these sizes? or print black border where "extra space" is
