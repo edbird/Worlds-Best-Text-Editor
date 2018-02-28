@@ -12,5 +12,18 @@ line 8
 11
 12
 I don't think the line numbers expand into double digits correctly!
-Also the line numbers start from zero not 1!
+Also the line numbers start from zero not 1! [this has now been fixed!]
 hi
+more lines
+line
+line
+line
+line
+line
+line
+line
+line
+line
+line
+this line runs off the bottom of the screen!
+this line is not visiable!

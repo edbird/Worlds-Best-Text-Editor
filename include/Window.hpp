@@ -756,6 +756,12 @@ class Window
                             cursor_texture_dst_rect.y += dst_rect.h;
                         }
                     }
+                    // added to fix bug where cursor does not appear in correct place
+                    // when line is wrapped 2018-02-28
+                    else if(cursor_line > current_line)
+                    {
+                        cursor_texture_dst_rect.y += dst_rect.h;
+                    }
                 }
 
                 // render texture to screen
