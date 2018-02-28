@@ -6,3 +6,6 @@ start in normal mode, add mode switching
 add statusbar / message bar
 add messagebox
 make window resizeable, set default size to multiple of char size, allow only resizing to these sizes? or print black border where "extra space" is
+editor should not have (buffer) _modified_ flag set when opening a blank file!
+load all options from config in class constructors
+create a resources class with pointers / whatever to access "resources" eg the timer
