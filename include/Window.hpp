@@ -37,94 +37,75 @@ class Window
 
     public:
 
-    Window()
+    Window(const Config& config, const TTF_Font* const font)
         : _window_(nullptr, SDL_DestroyWindow)
         , _surface_{nullptr}
+        , _font_{font}
         , _editor_mode_{EditorMode::NORMAL} // TODO: config file default mode
+        , _config_{config}
         //, COLOR_BACKGROUND{0x00000000}
         //, COLOR_TEXT_DEFAULT{0xFFFFFFFF}
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
     {
         
-        // TODO: should go elsewhere?
-        // TODO: error message
-        if(SDL_Init(SDL_INIT_VIDEO) < 0)
+        
+
+            
+        _window_.reset(SDL_CreateWindow("SDL Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _WIDTH_, _HEIGHT_, SDL_WINDOW_SHOWN));
+
+        if(_window_ == nullptr)
         {
             std::cerr << SDL_GetError() << std::endl;
         }
         else
         {
+            // not using smart pointer as this is not a managed resource
+            //_surface_.reset(SDL_GetWindowSurface(_window_.get()));
+            _surface_ = SDL_GetWindowSurface(_window_.get());
 
-            // initialize SDL_ttf
-            if(TTF_Init() < 0) // TODO check return codes
+            // map colors
+            //COLOR_BACKGROUND = SDL_MapRGB(_surface_->format, 0x00, 0x00, 0x00);
+            //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
+            //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
+            //COLOR_BACKGROUND = {0xFF, 0xFF, 0xFF};
+            //COLOR_CURSOR = {0x00, 0xFF, 0x00};
+            //COLOR_TEXT_DEFAULT = {0x00, 0x00, 0x00};
+            //COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
+            SDL_Color COLOR_BACKGROUND = _color_palette_.Get(ColorType::BACKGROUND);
+            SDL_Color COLOR_CURSOR = _color_palette_.Get("green"); // TODO
+            SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
+            SDL_Color COLOR_CURRENT_LINE_BACKGROUND = _color_palette_.Get("yellow");
+            
+            
+            // create renderer object
+            _renderer_ = SDL_CreateRenderer(_window_.get(), -1, SDL_RENDERER_ACCELERATED); // TODO vsync
+            if(_renderer_ == nullptr)
             {
-                std::cout << TTF_GetError() << std::endl;
+                std::cout << SDL_GetError() << std::endl;
             }
             else
             {
-                _window_.reset(SDL_CreateWindow("SDL Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _WIDTH_, _HEIGHT_, SDL_WINDOW_SHOWN));
+                // initialize renderer color
+                SDL_SetRenderDrawColor(_renderer_, COLOR_BACKGROUND.r, COLOR_BACKGROUND.g, COLOR_BACKGROUND.b, COLOR_BACKGROUND.a);
 
-                if(_window_ == nullptr)
-                {
-                    std::cerr << SDL_GetError() << std::endl;
-                }
-                else
-                {
-                    // not using smart pointer as this is not a managed resource
-                    //_surface_.reset(SDL_GetWindowSurface(_window_.get()));
-                    _surface_ = SDL_GetWindowSurface(_window_.get());
-
-                    // map colors
-                    //COLOR_BACKGROUND = SDL_MapRGB(_surface_->format, 0x00, 0x00, 0x00);
-                    //COLOR_TEXT_DEFAULT = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0xFF);
-                    //COLOR_CURRENT_LINE_BACKGROUND = SDL_MapRGB(_surface_->format, 0xFF, 0xFF, 0x00);
-                    //COLOR_BACKGROUND = {0xFF, 0xFF, 0xFF};
-                    //COLOR_CURSOR = {0x00, 0xFF, 0x00};
-                    //COLOR_TEXT_DEFAULT = {0x00, 0x00, 0x00};
-                    //COLOR_CURRENT_LINE_BACKGROUND = {0xFF, 0xFF, 0x00};
-                    SDL_Color COLOR_BACKGROUND = _color_palette_.Get(ColorType::BACKGROUND);
-                    SDL_Color COLOR_CURSOR = _color_palette_.Get("green"); // TODO
-                    SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
-                    SDL_Color COLOR_CURRENT_LINE_BACKGROUND = _color_palette_.Get("yellow");
-                    
-                    
-                    // create renderer object
-                    _renderer_ = SDL_CreateRenderer(_window_.get(), -1, SDL_RENDERER_ACCELERATED); // TODO vsync
-                    if(_renderer_ == nullptr)
-                    {
-                        std::cout << SDL_GetError() << std::endl;
-                    }
-                    else
-                    {
-                        // initialize renderer color
-                        SDL_SetRenderDrawColor(_renderer_, COLOR_BACKGROUND.r, COLOR_BACKGROUND.g, COLOR_BACKGROUND.b, COLOR_BACKGROUND.a);
-
-                    }
-
-
-                    // open the font
-                    _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", _config_.GetInt("fontsize"));
-                    
-                    if(_font_ == nullptr)
-                    {
-                        std::cout << TTF_GetError() << std::endl;
-                    }
-                    else
-                    {
-                        init_texture_chars();
-                    }
-
-                }
             }
+
+
+            // assumes font is valid (not nullptr)
+            init_texture_chars();
+
 
             //init_cursor();
 
+            // TODO: do not pass this as an argument, pass a pointer to a resources class
             _buffer_ptr_ = new Buffer(_texture_chars_size_);
         
             // Reset SDL timer after load
             _timer_ = SDL_GetTicks();
+
+        }
+
         
-        } // SDL_Init() failed
     }
 
     ~Window()
@@ -152,15 +133,12 @@ class Window
             it->second = nullptr;
         }
 
-        // Cleanup
-        TTF_CloseFont(_font_);
 
         SDL_DestroyRenderer(_renderer_);
 
-        TTF_Quit();
- 
-        SDL_Quit();
     }
+    
+    
     
     private:
     
@@ -176,7 +154,7 @@ class Window
             
             // render text
             SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
-            SDL_Surface* text_surface = TTF_RenderText_Solid(_font_, ch_string /*_texture_chars_.c_str()*/, COLOR_TEXT_DEFAULT);
+            SDL_Surface* text_surface = TTF_RenderText_Solid((TTF_Font*)_font_, ch_string /*_texture_chars_.c_str()*/, COLOR_TEXT_DEFAULT);
             
             if(text_surface == nullptr)
             {
@@ -509,7 +487,7 @@ class Window
     SDL_Renderer *_renderer_ = nullptr; // TODO smart
 
     // globally used font
-    TTF_Font *_font_ = nullptr;
+    const TTF_Font *const _font_ = nullptr;
 
     // texture
     //SDL_Texture *_texture_;
@@ -547,7 +525,7 @@ class Window
 
 
     // configuration options
-    Config _config_;
+    const Config &_config_;
 
     // Editor mode
     EditorMode _editor_mode_;
