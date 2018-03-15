@@ -18,8 +18,9 @@ class Cursor
     typedef uint32_t CursorPos_t;
 
 
-    Cursor(const int size_x, const int size_y, const int buffer_origin_x, const int buffer_origin_y)
-        : _line_{0}
+    Cursor(const int size_x, const int size_y, const int buffer_origin_x, const int buffer_origin_y, const Config& config)
+        : _config_{config}
+        , _line_{0}
         , _col_{0}
         , _remember_col_{0}
         , _cursor_size_x_{size_x}
@@ -27,7 +28,16 @@ class Cursor
         , _cursor_origin_x_{buffer_origin_x}
         , _cursor_origin_y_{buffer_origin_y}
         , _cursor_type_{CursorType::BLOCK}
+        , _last_blink_time_{0} // TODO
+        , _blink_delay_time_{500} // default
     {
+        // TODO: remove "has key" method - don't need it since a default value
+        // is always given
+        //if(_config_.HasKey("cursorblinkrate"))
+        {
+            _blink_delay_time_ = _config_.GetInt("cursorblinkdelay"); 
+        }
+        
         //init_cursor();
     }
     
@@ -49,12 +59,36 @@ class Cursor
     }
     */
 
-    // TODO: what if an invalid value is given?
-    void SetPos(const CursorPos_t line, const CursorPos_t col)
+    private:
+
+    void set_pos(const CursorPos_t line, const CursorPos_t col)
     {
         _line_ = line;
         _col_ = col;
         Print();
+    }
+
+    public:
+
+    // TODO: what if an invalid value is given?
+    void SetPos(const CursorPos_t line, const CursorPos_t col)
+    {
+        set_pos(line, col);
+    }
+
+    void SetPos(const CursorPos_t line, const CursorPos_t col, const Uint32 timer, const bool reset_blink_time = true)
+    {
+        set_pos(line, col);
+
+        if(reset_blink_time == true)
+        {
+            ResetBlinkTime(timer);
+        }
+    }
+
+    void ResetBlinkTime(const Uint32 timer)
+    {
+        _last_blink_time_ = timer;
     }
 
     CursorPos_t GetPosLine() const
@@ -67,41 +101,122 @@ class Cursor
         return _col_;
     }
 
-    void CR()
+    private:
+
+    void cr()
     {
         _col_ = 0;
     }
 
-    void Up()
+    void up()
     {
-        if(_line_ > 0)
-            -- _line_;
+        //if(_line_ > 0)
+        -- _line_;
         Print();
     }
 
-    void Down(const CursorPos_t line_count)
+    void down()
     {
         // TODO
-        if(_line_ < line_count - 1)
-            ++ _line_;
+        //if(_line_ < line_count - 1)
+        ++ _line_;
         Print();
+    }
+
+    void left()
+    {
+        //if(_col_ > 0)
+        -- _col_;
+        _remember_col_ = _col_;
+        Print();
+    }
+
+    void right()
+    {
+        // TODO
+        //if(_col_ < line_size) // cursor can scroll 1 char past the end!
+        ++ _col_;
+        _remember_col_ = _col_;
+        Print();
+    }
+
+    public:
+
+    void CR()
+    {
+        cr();
+    }
+
+    void CR(const Uint32 timer, const bool reset_blink_time = true)
+    {
+        cr();
+
+        if(reset_blink_time == true)
+        {
+            ResetBlinkTime(timer);
+        }
+    }
+
+    // TODO: removing all checks on cursor here!
+    // TODO: implement checks in buffer / window
+    void Up()
+    {
+        up();
+    }
+
+    void Down()
+    {
+        down();
     }
 
     void Left()
     {
-        if(_col_ > 0)
-            -- _col_;
-        _remember_col_ = _col_;
-        Print();
+        left();
     }
 
-    void Right(const CursorPos_t line_size)
+    void Right()
     {
-        // TODO
-        if(_col_ < line_size) // cursor can scroll 1 char past the end!
-            ++ _col_;
-        _remember_col_ = _col_;
-        Print();
+        right();
+    }
+    
+    void Up(const Uint32 timer, const bool reset_blink_time = true)
+    {
+        up();
+
+        if(reset_blink_time == true)
+        {
+            ResetBlinkTime(timer);
+        }
+    }
+
+    void Down(const Uint32 timer, const bool reset_blink_time = true)
+    {
+        down();
+        
+        if(reset_blink_time == true)
+        {
+            ResetBlinkTime(timer);
+        }
+    }
+
+    void Left(const Uint32 timer, const bool reset_blink_time = true)
+    {
+        left();
+        
+        if(reset_blink_time == true)
+        {
+            ResetBlinkTime(timer);
+        }
+    }
+
+    void Right(const Uint32 timer, const bool reset_blink_time = true)
+    {
+        right();
+        
+        if(reset_blink_time == true)
+        {
+            ResetBlinkTime(timer);
+        }
     }
 
     void Print() const
@@ -119,12 +234,47 @@ class Cursor
         return _cursor_type_;
     }
     
+
+    // reset the last blink time when the cursor moves
+    void ResetLastBlinkTime(const Uint32 timer)
+    {
+        _last_blink_time_ = timer;
+    }
+
     // NOTE
     // TODO
     // can pass in dimensions of cursor in the cursor_pos argument rather than setting
     // the cursor size in the constructor?
-    void Draw(SDL_Renderer *renderer, const SDL_Rect& cursor_pos) const
+    void Draw(SDL_Renderer *renderer, const SDL_Rect& cursor_pos, const Uint32 _timer_) const
     {
+        // TODO:
+        // different blink modes
+        // this blink mode draws a cursor and then draws nothing, but it is reset
+        // when the cursor is moved to prevent the user not being able to see 
+        // where the cursor is
+        // another mode is to change the color of the cursor, which maybe should
+        // change color as the cursor moves, or maybe the timer should be
+        // reset when the cursor moves as in the below implemented example
+
+
+        // Process the timing information
+        if((_timer_ - _last_blink_time_) / _blink_delay_time_ == 1)
+        {
+            // don't draw just return
+            return;
+        }
+        // NOTE: this is essentially 
+        // if (_timer - _last_blink_time_) / _blink_delay_time_ == 2
+        // but use > 1 incase there is a long delay which causes the value
+        // 2 to be skipped!
+        else if((_timer_ - _last_blink_time_) / _blink_delay_time_ > 1)
+        {
+            //reset the last blink time
+            _last_blink_time_ = _timer_;
+            // and now print the cursor
+        }
+
+        // Draw the cursor
         // TODO: color
         //SDL_Color BLACK{0x00, 0x00, 0x00, 0xFF}; // TODO: get from config
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
@@ -158,6 +308,7 @@ class Cursor
         {
             std::cerr << "Unrecognized cursor type" << std::endl;
         }
+
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -242,6 +393,9 @@ class Cursor
     */
 
     private:
+    
+    // reference to config
+    const Config& _config_;
 
     CursorPos_t _line_;
     CursorPos_t _col_;
@@ -271,6 +425,8 @@ class Cursor
     
     // TODO: color!
 
+    mutable Uint32 _last_blink_time_;
+    Uint32 _blink_delay_time_;
 
 };
 
