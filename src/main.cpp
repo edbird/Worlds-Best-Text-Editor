@@ -16,12 +16,10 @@ int main(int argc, char* argv[])
     Config config;
     const Config &_config_{config};
 
-    Buffer buffer;
 
     // font pointer
     TTF_Font *_font_ = nullptr;
-            
-
+    
     // TODO: should go elsewhere?
     // TODO: error message
     if(SDL_Init(SDL_INIT_VIDEO) < 0)

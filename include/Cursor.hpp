@@ -2,6 +2,13 @@
 #define CURSOR_HPP
 
 
+#include "Config.hpp"
+
+#include <SDL.h>
+
+#include <iostream>
+
+
 enum class CursorType
 {
     BLOCK,
