@@ -51,6 +51,8 @@ class Buffer
     Cursor& MutableCursor()
     */
 
+
+    // TODO: change to get cursor not subfunctions of cursor class
     Cursor::CursorPos_t GetCursorLine() const;
 
     Cursor::CursorPos_t GetCursorCol() const;
@@ -86,7 +88,7 @@ class Buffer
 
     // print char
     // TODO: optimize this, flag might not be required
-    bool print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture, const SDL_Rect& src_rect, SDL_Rect& dst_rect);
+    bool print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture, const SDL_Rect& src_rect, SDL_Rect& dst_rect, SDL_Rect& cursor_texture_dst_rect, Cursor::CursorPos_t current_line, Cursor::CursorPos_t current_col, const int dst_rect_origin_x);
 
     
     public:
