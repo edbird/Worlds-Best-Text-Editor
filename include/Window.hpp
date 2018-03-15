@@ -98,7 +98,7 @@ class Window
             //init_cursor();
 
             // TODO: do not pass this as an argument, pass a pointer to a resources class
-            _buffer_ptr_ = new Buffer(_texture_chars_size_);
+            _buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
         
             // Reset SDL timer after load
             _timer_ = SDL_GetTicks();
@@ -447,7 +447,7 @@ class Window
     void draw_buffer_contents()
     {
         Buffer &_buffer_{*_buffer_ptr_};
-        _buffer_.Draw(_renderer_, _config_, _texture_chars_, _texture_chars_size_, _WIDTH_, _HEIGHT_, _timer_);
+        _buffer_.Draw(_renderer_, _texture_chars_, _texture_chars_size_, _timer_);
     }
 
 
