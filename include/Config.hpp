@@ -111,27 +111,28 @@ class Config
                     // find name
                     // TODO: now have problem where name could occur in multiple option types! (multiple maps)
                     bool found{false};
-                    ConfigIterator_t it{_config_.find(name)};
-                    if(it != _config_.end())
-                    {
-                        found = true;
-
-                        // read value
-                        int value{read_value_int(next_substring)};
-
-                        it->second.Set(value);
-
-                        std::cout << "property " << name << " set to value " << value << std::endl;
-
-                    //if(name == std::string("fontsize"))
+                    //ConfigIterator_t it{_config_.find(name)};
+                    //if(it != _config_.end())
                     //{
-
+                    //    found = true;
+                    //
+                    //    // read value
+                    //    int value{read_value_int(next_substring)};
+                    //
+                    //    it->second.Set(value);
+                    //
+                    //    std::cout << "property " << name << " set to value " << value << std::endl;
+                    //
+                    ////if(name == std::string("fontsize"))
+                    ////{
+                    //
+                    ////}
+                    ////else if(name == std::string("cursorblinkrate"))
+                    ////{
+                    //
                     //}
-                    //else if(name == std::string("cursorblinkrate"))
-                    //{
 
-                    }
-
+                    // found is always false at this point
                     if(found == false)
                     {
                         ConfigIntOptionMapIterator_t it{_config_int_option_map_.find(name)};
@@ -188,6 +189,37 @@ class Config
     }
     */
 
+    // check if parameter exists in config
+    /*
+    bool HasKey(const std::string& name) const
+    {
+        bool found{false};
+
+        if(found == false)
+        {
+            ConfigIntOptionMapIterator_t it{_config_int_option_map_.find(name)};
+            std::map<const std::string, ConfigOption<int>>::iterator it{_config_int_option_map_.find(name)};
+            _config_int_option_map_.find(name);
+            //if(it != _config_int_option_map_.end())
+            //{
+            //    found = true;
+            //}
+        }
+        
+        if(found == false)
+        {
+            //ConfigFloatOptionMapIterator_t it{_config_float_option_map_.find(name)};
+            //if(it != _config_float_option_map_.end())
+            //{
+            //    found = true;
+            //}
+        }
+
+        return found;
+    }
+    */
+
+
     // New code
     int GetInt(const std::string& name) const
     {
@@ -236,7 +268,7 @@ class Config
 
         // TODO: name appears twice!
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
-        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkrate", ConfigOption<int>("cursorblinkrate", 500, "set cursorblinkrate 500 # milliseconds")));
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkdelay", ConfigOption<int>("cursorblinkdelay", 500, "set cursorblinkrate 500 # milliseconds")));
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("linenumber", ConfigOption<int>("linenumber", 0, "set linenumber 0 # false (off)")));
         //_config_float_option_map_.insert(std::map<const std::string, ConfigOption<double>>::value_type("")); // double not float
         
@@ -333,8 +365,8 @@ class Config
     const std::string _filename_{"config.rc"};
 
     // map of commands to config options
-    std::map<const std::string, ConfigOption<int>> _config_;
-    typedef std::map<const std::string, ConfigOption<int>>::iterator ConfigIterator_t;
+    //std::map<const std::string, ConfigOption<int>> _config_;
+    //typedef std::map<const std::string, ConfigOption<int>>::iterator ConfigIterator_t;
 
 
     // New code, new "hack" to make multiple types work without hcontainer
