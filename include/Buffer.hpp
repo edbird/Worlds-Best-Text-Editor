@@ -185,10 +185,6 @@ class Buffer
     // const
     const std::string _new_line_string_{std::string("\n")};
 
-
-    // temp: TODO remove
-    std::ofstream df;
-
 };
 
 
