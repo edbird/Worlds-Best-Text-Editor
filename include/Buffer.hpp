@@ -94,26 +94,23 @@ class Buffer
     // TODO: remove STEP as STEP = WIDTH/HEIGHT
 
     void advance_cursor_char(SDL_Rect& cursor_texture_dst_rect,
-                             const int cursor_texture_step_x, const int cursor_texture_step_y,
                              const int cursor_texutre_origin_x,
                              const Cursor::CursorPos_t cursor_line, const Cursor::CursorPos_t cursor_col,
                              Cursor::CursorPos_t& current_line, Cursor::CursorPos_t& current_col);
     
     void advance_cursor_line(SDL_Rect& cursor_texture_dst_rect,
-                             const int cursor_texture_step_x, const int cursor_texture_step_y,
                              const int cursor_texutre_origin_x,
                              const Cursor::CursorPos_t cursor_line, const Cursor::CursorPos_t cursor_col,
                              Cursor::CursorPos_t& current_line, Cursor::CursorPos_t& current_col);
 
     void advance_cursor_line_wrap(SDL_Rect& cursor_texture_dst_rect,
-                                  const int cursor_texture_step_x, const int cursor_texture_step_y,
                                   const int cursor_texutre_origin_x,
                                   const Cursor::CursorPos_t cursor_line, const Cursor::CursorPos_t cursor_col,
                                   Cursor::CursorPos_t& current_line, Cursor::CursorPos_t& current_col);
 
-    void advance_dst_rect_char(SDL_Rect& dst_rect, const int dst_rect_step_x);
+    void advance_dst_rect_char(SDL_Rect& dst_rect);
 
-    void advance_dst_rect_line(SDL_Rect& dst_rect, const int dst_rect_step_y, const int dst_rect_origin_x);
+    void advance_dst_rect_line(SDL_Rect& dst_rect, const int dst_rect_origin_x);
 
 
     // print char
