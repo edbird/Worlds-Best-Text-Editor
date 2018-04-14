@@ -2,6 +2,6 @@ set fontsize 11
 set cursorblinkrate 500 # millisecond
 some nonsense that produces an error
 # a comment which doesn't produce an error
-set linenumber 1 # TODO: would prefer "set linenumber" without the 1
+set linenumber 0 # TODO: would prefer "set linenumber" without the 1
 set maxmemory 512 # megabyte (-1 is no limit)
 set defaulteditormode NORMAL

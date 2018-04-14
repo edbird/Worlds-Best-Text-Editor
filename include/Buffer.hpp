@@ -83,12 +83,43 @@ class Buffer
 
 
     private:
+
+    bool cursor_check_space_x(const SDL_Rect& cursor_texture_dst_rect);
+    bool cursor_check_space_y(const SDL_Rect& cursor_texture_dst_rect);
+
     // check first line can be drawn (enough space in y direction)
     bool check_space_y(const SDL_Rect& dst_rect);
+    bool check_space_x(const SDL_Rect& dst_rect);
+
+    // TODO: remove STEP as STEP = WIDTH/HEIGHT
+
+    void advance_cursor_char(SDL_Rect& cursor_texture_dst_rect,
+                             const int cursor_texture_step_x, const int cursor_texture_step_y,
+                             const int cursor_texutre_origin_x,
+                             const Cursor::CursorPos_t cursor_line, const Cursor::CursorPos_t cursor_col,
+                             Cursor::CursorPos_t& current_line, Cursor::CursorPos_t& current_col);
+    
+    void advance_cursor_line(SDL_Rect& cursor_texture_dst_rect,
+                             const int cursor_texture_step_x, const int cursor_texture_step_y,
+                             const int cursor_texutre_origin_x,
+                             const Cursor::CursorPos_t cursor_line, const Cursor::CursorPos_t cursor_col,
+                             Cursor::CursorPos_t& current_line, Cursor::CursorPos_t& current_col);
+
+    void advance_cursor_line_wrap(SDL_Rect& cursor_texture_dst_rect,
+                                  const int cursor_texture_step_x, const int cursor_texture_step_y,
+                                  const int cursor_texutre_origin_x,
+                                  const Cursor::CursorPos_t cursor_line, const Cursor::CursorPos_t cursor_col,
+                                  Cursor::CursorPos_t& current_line, Cursor::CursorPos_t& current_col);
+
+    void advance_dst_rect_char(SDL_Rect& dst_rect, const int dst_rect_step_x);
+
+    void advance_dst_rect_line(SDL_Rect& dst_rect, const int dst_rect_step_y, const int dst_rect_origin_x);
+
 
     // print char
     // TODO: optimize this, flag might not be required
-    bool print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture, const SDL_Rect& src_rect, SDL_Rect& dst_rect, SDL_Rect& cursor_texture_dst_rect, Cursor::CursorPos_t current_line, Cursor::CursorPos_t current_col, const int dst_rect_origin_x);
+    void print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture,
+                            const SDL_Rect& src_rect, SDL_Rect& dst_rect);
 
     
     public:
@@ -107,7 +138,7 @@ class Buffer
 
     // TODO: pass dst_rect by reference and modify within function
     // TODO: remove _texture_chars_ arguments
-    void print_line_number(const int line_number, const int line_number_width, SDL_Rect &dst_rect, SDL_Renderer *const _renderer_, const std::map<const char, SDL_Texture*>& _texture_chars_, const std::map<const char, SDL_Rect>& _texture_chars_size_);
+    void print_line_number(const int line_number, const int line_number_width, SDL_Rect /*&*/dst_rect, SDL_Renderer *const _renderer_, const std::map<const char, SDL_Texture*>& _texture_chars_, const std::map<const char, SDL_Rect>& _texture_chars_size_);
     
     ////////////////////////////////////////////////////////////////////////////
     //
@@ -153,6 +184,11 @@ class Buffer
 
     // const
     const std::string _new_line_string_{std::string("\n")};
+
+
+    // temp: TODO remove
+    std::ofstream df;
+
 };
 
 
