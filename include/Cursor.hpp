@@ -25,15 +25,15 @@ class Cursor
     typedef uint32_t CursorPos_t;
 
 
-    Cursor(const int size_x, const int size_y, const int buffer_origin_x, const int buffer_origin_y, const Config& config)
+    Cursor(const int size_x, const int size_y, /*const int buffer_origin_x, const int buffer_origin_y,*/ const Config& config)
         : _config_{config}
         , _line_{0}
         , _col_{0}
         , _remember_col_{0}
         , _cursor_size_x_{size_x}
         , _cursor_size_y_{size_y}
-        , _cursor_origin_x_{buffer_origin_x}
-        , _cursor_origin_y_{buffer_origin_y}
+        //, _cursor_origin_x_{buffer_origin_x}
+        //, _cursor_origin_y_{buffer_origin_y}
         , _cursor_type_{CursorType::BLOCK}
         , _last_blink_time_{0} // TODO
         , _blink_delay_time_{500} // default
@@ -416,8 +416,8 @@ class Cursor
     
     // TODO: currently do not have an origin coordinate, so if buffer origin changes
     // cursor is not drawn in correct place
-    int _cursor_origin_x_;
-    int _cursor_origin_y_;
+    //int _cursor_origin_x_; // 2018-04-15 removed
+    //int _cursor_origin_y_;
 
     
     // textures for cursor drawing

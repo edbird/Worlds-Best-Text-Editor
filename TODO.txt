@@ -9,3 +9,17 @@ make window resizeable, set default size to multiple of char size, allow only re
 editor should not have (buffer) _modified_ flag set when opening a blank file!
 load all options from config in class constructors
 create a resources class with pointers / whatever to access "resources" eg the timer
+
+2018-04-15:
+
+1: replace all std::map<const char, const SDL_Rect> texture_chars_size by reference to FontTextureManger
+2: create Textbox class
+3: create CharMatrix class
+4: move stuff from Buffer
+5: move cursor stuff from Buffer to Textbox
+6: create class for texture chars which combines textures and sizes (not required if implementation is hidden inside FontTextureManager)
+7: CR does not work if not at end of line
+
+color palette used in Window and FontTextureManager
+
+update Window and Textbox classes so that functionality from Window is hidden in Textbox. move all "movements/actions" such as UDLR, and other key presses from Window to Textbox (implemention hiding)

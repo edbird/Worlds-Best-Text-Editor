@@ -49,6 +49,10 @@ int main(int argc, char* argv[])
             {
                 
             }
+            
+            // pass the font to the FontTextureManager
+            //FontTextureManager ftm(_font_, color_palette);
+            // window has a FontTextureManager object, should separate?
 
             // pass the font to the window
             Window window(config, _font_);

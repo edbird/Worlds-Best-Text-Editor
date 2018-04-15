@@ -9,7 +9,9 @@
 
 
 #include "Config.hpp"
-#include "Buffer.hpp"
+#include "FontTextureManager.hpp"
+//#include "Buffer.hpp"
+#include "Textbox.hpp"
 #include "Cursor.hpp"
 #include "KeyMap.hpp"
 #include "Keyboard.hpp"
@@ -40,9 +42,10 @@ class Window
     Window(const Config& config, const TTF_Font* const font)
         : _window_(nullptr, SDL_DestroyWindow)
         , _surface_{nullptr}
-        , _font_{font}
+        //, _font_{font}
         , _editor_mode_{EditorMode::NORMAL} // TODO: config file default mode
         , _config_{config}
+        //, _ftm_{ftm}
         //, COLOR_BACKGROUND{0x00000000}
         //, COLOR_TEXT_DEFAULT{0xFFFFFFFF}
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
@@ -92,13 +95,14 @@ class Window
 
 
             // assumes font is valid (not nullptr)
-            init_texture_chars();
-
+            //init_texture_chars();
+            _ftm_ = new FontTextureManager(_renderer_, font, _color_palette_); // TODO make font a member var
 
             //init_cursor();
 
             // TODO: do not pass this as an argument, pass a pointer to a resources class
-            _buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
+            //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
+            _textbox_ptr_ = new Textbox(_config_, *_ftm_);
         
             // Reset SDL timer after load
             _timer_ = SDL_GetTicks();
@@ -110,12 +114,16 @@ class Window
 
     ~Window()
     {
-        delete _buffer_ptr_;
+        delete _ftm_;
+    
+        //delete _buffer_ptr_;
+        delete _textbox_ptr_;
     
         //SDL_DestroyWindow(_window_.get());
         //SDL_DestroyWindow(_window_);
 
         // Delete cursor textures
+        /*
         std::map<const char, SDL_Texture*>::iterator it{_texture_chars_.begin()};
         for(; it != _texture_chars_.end(); ++ it)
         {
@@ -132,6 +140,7 @@ class Window
 
             it->second = nullptr;
         }
+        */
 
 
         SDL_DestroyRenderer(_renderer_);
@@ -142,53 +151,53 @@ class Window
     
     private:
     
-    void init_texture_chars()
-    {
-                
-        // init printable characters
-        for(char ch{' '}; ; )
-        {
+    // old function - moved to FontTextureManager
+    //void init_texture_chars()
+    //{
+    //            
+    //    // init printable characters
+    //    for(char ch{' '}; ; )
+    //    {
+    //
+    //        // render text surface
+    //        const char ch_string[2]{ch, '\0'};
+    //        
+    //        // render text
+    //        SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
+    //        SDL_Surface* text_surface = TTF_RenderText_Solid((TTF_Font*)_font_, ch_string /*_texture_chars_.c_str()*/, COLOR_TEXT_DEFAULT);
+    //        
+    //        if(text_surface == nullptr)
+    //        {
+    //            std::cout << TTF_GetError() << std::endl;
+    //        }
+    //        else
+    //        {
+    //            // create texture from surface pixels
+    //            SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer_, text_surface);
+    //            if(texture == nullptr)
+    //            {
+    //                std::cout << SDL_GetError() << std::endl;
+    //            }
+    //            else
+    //            {
+    //                //Get image dimensions
+    //                //_texture_width_ = _text_surface_->w;
+    //                //_texture_height_ = _text_surface_->h;
+    //
+    //                _texture_chars_[ch] = texture;
+    //                _texture_chars_size_[ch].w = text_surface->w;
+    //                _texture_chars_size_[ch].h = text_surface->h;
+    //            }
+    //
+    //            //Get rid of old surface
+    //            SDL_FreeSurface(text_surface);
+    //        } 
+    //
+    //        if(ch == '~') break;
+    //        ++ ch;
+    //    }
+    //}
     
-            // render text surface
-            const char ch_string[2]{ch, '\0'};
-            
-            // render text
-            SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
-            SDL_Surface* text_surface = TTF_RenderText_Solid((TTF_Font*)_font_, ch_string /*_texture_chars_.c_str()*/, COLOR_TEXT_DEFAULT);
-            
-            if(text_surface == nullptr)
-            {
-                std::cout << TTF_GetError() << std::endl;
-            }
-            else
-            {
-                // create texture from surface pixels
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer_, text_surface);
-                if(texture == nullptr)
-                {
-                    std::cout << SDL_GetError() << std::endl;
-                }
-                else
-                {
-                    //Get image dimensions
-                    //_texture_width_ = _text_surface_->w;
-                    //_texture_height_ = _text_surface_->h;
-
-                    _texture_chars_[ch] = texture;
-                    _texture_chars_size_[ch].w = text_surface->w;
-                    _texture_chars_size_[ch].h = text_surface->h;
-                }
-
-                //Get rid of old surface
-                SDL_FreeSurface(text_surface);
-            } 
-    
-            //_texture_chars_.push_back(ch);
-
-            if(ch == '~') break;
-            ++ ch;
-        }
-    }
     
 
 
@@ -197,7 +206,8 @@ class Window
 
     int Run()
     {
-        Buffer &_buffer_{*_buffer_ptr_};
+        //Buffer &_buffer_{*_buffer_ptr_};
+        Textbox &textbox{*_textbox_ptr_};
     
         // TODO
         // regarding keyboard input it would be better to have a unified
@@ -223,7 +233,7 @@ class Window
                 // user request quit
                 if(event.type == SDL_QUIT)
                 {
-                    if(_buffer_.NotSaved())
+                    if(_textbox_ptr_->GetBuffer().NotSaved())
                     {
                         std::cout << "cannot quit, not saved" << std::endl;
                     }
@@ -264,7 +274,7 @@ class Window
                                 if(MOD_CTRL) // not needed
                                 {
                                     //quit_action
-                                    if(_buffer_.NotSaved())
+                                    if(_textbox_ptr_->GetBuffer().NotSaved())
                                     {
                                         std::cout << "The buffer is not saved, cannot quit" << std::endl;
                                         std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
@@ -282,8 +292,8 @@ class Window
                                 if(MOD_CTRL) // not needed
                                 {
                                     //save_action
-                                    _buffer_.Save("buffer.txt");
-                                    std::cout << "File " << "buffer.txt" << " written, " << _buffer_.Size() << " bytes" << std::endl;
+                                    _textbox_ptr_->GetBuffer().Save("buffer.txt");
+                                    std::cout << "File " << "buffer.txt" << " written, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
                                 }
                                 break;
 
@@ -292,8 +302,8 @@ class Window
                                 if(MOD_CTRL) // not needed
                                 {
                                     //open_action
-                                    _buffer_.Open("buffer.txt");
-                                    std::cout << "File " << "buffer.txt" << " read, " << _buffer_.Size() << " bytes" << std::endl;
+                                    _textbox_ptr_->MutableBuffer().Open("buffer.txt");
+                                    std::cout << "File " << "buffer.txt" << " read, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
                                 }
                                 break;
 
@@ -311,11 +321,13 @@ class Window
                             case SDLK_BACKSPACE:
                                 // only move if the buffer could execute the backspace
                                 // command; ie if a char was deleted
-                                if(_buffer_.BackspaceAtCursor() == true)
-                                {
-                                    std::cout << "moving cursor left" << std::endl;
-                                    _buffer_.CursorLeft();
-                                }
+                                //if(_textbox_ptr_->BackspaceAtCursor() == true)
+                                //{
+                                //    std::cout << "moving cursor left" << std::endl;
+                                //    _textbox_ptr_->CursorLeft();
+                                //}
+                                _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
+                                // see Textbox.hpp for more details (implementation hiding)
                                 break;
                         }
                     }
@@ -326,29 +338,29 @@ class Window
                         switch(event.key.keysym.sym)
                         {
                             case SDLK_UP:
-                                _buffer_.CursorUp();        
+                                _textbox_ptr_->CursorUp();        
                                 break;
 
 
                             case SDLK_DOWN:
-                                _buffer_.CursorDown();
+                                _textbox_ptr_->CursorDown();
                                 break;
 
 
                             case SDLK_LEFT:
-                                _buffer_.CursorLeft();
+                                _textbox_ptr_->CursorLeft();
                                 break;
 
 
                             case SDLK_RIGHT:
-                                _buffer_.CursorRight();
+                                _textbox_ptr_->CursorRight();
                                 break;
                         
 
                             case SDLK_RETURN:
-                                _buffer_.ReturnAtCursor();
-                                _buffer_.CursorCR();
-                                _buffer_.CursorDown();
+                                _textbox_ptr_->ReturnAtCursor();
+                                _textbox_ptr_->CursorCR();
+                                _textbox_ptr_->CursorDown();
                         
                         }
                     }
@@ -370,8 +382,8 @@ class Window
                         //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
                         if(_keyboard_.GetChar(ch))
                         {
-                            _buffer_.InsertAtCursor(ch);
-                            _buffer_.CursorRight();
+                            _textbox_ptr_->InsertAtCursor(ch);
+                            _textbox_ptr_->CursorRight();
                         }
 
                         // use map to process printable characters
@@ -446,8 +458,10 @@ class Window
     // TODO: remove pseudofunction
     void draw_buffer_contents()
     {
-        Buffer &_buffer_{*_buffer_ptr_};
-        _buffer_.Draw(_renderer_, _texture_chars_, _texture_chars_size_, _timer_);
+        //Buffer &_buffer_{*_buffer_ptr_};
+        //_buffer_.Draw(_renderer_, _texture_chars_, _texture_chars_size_, _timer_);
+        
+        _textbox_ptr_->Draw(_renderer_, _timer_);
     }
 
 
@@ -487,7 +501,7 @@ class Window
     SDL_Renderer *_renderer_ = nullptr; // TODO smart
 
     // globally used font
-    const TTF_Font *const _font_ = nullptr;
+    //const TTF_Font *const _font_ = nullptr;
 
     // texture
     //SDL_Texture *_texture_;
@@ -498,15 +512,16 @@ class Window
 
     //const std::string _texture_chars_{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "};
     //std::string _texture_chars_;
-    std::map<const char, SDL_Texture*> _texture_chars_;
-    std::map<const char, SDL_Rect> _texture_chars_size_;
+    //std::map<const char, SDL_Texture*> _texture_chars_;
+    //std::map<const char, SDL_Rect> _texture_chars_size_;
 
     //SDL_Window *_window_;
     //SDL_Surface *_surface_;
 
     // TODO: change back - this has been done because buffer now requires an argument
     //Buffer _buffer_;
-    Buffer *_buffer_ptr_;
+    //Buffer *_buffer_ptr_;
+    Textbox *_textbox_ptr_;
     
     //Cursor _cursor_;
     // TODO: custom deleter
@@ -518,7 +533,7 @@ class Window
     //SDL_Color COLOR_CURSOR;
     //SDL_Color COLOR_TEXT_DEFAULT;
     //SDL_Color COLOR_CURRENT_LINE_BACKGROUND;
-    ColorPalette _color_palette_;
+    ColorPalette _color_palette_; // TODO: this is also used by FontTextureManager, move elsewhere?
 
 
     Uint32 _timer_;
@@ -526,6 +541,7 @@ class Window
 
     // configuration options
     const Config &_config_;
+    FontTextureManager *_ftm_;
 
     // Editor mode
     EditorMode _editor_mode_;
