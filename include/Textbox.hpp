@@ -31,7 +31,9 @@ class Textbox
                                 // character will be inserted: the buffer starts with zero
                                 // size however the cursor will be drawn at position 0
                                 // even though the buffer is not of size 1
-        
+       
+        _charmatrix_ptr_ = new CharMatrix(_pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
+
     }
     
     
@@ -117,10 +119,12 @@ class Textbox
         //std::size_t line_width{(std::size_t)(_size_x_ / texture_chars_size.at(' ').w)};
         
         // create character matrix object
-        CharMatrix cm(/*line_width,*/ _buffer_, _pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
-        
-        cm.Draw(renderer, _timer_);
-        
+        // TODO: this should be a long life object
+        //CharMatrix cm(/*line_width,*/ _buffer_, _pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
+        _charmatrix_ptr_->Update(_buffer_);
+
+        //cm.Draw(renderer, _timer_);
+        _charmatrix_ptr_->Draw(renderer, _timer_);
         
     }
     
@@ -146,7 +150,7 @@ class Textbox
     const Config& _config_;
     const FontTextureManager& _ftm_;
 
-    //CharMatrix;
+    CharMatrix *_charmatrix_ptr_;
 
     Buffer _buffer_;
 

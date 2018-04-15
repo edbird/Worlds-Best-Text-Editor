@@ -24,10 +24,14 @@ class CharMatrix
 
     public:
 
+    // TODO: lifetime of this object is zero (only used to draw)
+    // however config is read every time this class is constructed
+    // change this so that lifetime is longer
+
     // TODO: bit weird that the size in pixels is specified and the line width is
     // also specified, should compute line width from size, and also draw "overhang"
     // in different color
-    CharMatrix(/*const std::size_t line_width,*/ const Buffer& buffer,
+    CharMatrix(/*const std::size_t line_width,*/// const Buffer& buffer,
                const int pos_x, const int pos_y, const int size_x, const int size_y,
                const Cursor& cursor,
                const Config& config,
@@ -40,20 +44,39 @@ class CharMatrix
         , _cursor_{cursor}
         , _config_{config}
         , _ftm_{ftm}
+        , _line_number_enabled_{false}
+        , _line_number_width_{0}
     {
     
-        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
-    
-        std::size_t line_width{(std::size_t)(_size_x_ / texture_chars_size.at(' ').w)};
-        _line_width_ = line_width;
-        
-        init(line_width, buffer);
+
+        ////////////////////////////////////////////////////////////////////////////
+        // READ CONFIG
+        ////////////////////////////////////////////////////////////////////////////
+
+        //bool line_number_enabled{false};
+        //int line_number_width{0};
+        // Note: only 1 is true, any other integer is false
+        if(_config_.GetInt("linenumber") == 1)
+        {
+            _line_number_enabled_ = true;
+        }
+
+
+        // TODO: reorgnize this, constructor contains all LONG LIFE
+        // processes, add Update() function which Updates() contents of
+        // _matrix_ before drawing
+        //init(line_width - _line_number_width_, buffer);
     }
 
     ~CharMatrix()
     {
 
     }
+
+    //void Update(const Buffer& buffer, )
+    //{
+    //    
+    //}
     
     void Draw(SDL_Renderer *const renderer,
               const Uint32 timer);
@@ -82,16 +105,49 @@ class CharMatrix
                            SDL_Rect /*&*/dst_rect,
                            SDL_Renderer *const renderer);
 
-    
+   
+    public:
 
-    inline
-    void init(const std::size_t line_width, const Buffer& buffer)
+
+    void Update(const Buffer& buffer)
     {
-    
+        
+        // get line count
         _buffer_line_count_ = buffer.GetLineCount();
 
+        // compute line number width required
+        _line_number_width_ = 0;
+        if(_line_number_enabled_)
+        {
+            // set line number character count
+            //int line_count{_buffer_.GetLineCount()};
+            int line_count{_buffer_line_count_};
+            for(;;)
+            {
+                ++ _line_number_width_;
+                line_count = line_count / 10;
+                if(line_count > 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    break;
+                    // line_number_char_count contains correct value
+                    // line_count is invalid
+                }
+            }
+        }
+        
+        // compute line width (space for characters when line numbers are accounted for)
+        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+        _line_width_ = (std::size_t)(_size_x_ / texture_chars_size.at(' ').w - _line_number_width_);
+
+        // clear matrix contents
         _matrix_.clear();
         _matrix_.shrink_to_fit();
+        _line_number_.clear();
+        _line_number_.shrink_to_fit();
         
         // TODO: this does not work if the line numbers are enabled!
         // cursor tracking
@@ -127,17 +183,18 @@ class CharMatrix
             substr_pos = 0;
             substr_len = 0;
 
+            bool first{true};
             for(;;)
             {
 
                 bool wrapped{false};
 
                 // compute substr_len size
-                if(line_text[line_ix].size() - substr_pos > line_width)
+                if(line_text[line_ix].size() - substr_pos > _line_width_)
                 {
                     // remaining contents in line too big to fix, set
                     // substring length to maximum size
-                    substr_len = line_width;
+                    substr_len = _line_width_;
 
                     wrapped = true;
                 }
@@ -153,6 +210,8 @@ class CharMatrix
                 std::string next_line{line_text[line_ix].substr(substr_pos, substr_len)};
                 //std::cout << next_line << std::endl;
                 _matrix_.emplace_back(next_line);
+                _line_number_.emplace_back(first);
+                first = false;
                 
                 // cursor
                 //if(current_col + substr_len > cursor_col)
@@ -225,6 +284,9 @@ class CharMatrix
 
         }
     }
+
+
+    private:
     
     
     ////////////////////////////////////////////////////////////////////////////
@@ -232,6 +294,7 @@ class CharMatrix
     ////////////////////////////////////////////////////////////////////////////
 
     std::vector<std::string> _matrix_;
+    std::vector<int> _line_number_;
     //Cursor &_cursor_;
     std::size_t _cursor_x_;
     std::size_t _cursor_y_;
@@ -248,6 +311,9 @@ class CharMatrix
     const Config& _config_;
     const FontTextureManager& _ftm_;
     const Cursor& _cursor_;
+
+    bool _line_number_enabled_;
+    int _line_number_width_;
 
 };
 
@@ -343,37 +409,6 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
     //const std::map<const char, SDL_Rect>& _texture_chars_size_{texture_chars_size};
 
 
-    ////////////////////////////////////////////////////////////////////////////
-    // READ CONFIG
-    ////////////////////////////////////////////////////////////////////////////
-
-    bool line_number_enabled{false};
-    int line_number_width{0};
-    // Note: only 1 is true, any other integer is false
-    if(_config_.GetInt("linenumber") == 1)
-    {
-        line_number_enabled = true;
-
-        // set line number character count
-        //int line_count{_buffer_.GetLineCount()};
-        int line_count{_buffer_line_count_};
-        for(;;)
-        {
-            ++ line_number_width;
-            line_count = line_count / 10;
-            if(line_count > 0)
-            {
-                continue;
-            }
-            else
-            {
-                break;
-                // line_number_char_count contains correct value
-                // line_count is invalid
-            }
-        }
-    }
-
 
     ////////////////////////////////////////////////////////////////////////////
     // DRAWING INIT
@@ -394,7 +429,7 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
     //{
     //    dst_rect_origin_x += line_number_width * _texture_chars_size_.at(' ').w;
     //}
-    int dst_rect_origin_x{line_number_width * texture_chars_size.at(' ').w};
+    int dst_rect_origin_x{_line_number_width_ * texture_chars_size.at(' ').w};
 
     // current line number to print, starts from 1
     int line_number{1};
@@ -414,12 +449,14 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
     //SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + _pos_x_, _pos_y_, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
 
     // Print line number zero
-    if(line_number_enabled == true)
+    if(_line_number_enabled_ == true)
     {
         // TODO: are these needed anymore?
         //if(check_space_y(dst_rect_line_number))
         //{
-            print_line_number(line_number, line_number_width, dst_rect_line_number, renderer);
+        print_line_number(line_number, _line_number_width_, dst_rect_line_number, renderer);
+        ++ line_number;
+        //dst_rect_line_number.y += dst_rect_line_number.h;
         //}
     }
 
@@ -453,13 +490,21 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
         }
 
 
-        if(line_number_enabled && line_ix + 1 < _matrix_.size())
+        // TODO: this does not print line numbers correctly!
+        // some lines are wrapped!
+        // Might be able to migrate this code into the Update function
+        // (change Update to draw and draw instead of storing in a container)
+        if(_line_number_enabled_ && line_ix + 1 < _matrix_.size())
         {
-            ++ line_number;
-
             dst_rect_line_number.y += dst_rect_line_number.h;
 
-            print_line_number(line_number, line_number_width, dst_rect_line_number, renderer);
+            if(_line_number_[line_ix + 1] == true)
+            {
+                print_line_number(line_number, _line_number_width_, dst_rect_line_number, renderer);
+                ++ line_number;
+                std::cout << line_ix << std::endl;
+            }
+
         }
         
         
