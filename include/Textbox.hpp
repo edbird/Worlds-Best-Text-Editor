@@ -359,20 +359,31 @@ void Textbox::BackspaceAtCursor()
     Cursor::CursorPos_t c_line{_cursor_->GetPosLine()};
     Cursor::CursorPos_t c_col{_cursor_->GetPosCol()};
         
+    std::cout << "c_line=" << c_line << ", c_col=" << c_col << std::endl;
+
     // TODO: change to void if possible
-    if(_buffer_.Delete(c_line, c_col) == true)
+    // Note: not possible!
+    if(c_col > 0 || c_line > 0)
     {
-        if(c_col > 0)
+        // now it is always possible to delete, so remove
+        // bool!
+        // TODO
+        if(_buffer_.Delete(c_line, c_col - 1) == true)
         {
-            _cursor_->Left();
+            // move cursor as required
+            if(c_col > 0)
+            {
+                _cursor_->Left();
+            }
+            else
+            {
+                //_cursor_.Up(); // TODO: test this
+                
+                Cursor::CursorPos_t goto_line{_cursor_->GetPosLine() - 1};
+                _cursor_->SetPos(goto_line, _buffer_.LineLength(goto_line));
+            }
         }
-        else
-        {
-            //_cursor_.Up(); // TODO: test this
-            
-            Cursor::CursorPos_t goto_line{_cursor_->GetPosLine() - 1};
-            _cursor_->SetPos(goto_line, _buffer_.LineLength(goto_line));
-        }
+
     }
     
     
