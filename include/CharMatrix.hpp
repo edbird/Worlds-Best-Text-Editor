@@ -102,8 +102,6 @@ class CharMatrix
         _cursor_x_ = 0;
         _cursor_y_ = 0;
 
-        std::cout << "cursor_col=" << cursor_col << std::endl;
-
         // x, y index for tracking char entry into _data_
         std::size_t ix{0};
         std::size_t iy{0};
@@ -120,7 +118,6 @@ class CharMatrix
         // iterate over all lines in buffer
         for(std::size_t line_ix{0}; line_ix < line_text.size(); ++ line_ix)
         {
-            std::cout << "line_ix=" << line_ix << std::endl;
         
             // insert new blank string as we have started a copying new line
             //_matrix_.emplace_back(std::string());
@@ -167,7 +164,6 @@ class CharMatrix
                 {
                     // line was wrapped, increment cursor y position
                     ++ _cursor_y_;
-                    std::cout << "INCR" << std::endl;
                 }
                 
                 current_col += substr_len;
@@ -195,8 +191,6 @@ class CharMatrix
             }
 
         }
-        
-        std::cout << "cursor_y=" << _cursor_y_ << std::endl;
     }
     
     
