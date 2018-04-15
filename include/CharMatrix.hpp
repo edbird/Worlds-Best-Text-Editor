@@ -406,7 +406,7 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
             const int y_off{c_h * line_ix};
         
             // character dst rect
-            SDL_Rect dst_rect{dst_rect_origin_x + x_off, _pos_y_ + y_off, c_w, c_h};
+            SDL_Rect dst_rect{_pos_x_ + dst_rect_origin_x + x_off, _pos_y_ + y_off, c_w, c_h};
         
             // character to print
             const char ch{_matrix_[line_ix][char_ix]};
