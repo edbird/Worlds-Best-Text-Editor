@@ -206,7 +206,8 @@ void Buffer::InsertNewLine(const std::size_t line, const std::size_t col)
     
     
     std::string s{_line_text_.at(line).substr(col)};
-    std::cout << "InsertNewLine, split line: remaining text is: " << s << std::endl;
+    //std::cout << "InsertNewLine, split line: remaining text is: " << s << std::endl;
+    _line_text_.at(line).erase(col);
     
     _line_text_.insert(_line_text_.cbegin() + line + 1, s);
     // push back a new line (string)
