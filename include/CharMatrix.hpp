@@ -451,6 +451,16 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
             SDL_Texture *texture{texture_chars.at(ch)};
             print_char_texture(renderer, texture, src_rect, dst_rect);
         }
+
+
+        if(line_number_enabled)
+        {
+            ++ line_number;
+
+            dst_rect_line_number.y += dst_rect_line_number.h;
+
+            print_line_number(line_number, line_number_width, dst_rect_line_number, renderer);
+        }
         
         
     }
