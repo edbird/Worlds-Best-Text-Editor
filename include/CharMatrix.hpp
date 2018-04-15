@@ -153,8 +153,8 @@ class CharMatrix
         // cursor tracking
         Cursor::CursorPos_t cursor_line{_cursor_.GetPosLine()};
         Cursor::CursorPos_t cursor_col{_cursor_.GetPosCol()};
-        Cursor::CursorPos_t current_line{0};
-        Cursor::CursorPos_t current_col{0};
+        //Cursor::CursorPos_t current_line{0};
+        //Cursor::CursorPos_t current_col{0};
         _cursor_x_ = 0;
         _cursor_y_ = 0;
 
@@ -171,6 +171,8 @@ class CharMatrix
         std::size_t substr_pos{0};
         std::size_t substr_len{0};
 
+        bool triggered{false};
+
         // iterate over all lines in buffer
         for(std::size_t line_ix{0}; line_ix < line_text.size(); ++ line_ix)
         {
@@ -182,6 +184,13 @@ class CharMatrix
             // set length to zero
             substr_pos = 0;
             substr_len = 0;
+
+            // init _cursor_x_
+            //if(current_line == cursor_line)
+            if(line_ix == cursor_line)
+            {
+                _cursor_x_ = cursor_col;
+            }
 
             bool first{true};
             for(;;)
@@ -235,26 +244,57 @@ class CharMatrix
                 
 
                 // if current line, set cursor x position
-                if(current_line == cursor_line)
+                //if(current_line == cursor_line)
+                if(line_ix == cursor_line)
                 {
                     // if cursor is within wrapped section
-                    if(substr_pos <= cursor_col && cursor_col <= substr_pos + substr_len)
+                    //if(substr_pos <= cursor_col && cursor_col <= substr_pos + substr_len)
+                    //{
+                    //    _cursor_x_ = cursor_col - substr_pos;
+                    //    std::cout << "cursor_x=" << _cursor_x_ << std::endl;
+                    //}
+                    // leq or lt?
+                    //else if(substr_pos + substr_len < cursor_col)
+                    //{
+                    //    ++ _cursor_y_;
+                    //}
+
+                    //if(_cursor_x_ - substr_len >= 0)
+                    if(_cursor_x_ > substr_len && !triggered)
                     {
-                        _cursor_x_ = cursor_col - substr_pos;
+                        // TODO: this is a "bodge", fix it
+                        // problem: after this has been set correctly, if we are in the middle of a line
+                        // which wraps, if subsequent pieces of the line are such that
+                        // _cursor_x_ > substr_len
+                        // then the cursor moves again
+                        triggered = true;
+
+                        _cursor_x_ -= substr_len;
+                        ++ _cursor_y_;
+                        std::cout << "TRIG A" << std::endl;
+                        std::cout << "substr_len=" << substr_len << std::endl;
                     }
-                }
 
-                if(wrapped == false)
-                {
+                    //current_col += substr_len;
                 }
-                else
+                //else if(current_line < cursor_line)
+                else if(line_ix < cursor_line)
                 {
-                    // line was wrapped, increment cursor y position
                     ++ _cursor_y_;
+                    std::cout << "TRIG B" << std::endl;
                 }
 
-                current_col += substr_len;
-                
+                //if(wrapped == false)
+                //{
+                //}
+                //else
+                //{
+                //    // line was wrapped, increment cursor y position
+                //    ++ _cursor_y_;
+                //}
+
+                //current_col += substr_len;
+                //++ current_line;
 
                 //if(substr_len == line_width)
                 if(wrapped == true)
@@ -270,17 +310,21 @@ class CharMatrix
 
             }
             
-            if(line_ix + 1 < line_text.size())
-            {
+            //if(line_ix + 1 < line_text.size())
+            //{
                 // TODO: this always = line_ix
-                if(current_line < cursor_line)
-                {
-                    ++ _cursor_y_;
-                }
+                //if(current_line < cursor_line)
+                //{
+                //    ++ _cursor_y_;
+                //}
                 
-                current_col = 0;
-                ++ current_line;
-            }
+                //current_col = 0;
+                //++ current_line;
+            //}
+
+            // increment current_line every time line_ix is incremented
+            // they are the same variable, so remove current_line
+            //++ current_line;
 
         }
     }
@@ -502,7 +546,6 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
             {
                 print_line_number(line_number, _line_number_width_, dst_rect_line_number, renderer);
                 ++ line_number;
-                std::cout << line_ix << std::endl;
             }
 
         }
