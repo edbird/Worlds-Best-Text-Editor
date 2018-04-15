@@ -130,12 +130,16 @@ class CharMatrix
             for(;;)
             {
 
+                bool wrapped{false};
+
                 // compute substr_len size
                 if(line_text[line_ix].size() - substr_pos > line_width)
                 {
                     // remaining contents in line too big to fix, set
                     // substring length to maximum size
                     substr_len = line_width;
+
+                    wrapped = true;
                 }
                 else
                 {
@@ -147,29 +151,54 @@ class CharMatrix
                 // TODO: remove variable next_line
                 // optimize out
                 std::string next_line{line_text[line_ix].substr(substr_pos, substr_len)};
-                std::cout << next_line << std::endl;
+                //std::cout << next_line << std::endl;
                 _matrix_.emplace_back(next_line);
                 
                 // cursor
-                if(current_col + substr_len <= cursor_col)
+                //if(current_col + substr_len > cursor_col)
+                //{
+                //    // set cursor x position
+                //    // only if the current line is the cursor line
+                //    if(current_line == cursor_line)
+                //    {
+                //        _cursor_x_ = cursor_col - current_col;
+                //    }
+                //    else
+                //    {
+                //        
+                //    }
+                //}
+                //else
+                //{
+                //    // line was wrapped, increment cursor y position
+                //    ++ _cursor_y_;
+                //}
+                
+
+                // if current line, set cursor x position
+                if(current_line == cursor_line)
                 {
-                    // set cursor x position
-                    // only if the current line is the cursor line
-                    if(current_line == cursor_line)
+                    // if cursor is within wrapped section
+                    if(substr_pos <= cursor_col && cursor_col <= substr_pos + substr_len)
                     {
-                        _cursor_x_ = cursor_col - current_col;
+                        _cursor_x_ = cursor_col - substr_pos;
                     }
+                }
+
+                if(wrapped == false)
+                {
                 }
                 else
                 {
                     // line was wrapped, increment cursor y position
                     ++ _cursor_y_;
                 }
-                
+
                 current_col += substr_len;
                 
 
-                if(substr_len == line_width)
+                //if(substr_len == line_width)
+                if(wrapped == true)
                 {
                     substr_pos += substr_len;
                     //substr_len = 0; // TODO: remove?
@@ -185,9 +214,13 @@ class CharMatrix
             if(line_ix + 1 < line_text.size())
             {
                 // TODO: this always = line_ix
+                if(current_line < cursor_line)
+                {
+                    ++ _cursor_y_;
+                }
+                
                 current_col = 0;
                 ++ current_line;
-                ++ _cursor_y_;
             }
 
         }

@@ -23,3 +23,8 @@ create a resources class with pointers / whatever to access "resources" eg the t
 color palette used in Window and FontTextureManager
 
 update Window and Textbox classes so that functionality from Window is hidden in Textbox. move all "movements/actions" such as UDLR, and other key presses from Window to Textbox (implemention hiding)
+
+
+debug pannel:
+
+new SDL window with text = VALUE debug pannels
