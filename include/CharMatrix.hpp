@@ -453,7 +453,7 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
         }
 
 
-        if(line_number_enabled)
+        if(line_number_enabled && line_ix + 1 < _matrix_.size())
         {
             ++ line_number;
 

@@ -232,14 +232,15 @@ bool Buffer::Delete(const std::size_t line, const std::size_t col)
     //_modified_ = true;
     //_not_saved_ = true;
 
+    // TODO: this is always true
     if(col > 0)
     {
-        //-- c_col; // decrement to erase correct character
 
         _modified_ = true;
         _not_saved_ = true;
 
-        _line_text_.at(line).erase(col, 1);
+        // decrement col to erase correct character
+        _line_text_.at(line).erase(col - 1, 1);
 
         // use at() here in case we did something wrong
         // when updating the cursor
