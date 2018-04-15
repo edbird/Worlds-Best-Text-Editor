@@ -289,7 +289,7 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
     // Testing purposes
     int overhang{_size_x_ % (texture_chars_size.at(' ').w)};
     SDL_Rect rect1{_pos_x_, _pos_y_, _size_x_ - overhang, _size_y_};
-    SDL_Rect rect2{_size_x_ - overhang, _pos_y_, _size_x_, _size_y_};
+    SDL_Rect rect2{_pos_x_ + _size_x_ - overhang, _pos_y_, overhang, _size_y_};
     SDL_SetRenderDrawColor(renderer, 0xCC, 0xCC, 0xCC, 0xFF);
     SDL_RenderFillRect(renderer, &rect1);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
