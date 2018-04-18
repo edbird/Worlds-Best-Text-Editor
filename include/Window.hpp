@@ -220,7 +220,11 @@ class Window
         bool quit{false};
         for(;;)
         {
-            
+
+            // TODO: correct delay time
+            SDL_Delay(500);
+
+
             // poll events
             SDL_Event event;
 

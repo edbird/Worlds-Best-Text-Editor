@@ -121,7 +121,7 @@ class Textbox
         // create character matrix object
         // TODO: this should be a long life object
         //CharMatrix cm(/*line_width,*/ _buffer_, _pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
-        _charmatrix_ptr_->Update(_buffer_);
+        _charmatrix_ptr_->Update(_buffer_, renderer, _timer_);
 
         //cm.Draw(renderer, _timer_);
         _charmatrix_ptr_->Draw(renderer, _timer_);
