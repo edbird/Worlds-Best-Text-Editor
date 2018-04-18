@@ -152,12 +152,9 @@ class CharMatrix
         _line_number_.clear();
         _line_number_.shrink_to_fit();
         
-        // TODO: this does not work if the line numbers are enabled!
         // cursor tracking
         Cursor::CursorPos_t cursor_line{_cursor_.GetPosLine()};
         Cursor::CursorPos_t cursor_col{_cursor_.GetPosCol()};
-        //Cursor::CursorPos_t current_line{0};
-        //Cursor::CursorPos_t current_col{0};
         _cursor_x_ = 0;
         _cursor_y_ = 0;
 
@@ -167,36 +164,19 @@ class CharMatrix
 
         // const reference to data structure
         const std::vector<std::string> &line_text{buffer.GetContainer()};
-        //std::size_t line_ix{0};
-        //std::size_t char_ix{0};
 
         // substring start position
         std::size_t substr_pos{0};
         std::size_t substr_len{0};
 
-        //bool triggered{false};
-
         // iterate over all lines in buffer
         for(std::size_t line_ix{0}; line_ix < line_text.size(); ++ line_ix)
         {
         
-            // insert new blank string as we have started a copying new line
-            //_matrix_.emplace_back(std::string());
-            //std::string next_line;
             // set substring position to start
             // set length to zero
             substr_pos = 0;
             substr_len = 0;
-
-            // init _cursor_x_
-            //if(current_line == cursor_line)
-            ////Cursor::CursorPos_t cursor_count{0};
-            ////if(line_ix == cursor_line)
-            ////{
-                //_cursor_x_ = cursor_col;
-                ////_cursor_x_ = 0;
-                //cursor_count = 0;
-            ////}
 
             bool first{true};
             for(;;)
@@ -228,123 +208,6 @@ class CharMatrix
                 _line_number_.emplace_back(first);
                 first = false;
                 
-                // cursor
-                //if(current_col + substr_len > cursor_col)
-                //{
-                //    // set cursor x position
-                //    // only if the current line is the cursor line
-                //    if(current_line == cursor_line)
-                //    {
-                //        _cursor_x_ = cursor_col - current_col;
-                //    }
-                //    else
-                //    {
-                //        
-                //    }
-                //}
-                //else
-                //{
-                //    // line was wrapped, increment cursor y position
-                //    ++ _cursor_y_;
-                //}
-                
-
-                
-                // if current line, set cursor x position
-                //if(current_line == cursor_line)
-                ////if(line_ix == cursor_line)
-                ////{
-
-                    // set cursor x and y
-                    ////_cursor_y_ += cursor_col / _line_width_;
-                    ////_cursor_x_ += cursor_col % _line_width_;
-
-                    // if cursor is within wrapped section
-                    //if(substr_pos <= cursor_col && cursor_col <= substr_pos + substr_len)
-                    //{
-                    //    _cursor_x_ = cursor_col - substr_pos;
-                    //    std::cout << "cursor_x=" << _cursor_x_ << std::endl;
-                    //}
-                    // leq or lt?
-                    //else if(substr_pos + substr_len < cursor_col)
-                    //{
-                    //    ++ _cursor_y_;
-                    //}
-
-                    //if(_cursor_x_ - substr_len >= 0)
-                    //if(_cursor_x_ > substr_len) // && !triggered)
-                    ////if(cursor_count + substr_len < cursor_col)
-                    ////if(cursor_count + substr_len <= cursor_col) !!! might fix problem?
-                        // of cursor on wrong line at end
-                    ////{
-                        // TODO: this is a "bodge", fix it
-                        // problem: after this has been set correctly, if we are in the middle of a line
-                        // which wraps, if subsequent pieces of the line are such that
-                        // _cursor_x_ > substr_len
-                        // then the cursor moves again
-                        //triggered = true;
-
-                        //_cursor_x_ -= substr_len;
-                        //cursor_count += substr_len;
-                        ////++ _cursor_y_;
-                        //std::cout << "TRIG A" << std::endl;
-                        //std::cout << "substr_len=" << substr_len << std::endl;
-                    ////}
-                    ////else
-                    ////{
-
-                        // new
-                        ////if(cursor_count <= cursor_col && cursor_col < cursor_count + _line_width_)
-                        ////{
-                            ////_cursor_x_ = cursor_col - cursor_count;
-                        ////}
-
-                        /*
-                        if(cursor_col <= cursor_count + _line_width_)
-                        {
-                            if(cursor_count + substr_len >= cursor_col)
-                            {
-                                _cursor_x_ = cursor_col - cursor_count;
-                                //cursor_count += substr_len;
-
-                                l1s = "TRIG true";
-                            }
-                            else
-                            {
-                                // do nothing
-                            }
-                        }
-                        else
-                        {
-                            // do nothing?
-                        }
-                        */
-                    ////}
-                    // NOTE: substr_len here, but _line_width_ above
-                    ////cursor_count += substr_len;
-
-                    //current_col += substr_len;
-                ////}
-                //else if(current_line < cursor_line)
-                ////else if(line_ix < cursor_line)
-                ////{
-                    ////++ _cursor_y_;
-                    //std::cout << "TRIG B" << std::endl;
-
-                    ////_cursor_y_ += cursor_col / _line_width_ + 1;
-                ////}
-
-                //if(wrapped == false)
-                //{
-                //}
-                //else
-                //{
-                //    // line was wrapped, increment cursor y position
-                //    ++ _cursor_y_;
-                //}
-
-                //current_col += substr_len;
-                //++ current_line;
 
                 //if(substr_len == line_width)
                 if(wrapped == true)
@@ -360,7 +223,6 @@ class CharMatrix
 
             }
 
-            
 
             // set cursor x and y
             if(line_ix == cursor_line)
@@ -372,29 +234,6 @@ class CharMatrix
             {
                 _cursor_y_ += (line_text[line_ix].size() - 1) / _line_width_ + 1;
             }
-
-
-
-
-
-
-
-            //if(line_ix + 1 < line_text.size())
-            //{
-                // TODO: this always = line_ix
-                //if(current_line < cursor_line)
-                //{
-                //    ++ _cursor_y_;
-                //}
-                
-                //current_col = 0;
-                //++ current_line;
-            //}
-
-            // increment current_line every time line_ix is incremented
-            // they are the same variable, so remove current_line
-            //++ current_line;
-
         }
 
 
