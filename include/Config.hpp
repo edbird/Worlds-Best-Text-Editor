@@ -7,6 +7,9 @@
 #include <map>
 
 
+// TODO: change so that config stores all options as string
+// and then conversion is done afterwards or even manually by
+// the calling context
 
 class Config;
 

@@ -142,6 +142,8 @@ class Window
 
             _refresh_delay_ = std::floor((1000.0 / (double)config.GetInt("targetrefreshrate")));
             std::cout << "refreshdelay set to: " << _refresh_delay_ << std::endl;
+            // TODO: keep track of the rounded part and add it on to the next refresh delay to get
+            // a more accurage 60 Hz refresh
 
         }
 
@@ -426,8 +428,8 @@ class Window
 
 
                         // switch on editor mode first
-                        if(_editor_mode_ == EditorMode::NORMAL)
-                        {
+                        //if(_editor_mode_ == EditorMode::NORMAL)
+                        //{
 
                             // switch on modifier state second
                             // TODO: change to switch on key second, and then
@@ -442,7 +444,7 @@ class Window
                             // TODO: implement action key before returning to fix this
                             // TODO: need to completely re-think how this text editor should behave
                            
-                        }
+                        //}
 
                         
                         // process printable characters
@@ -456,9 +458,9 @@ class Window
                                 {
 
                                     // exit edit mode
-                                    case SDLK_ESCAPE:
-                                        _editor_mode_ = EditorMode::NORMAL;
-                                        break;
+                                    //case SDLK_ESCAPE:
+                                    //    _editor_mode_ = EditorMode::NORMAL;
+                                    //    break;
 
                                     // insert new line
                                     case SDLK_RETURN:
