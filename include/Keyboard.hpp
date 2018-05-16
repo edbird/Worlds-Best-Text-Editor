@@ -292,7 +292,7 @@ class Keyboard
 
     bool RightShiftState() const
     {
-        return _mode_key_.at(SDLK_RSHIFT);
+        return _mod_key_.at(SDLK_RSHIFT);
     }
 
     bool LeftCTRLState() const
@@ -302,7 +302,7 @@ class Keyboard
 
     bool RightCTRLState() const
     {
-        return _mode_key_.at(SDLK_RCTRL);
+        return _mod_key_.at(SDLK_RCTRL);
     }
 
     bool LeftAltState() const
@@ -312,7 +312,7 @@ class Keyboard
 
     bool RightAltState() const
     {
-        return _mode_key_.at(SDLK_RALT);
+        return _mod_key_.at(SDLK_RALT);
     }
 
     bool LeftGUIState() const
@@ -322,7 +322,7 @@ class Keyboard
 
     bool RightGUIState() const
     {
-        return _mode_key_.at(SDLK_RGUI);
+        return _mod_key_.at(SDLK_RGUI);
     }
 
     // TODO

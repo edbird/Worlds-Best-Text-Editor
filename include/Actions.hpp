@@ -2,9 +2,14 @@
 #define ACTIONS_HPP
 
 
+#include "Keyboard.hpp"
+
+
 #include <map>
 
+
 #include <SDL.h>
+
 
 // TODO: cleanup this file
 
@@ -82,7 +87,7 @@ class KeyboardModstate
     // CTRL, SHIFT, ALT, etc
     SDL_Keycode _keycode_;
 
-}
+};
 
 enum class Tristate
 {
@@ -95,7 +100,7 @@ enum class Bistate
 {
     FALSE,
     TRUE
-}
+};
 
 // Shift Control Alt Modifier State
 enum class SCAModState
@@ -105,8 +110,8 @@ enum class SCAModState
     LEFT, // left ON, right DONT_CARE (do not check right)
     RIGHT_ONLY, // left OFF, right ON
     RIGHT, // left DONT_CARE (do not check left), right ON
-    BOTH // / AND, // left ON, right ON (AND)
-    ANY // / OR, // any of left or right, if 1 or more is on then pass test (OR)
+    BOTH, // / AND, // left ON, right ON (AND)
+    ANY, // / OR, // any of left or right, if 1 or more is on then pass test (OR)
     // weird / unusual combinatiONs which are not typically used:
     NOT_LEFT, // left OFF, right DONT_CARE (do not check right)
     NOT_RIGHT, // left DONT_CARE (do not check left), right OFF
@@ -131,24 +136,49 @@ enum class SCAModState
     // 0 | 1  ||  1 | 0  ||  1 | 1 <- "== any" (at least one 1)
     // X | 0  ||  0 | X <- "Nany" (at least one 0)
 
-}
+};
+
+
+class CurrentKeyboardAction;
+
+
+// TODO : move back
+class Window;
+//class Buffer;
+class Textbox;
+typedef void (*FunctionPointer_t)(Window& , Textbox& );
+
+
+
 
 class ActionKey
 {
 
     friend
-    bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
+    bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &action_key_2);
 
 
     public:
 
-    ActionKey(SDL_Keycode keycode, SCAModState shift_state, SCAModState ctrl_state, SCAModState alt_state, SCAModState gui_state)
-        : _keycode_{keycode}
+    ActionKey(FunctionPointer_t function_pointer, SDL_Keycode keycode, SCAModState shift_state, SCAModState ctrl_state, SCAModState alt_state, SCAModState gui_state)
+        : _function_pointer_{function_pointer}
+        , _keycode_{keycode}
         , _shift_state_{shift_state}
         , _ctrl_state_{ctrl_state}
         , _alt_state_{alt_state}
         , _gui_state_{gui_state}
     {
+    }
+
+    // TODO: pass data in here to fire?
+    // execute function pointer
+    // this is called after the test with operator== is done
+    // TODO: could be auto-called by operator==
+    // TODO: or create new external function, TestAndFire()
+    // which calls operator==, and then fires if true
+    void Fire(Window& current_window, Textbox& current_textbox) const
+    {
+        (*_function_pointer_)(current_window, current_textbox);
     }
 
     private:
@@ -159,7 +189,7 @@ class ActionKey
     SDL_Keycode _keycode_;
 
     SCAModState _shift_state_;
-    SCAModState _ctrl;
+    SCAModState _ctrl_state_;
     SCAModState _alt_state_;
     SCAModState _gui_state_;
 
@@ -173,27 +203,40 @@ class ActionKey
     //Tristate _left_ctrl_;
     //Tristate _right_ctrl_;
 
+    // function pointer type definition
+    // Note: the function pointer needs to take the window as an argument, so
+    // that the editor mode can be changed, and it needs to take a buffer as
+    // an argument, so that the current buffer can be changed
+    // In future, the arguments this function pointer takes may be changed,
+    // depending on what access to what data is needed
+    //typedef void (*FunctionPointer_t)(Window& current_window, Buffer& current_buffer);
+    FunctionPointer_t _function_pointer_;
+
+    // TODO: do I need to store the "data" for the function pointer?
 
 
 };
 
-class Actions
-{
+
+
+//class Actions
+//{
 
 
 
-};
+//};
 
 
-class ActionKey2
+class CurrentKeyboardAction
 {
 
     friend
-    bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
+    bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &action_key_2);
+
 
     public:
 
-    ActionKey2(const Keyboard& keyboard)
+    CurrentKeyboardAction(const Keyboard& keyboard)
     {
         // initialize using keyboard,
         // sets the keycode to the last pressed keycode
@@ -229,7 +272,7 @@ class ActionKey2
         else _right_gui_state_ = Bistate::FALSE;
     }
 
-    //ActionKey2(const SDL_Keycode keycode, Bistate shift_state, Bistate ctrl_state, Bistate alt_state, Bistate gui_state)
+    //CurrentKeyboardAction(const SDL_Keycode keycode, Bistate shift_state, Bistate ctrl_state, Bistate alt_state, Bistate gui_state)
     //{
     //    _keycode_ = keycode;
     //
@@ -254,50 +297,70 @@ class ActionKey2
 };
 
 
-bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
+// TODO: this is the default one, swap code with below
+bool operator==(const CurrentKeyboardAction &action_key_2, const ActionKey &action_key)
 {
+    return action_key == action_key_2;
+}
+
+
+bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &action_key_2)
+{
+    // check keycode
+    std::cout << "keycode" << std::endl;
+    if(action_key._keycode_ != action_key_2._keycode_)
+    {
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // shift
     ////////////////////////////////////////////////////////////////////////////
+    std::cout << "shift" << std::endl;
     if(action_key._shift_state_ == SCAModState::NONE)
     {
+        std::cout << "NONE" << std::endl;
         // both must be false
-        if(!(action_key_2._left_shift_state_ == Bistate::FALSE && action_key_2._right_shift_state_ == Bistate::FALSE)
+        if(!(action_key_2._left_shift_state_ == Bistate::FALSE && action_key_2._right_shift_state_ == Bistate::FALSE))
         {
             return false;
         }
     }
     else if(action_key._shift_state_ == SCAModState::LEFT_ONLY)
     {
+        std::cout << "LEFT_ONLY" << std::endl;
         // left must be true, right must be false
-        if(!action_key_2._left_shift_state_ == Bistate::TRUE) return false;
-        if(!action_key_2._right_shift_state_ == Bistate::FALSE) return false;
+        if(!(action_key_2._left_shift_state_ == Bistate::TRUE)) return false;
+        if(!(action_key_2._right_shift_state_ == Bistate::FALSE)) return false;
     }
     else if(action_key._shift_state_ == SCAModState::LEFT)
     {
+        std::cout << "LEFT" << std::endl;
         // left must be true, don't check right
-        if(!action_key_2._left_shift_state_ == Bistate::TRUE)
+        if(!(action_key_2._left_shift_state_ == Bistate::TRUE))
         {
             return false;
         }
     }
     else if(action_key._shift_state_ == SCAModState::RIGHT_ONLY)
     {
+        std::cout << "RIGHT_ONLY" << std::endl;
         // left must be false, right must be true
-        if(!action_key_2._left_shift_state_ == Bistate::FALSE) return false;
-        if(!action_key_2._right_shift_state_ == Bistate::TRUE) return false;
+        if(!(action_key_2._left_shift_state_ == Bistate::FALSE)) return false;
+        if(!(action_key_2._right_shift_state_ == Bistate::TRUE)) return false;
     }
     else if(action_key._shift_state_ == SCAModState::RIGHT)
     {
+        std::cout << "RIGHT" << std::endl;
         // right must be true, don't check left
-        if(!action_key_2._right_shift_state_ == Bistate::TRUE)
+        if(!(action_key_2._right_shift_state_ == Bistate::TRUE))
         {
             return false;
         }
     }
     else if(action_key._shift_state_ == SCAModState::BOTH)
     {
+        std::cout << "BOTH" << std::endl;
         // both left and right must be true
         if(!(action_key_2._left_shift_state_ == Bistate::TRUE && action_key_2._right_shift_state_ == Bistate::TRUE))
         {
@@ -306,6 +369,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     }
     else if(action_key._shift_state_ == SCAModState::ANY)
     {
+        std::cout << "ANY" << std::endl;
         // either left or right must be true
         if(!(action_key_2._left_shift_state_ == Bistate::TRUE || action_key_2._right_shift_state_ == Bistate::TRUE))
         {
@@ -316,16 +380,18 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     }
     else if(action_key._shift_state_ == SCAModState::NOT_LEFT)
     {
+        std::cout << "NOT_LEFT" << std::endl;
         // left must be false, don't check right
-        if(!action_key_2._left_shift_state_ == Bistate::FALSE)
+        if(!(action_key_2._left_shift_state_ == Bistate::FALSE))
         {
             return false;
         }
     }
     else if(action_key._shift_state_ == SCAModState::NOT_RIGHT)
     {
+        std::cout << "NOT_RIGHT" << std::endl;
         // right must be false, don't check left
-        if(!action_key_2._right_shift_state_ == Bistate::FALSE)
+        if(!(action_key_2._right_shift_state_ == Bistate::FALSE))
         {
             return false;
         }
@@ -340,10 +406,11 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     ////////////////////////////////////////////////////////////////////////////
     // ctrl
     ////////////////////////////////////////////////////////////////////////////
+    std::cout << "ctrl" << std::endl;
     if(action_key._ctrl_state_ == SCAModState::NONE)
     {
         // both must be false
-        if(!(action_key_2._left_ctrl_state_ == Bistate::FALSE && action_key_2._right_ctrl_state_ == Bistate::FALSE)
+        if(!(action_key_2._left_ctrl_state_ == Bistate::FALSE && action_key_2._right_ctrl_state_ == Bistate::FALSE))
         {
             return false;
         }
@@ -351,13 +418,13 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._ctrl_state_ == SCAModState::LEFT_ONLY)
     {
         // left must be true, right must be false
-        if(!action_key_2._left_ctrl_state_ == Bistate::TRUE) return false;
-        if(!action_key_2._right_ctrl_state_ == Bistate::FALSE) return false;
+        if(!(action_key_2._left_ctrl_state_ == Bistate::TRUE)) return false;
+        if(!(action_key_2._right_ctrl_state_ == Bistate::FALSE)) return false;
     }
     else if(action_key._ctrl_state_ == SCAModState::LEFT)
     {
         // left must be true, don't check right
-        if(!action_key_2._left_ctrl_state_ == Bistate::TRUE)
+        if(!(action_key_2._left_ctrl_state_ == Bistate::TRUE))
         {
             return false;
         }
@@ -365,13 +432,13 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._ctrl_state_ == SCAModState::RIGHT_ONLY)
     {
         // left must be false, right must be true
-        if(!action_key_2._left_ctrl_state_ == Bistate::FALSE) return false;
-        if(!action_key_2._right_ctrl_state_ == Bistate::TRUE) return false;
+        if(!(action_key_2._left_ctrl_state_ == Bistate::FALSE)) return false;
+        if(!(action_key_2._right_ctrl_state_ == Bistate::TRUE)) return false;
     }
     else if(action_key._ctrl_state_ == SCAModState::RIGHT)
     {
         // right must be true, don't check left
-        if(!action_key_2._right_ctrl_state_ == Bistate::TRUE)
+        if(!(action_key_2._right_ctrl_state_ == Bistate::TRUE))
         {
             return false;
         }
@@ -397,7 +464,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._ctrl_state_ == SCAModState::NOT_LEFT)
     {
         // left must be false, don't check right
-        if(!action_key_2._left_ctrl_state_ == Bistate::FALSE)
+        if(!(action_key_2._left_ctrl_state_ == Bistate::FALSE))
         {
             return false;
         }
@@ -405,7 +472,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._ctrl_state_ == SCAModState::NOT_RIGHT)
     {
         // right must be false, don't check left
-        if(!action_key_2._right_ctrl_state_ == Bistate::FALSE)
+        if(!(action_key_2._right_ctrl_state_ == Bistate::FALSE))
         {
             return false;
         }
@@ -420,10 +487,11 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     ////////////////////////////////////////////////////////////////////////////
     // alt
     ////////////////////////////////////////////////////////////////////////////
+    std::cout << "alt" << std::endl;
     if(action_key._alt_state_ == SCAModState::NONE)
     {
         // both must be false
-        if(!(action_key_2._left_alt_state_ == Bistate::FALSE && action_key_2._right_alt_state_ == Bistate::FALSE)
+        if(!(action_key_2._left_alt_state_ == Bistate::FALSE && action_key_2._right_alt_state_ == Bistate::FALSE))
         {
             return false;
         }
@@ -431,13 +499,13 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._alt_state_ == SCAModState::LEFT_ONLY)
     {
         // left must be true, right must be false
-        if(!action_key_2._left_alt_state_ == Bistate::TRUE) return false;
-        if(!action_key_2._right_alt_state_ == Bistate::FALSE) return false;
+        if(!((action_key_2._left_alt_state_ == Bistate::TRUE))) return false;
+        if(!((action_key_2._right_alt_state_ == Bistate::FALSE))) return false;
     }
     else if(action_key._alt_state_ == SCAModState::LEFT)
     {
         // left must be true, don't check right
-        if(!action_key_2._left_alt_state_ == Bistate::TRUE)
+        if(!((action_key_2._left_alt_state_ == Bistate::TRUE)))
         {
             return false;
         }
@@ -445,13 +513,13 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._alt_state_ == SCAModState::RIGHT_ONLY)
     {
         // left must be false, right must be true
-        if(!action_key_2._left_alt_state_ == Bistate::FALSE) return false;
-        if(!action_key_2._right_alt_state_ == Bistate::TRUE) return false;
+        if(!((action_key_2._left_alt_state_ == Bistate::FALSE))) return false;
+        if(!((action_key_2._right_alt_state_ == Bistate::TRUE))) return false;
     }
     else if(action_key._alt_state_ == SCAModState::RIGHT)
     {
         // right must be true, don't check left
-        if(!action_key_2._right_alt_state_ == Bistate::TRUE)
+        if(!((action_key_2._right_alt_state_ == Bistate::TRUE)))
         {
             return false;
         }
@@ -459,7 +527,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._alt_state_ == SCAModState::BOTH)
     {
         // both left and right must be true
-        if(!(action_key_2._left_alt_state_ == Bistate::TRUE && action_key_2._right_alt_state_ == Bistate::TRUE))
+        if(!((action_key_2._left_alt_state_ == Bistate::TRUE && action_key_2._right_alt_state_ == Bistate::TRUE)))
         {
             return false;
         }
@@ -467,7 +535,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._alt_state_ == SCAModState::ANY)
     {
         // either left or right must be true
-        if(!(action_key_2._left_alt_state_ == Bistate::TRUE || action_key_2._right_alt_state_ == Bistate::TRUE))
+        if(!((action_key_2._left_alt_state_ == Bistate::TRUE || action_key_2._right_alt_state_ == Bistate::TRUE)))
         {
             return false;
         }
@@ -477,7 +545,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._alt_state_ == SCAModState::NOT_LEFT)
     {
         // left must be false, don't check right
-        if(!action_key_2._left_alt_state_ == Bistate::FALSE)
+        if(!((action_key_2._left_alt_state_ == Bistate::FALSE)))
         {
             return false;
         }
@@ -485,7 +553,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._alt_state_ == SCAModState::NOT_RIGHT)
     {
         // right must be false, don't check left
-        if(!action_key_2._right_alt_state_ == Bistate::FALSE)
+        if(!((action_key_2._right_alt_state_ == Bistate::FALSE)))
         {
             return false;
         }
@@ -500,10 +568,11 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     ////////////////////////////////////////////////////////////////////////////
     // gui
     ////////////////////////////////////////////////////////////////////////////
+    std::cout << "gui" << std::endl;
     if(action_key._gui_state_ == SCAModState::NONE)
     {
         // both must be false
-        if(!(action_key_2._left_gui_state_ == Bistate::FALSE && action_key_2._right_gui_state_ == Bistate::FALSE)
+        if(!((action_key_2._left_gui_state_ == Bistate::FALSE && action_key_2._right_gui_state_ == Bistate::FALSE)))
         {
             return false;
         }
@@ -511,13 +580,13 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._gui_state_ == SCAModState::LEFT_ONLY)
     {
         // left must be true, right must be false
-        if(!action_key_2._left_gui_state_ == Bistate::TRUE) return false;
-        if(!action_key_2._right_gui_state_ == Bistate::FALSE) return false;
+        if(!((action_key_2._left_gui_state_ == Bistate::TRUE))) return false;
+        if(!((action_key_2._right_gui_state_ == Bistate::FALSE))) return false;
     }
     else if(action_key._gui_state_ == SCAModState::LEFT)
     {
         // left must be true, don't check right
-        if(!action_key_2._left_gui_state_ == Bistate::TRUE)
+        if(!((action_key_2._left_gui_state_ == Bistate::TRUE)))
         {
             return false;
         }
@@ -525,13 +594,13 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._gui_state_ == SCAModState::RIGHT_ONLY)
     {
         // left must be false, right must be true
-        if(!action_key_2._left_gui_state_ == Bistate::FALSE) return false;
-        if(!action_key_2._right_gui_state_ == Bistate::TRUE) return false;
+        if(!(action_key_2._left_gui_state_ == Bistate::FALSE)) return false;
+        if(!(action_key_2._right_gui_state_ == Bistate::TRUE)) return false;
     }
     else if(action_key._gui_state_ == SCAModState::RIGHT)
     {
         // right must be true, don't check left
-        if(!action_key_2._right_gui_state_ == Bistate::TRUE)
+        if(!(action_key_2._right_gui_state_ == Bistate::TRUE))
         {
             return false;
         }
@@ -557,7 +626,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._gui_state_ == SCAModState::NOT_LEFT)
     {
         // left must be false, don't check right
-        if(!action_key_2._left_gui_state_ == Bistate::FALSE)
+        if(!(action_key_2._left_gui_state_ == Bistate::FALSE))
         {
             return false;
         }
@@ -565,7 +634,7 @@ bool operator==(const ActionKey &action_key, const ActionKey2 &action_key_2);
     else if(action_key._gui_state_ == SCAModState::NOT_RIGHT)
     {
         // right must be false, don't check left
-        if(!action_key_2._right_gui_state_ == Bistate::FALSE)
+        if(!(action_key_2._right_gui_state_ == Bistate::FALSE))
         {
             return false;
         }

@@ -7,6 +7,7 @@
 
 
 
+#include "Actions.hpp"
 
 #include "Config.hpp"
 #include "FontTextureManager.hpp"
@@ -42,8 +43,20 @@ enum class EditorEditMode
 };
 
 
+
+
+
+
+void thefunctiontocall(Window&, Textbox&);
+
+
+
 class Window
 {
+
+    friend
+    void thefunctiontocall(Window&, Textbox&);
+
 
     public:
 
@@ -266,8 +279,32 @@ class Window
                     const bool MOD_CTRL{_keyboard_.CTRLState()};
                     const bool MOD_ALT{_keyboard_.AltState()};
                     const bool MOD_GUI{_keyboard_.GUIState()};
-                    const bool MOD_LSHIFT{_keyboard_.LShiftState()};
+                    const bool MOD_LSHIFT{_keyboard_.LeftShiftState()};
                     const bool MOD_NONE{!_keyboard_.ModState()};
+
+                    // store the current key press and keyboard modifier states
+                    // in an ActionKey2 object
+                    CurrentKeyboardAction current_keyboard_action(_keyboard_);
+
+                    // this ActionKey is the object we check the above against
+                    // this action for key "e"
+                    // with NO shift state,
+                    // with NO ctrl state,
+                    // with NO alt state,
+                    // with NO gui state
+                    ActionKey action_key_enter_edit_mode(thefunctiontocall, SDLK_e, SCAModState::NONE, SCAModState::NONE, SCAModState::NONE, SCAModState::NONE);
+
+                    if(action_key_enter_edit_mode == current_keyboard_action)
+                    {
+                        std::cout << "equal" << std::endl;
+                        // "e" was pressed with NO MODS
+                        //if(_editor_mode_ == EditorMode::NORMAL)
+                        //{
+                        //    _editor_mode_ = EditorMode::EDIT;
+                        //}
+                        action_key_enter_edit_mode.Fire(*this, *_textbox_ptr_);
+                    }
+                    else std::cout << "not equal" << std::endl;
 
                     // process any keys which do not care about the editor mode
                     if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
@@ -369,13 +406,15 @@ class Window
                                 break;
 
                             // enter insert (EDIT) mode
-                            case SDLK_e: // E = edit
+                            /*
+                               case SDLK_e: // E = edit
                                 if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                                 {
                                     // normal mode -> edit mode action
                                     _editor_mode_ = EditorMode::EDIT;
                                 }
                                 break;
+                            */
                             
                             default:
                             //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
@@ -653,5 +692,26 @@ class Window
     EditorMode _editor_mode_;
 
 };
+
+
+
+
+
+
+// define a function to call here, because this is a convenient place to put it
+// until I find somewhere to move it
+// TODO
+void thefunctiontocall(Window& current_window, Textbox& current_textbox)
+{
+    if(current_window._editor_mode_ == EditorMode::NORMAL)
+    {
+        current_window._editor_mode_ = EditorMode::EDIT;
+    }
+}
+
+
+
+
+
 
 #endif
