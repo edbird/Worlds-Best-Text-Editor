@@ -2,7 +2,7 @@
 #define CHARMATRIX_HPP
 
 
-#include "Label.hpp"
+//#include "Label.hpp"
 #include "Buffer.hpp"
 
 
@@ -238,10 +238,12 @@ class CharMatrix
 
 
         // print debug labels
-        std::stringstream l1ss(l1s);
-        Label l1(l1ss.str(), _ftm_);
-        l1.SetPosition(350, 100);
-        l1.Draw(renderer, timer);
+        // note: removed this label, however label needs to be added to
+        // the git tracker on my other computer
+        //std::stringstream l1ss(l1s);
+        //Label l1(l1ss.str(), _ftm_);
+        //l1.SetPosition(350, 100);
+        //l1.Draw(renderer, timer);
 
 
     }
