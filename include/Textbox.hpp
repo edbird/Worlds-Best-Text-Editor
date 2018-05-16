@@ -12,9 +12,9 @@ class Textbox
     Textbox(const Config& config, const FontTextureManager& ftm)
         : _config_{config}
         , _ftm_{ftm}
-        , _size_x_{30}
+        , _size_x_{300}
         , _size_y_{300}
-        , _pos_x_{100} // TODO: test with/out line number
+        , _pos_x_{0} // TODO: test with/out line number
         , _pos_y_{0}
         , _line_text_first_line_{0}
     {
