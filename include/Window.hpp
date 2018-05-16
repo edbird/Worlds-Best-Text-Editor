@@ -48,9 +48,9 @@ enum class EditorEditMode
 
 
 // TODO: remove Textbox& by accessing textbox through Window&
-void fc_enter_edit_mode(Window&, Textbox&);
-void fc_quit_request(Window&, Textbox&);
-void fc_quit_force(Window&, Textbox&);
+void fc_enter_edit_mode(Window&);
+void fc_quit_request(Window&);
+void fc_quit_force(Window&);
 
 
 
@@ -58,9 +58,9 @@ class Window
 {
 
     // list of callback functions
-    friend void fc_enter_edit_mode(Window&, Textbox&);
-    friend void fc_quit_request(Window&, Textbox&);
-    friend void fc_quit_force(Window&, Textbox&);
+    friend void fc_enter_edit_mode(Window&);
+    friend void fc_quit_request(Window&);
+    friend void fc_quit_force(Window&);
 
 
     public:
@@ -325,7 +325,7 @@ class Window
                     {
                         if(current_keyboard_action == **it)
                         {
-                            (*it)->Fire(*this, *_textbox_ptr_);
+                            (*it)->Fire(*this);
                             fired = true;
                             break;
                         }
@@ -746,7 +746,7 @@ class Window
 // define a function to call here, because this is a convenient place to put it
 // until I find somewhere to move it
 // TODO
-void fc_enter_edit_mode(Window& current_window, Textbox& current_textbox)
+void fc_enter_edit_mode(Window& current_window)
 {
     if(current_window._editor_mode_ == EditorMode::NORMAL)
     {
@@ -757,11 +757,11 @@ void fc_enter_edit_mode(Window& current_window, Textbox& current_textbox)
 
 // TODO: this won't work for multiple textboxes,
 // in addition, current_textbox is accessable from current_window
-void fc_quit_request(Window& current_window, Textbox& current_textbox)
+void fc_quit_request(Window& current_window)
 {
     //quit_action
     // quit request action
-    if(current_textbox.GetBuffer().NotSaved())
+    if(current_window._textbox_ptr_->GetBuffer().NotSaved())
     {
         std::cout << "The buffer is not saved, cannot quit" << std::endl;
         std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
@@ -777,7 +777,7 @@ void fc_quit_request(Window& current_window, Textbox& current_textbox)
 
 
 // CTRL + SHIFT + Q -> immediate quit, without save
-void fc_quit_force(Window& current_window, Textbox& current_textbox)
+void fc_quit_force(Window& current_window)
 {
     current_window._quit_ = true;
 }
