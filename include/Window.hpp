@@ -47,21 +47,27 @@ enum class EditorEditMode
 
 
 
-void thefunctiontocall(Window&, Textbox&);
+// TODO: remove Textbox& by accessing textbox through Window&
+void fc_enter_edit_mode(Window&, Textbox&);
+void fc_quit_request(Window&, Textbox&);
+void fc_quit_force(Window&, Textbox&);
 
 
 
 class Window
 {
 
-    friend
-    void thefunctiontocall(Window&, Textbox&);
+    // list of callback functions
+    friend void fc_enter_edit_mode(Window&, Textbox&);
+    friend void fc_quit_request(Window&, Textbox&);
+    friend void fc_quit_force(Window&, Textbox&);
 
 
     public:
 
     Window(const Config& config, const TTF_Font* const font)
-        : _window_(nullptr, SDL_DestroyWindow)
+        : _quit_{false}
+        , _window_(nullptr, SDL_DestroyWindow)
         , _surface_{nullptr}
         //, _font_{font}
         , _editor_mode_{EditorMode::NORMAL} // TODO: config file default mode
@@ -238,7 +244,7 @@ class Window
         // these functions modify the buffer as they should
 
 
-        bool quit{false};
+        //bool quit{false};
         for(;;)
         {
 
@@ -255,6 +261,8 @@ class Window
                 // send data to Keyboard class
                 _keyboard_.ProcessEvent(event);
 
+                // TODO: what to do about this thing? it is not a keyboard action!
+                // but functionality is the same
                 // user request quit
                 if(event.type == SDL_QUIT)
                 {
@@ -264,7 +272,8 @@ class Window
                     }
                     else
                     {
-                        quit = true;
+                        //quit = true;
+                        _quit_ = true;
                     }
                 }
 
@@ -292,19 +301,50 @@ class Window
                     // with NO ctrl state,
                     // with NO alt state,
                     // with NO gui state
-                    ActionKey action_key_enter_edit_mode(thefunctiontocall, SDLK_e, SCAModState::NONE, SCAModState::NONE, SCAModState::NONE, SCAModState::NONE);
 
-                    if(action_key_enter_edit_mode == current_keyboard_action)
+                    // e
+                    ActionKey ak_enter_edit_mode(fc_enter_edit_mode, SDLK_e);
+                    // TODO: change from fixed SDLK_* keys to variables, which can be changed in config?
+                    // need to check how the key maps worked to figure out what to do here
+
+                    // ctrl q
+                    ActionKey ak_quit_request(fc_quit_request, SDLK_q, SCAModState::NONE, SCAModState::ANY);
+
+                    // ctrl shift q
+                    ActionKey ak_quit_force(fc_quit_force, SDLK_q, SCAModState::ANY, SCAModState::ANY);
+
+                    // vector of all action keys
+                    std::vector<ActionKey*> akv;
+                    akv.push_back(&ak_enter_edit_mode);
+                    akv.push_back(&ak_quit_request);
+                    akv.push_back(&ak_quit_force);
+
+                    bool fired{false};
+                    std::vector<ActionKey*>::iterator it{akv.begin()};
+                    for(; it != akv.end(); ++ it)
                     {
-                        std::cout << "equal" << std::endl;
+                        if(current_keyboard_action == **it)
+                        {
+                            (*it)->Fire(*this, *_textbox_ptr_);
+                            fired = true;
+                            break;
+                        }
+                    }
+
+                    //if(ak_enter_edit_mode == current_keyboard_action)
+                    //{
+                    //    std::cout << "equal" << std::endl;
                         // "e" was pressed with NO MODS
                         //if(_editor_mode_ == EditorMode::NORMAL)
                         //{
                         //    _editor_mode_ = EditorMode::EDIT;
                         //}
-                        action_key_enter_edit_mode.Fire(*this, *_textbox_ptr_);
-                    }
-                    else std::cout << "not equal" << std::endl;
+                    //    ak_enter_edit_mode.Fire(*this, *_textbox_ptr_);
+                    //}
+                    //else std::cout << "not equal" << std::endl;
+
+                    if(!fired)
+                    {
 
                     // process any keys which do not care about the editor mode
                     if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
@@ -360,6 +400,7 @@ class Window
                         {
 
                             // CTRL-Q: quit action
+                            /*
                             case SDLK_q:
                                 if(MOD_CTRL)
                                 {
@@ -384,6 +425,7 @@ class Window
                                     }
                                 }
                                 break;
+                            */
 
                             // CTRL-S: save action
                             case SDLK_s:
@@ -571,7 +613,7 @@ class Window
                             //}
                         }
                     }
-
+                    } // if !fired
 
 
                     // print buffer for debug
@@ -584,7 +626,7 @@ class Window
             draw_window();
             
                                 
-            if(quit == true) break;
+            if(_quit_ == true) break;
 
 
             //SDL_Delay(500);
@@ -635,6 +677,9 @@ class Window
         SDL_RenderPresent(_renderer_);
     }
 
+    bool _quit_;
+
+    // TODO: make default variables as consts
     const int32_t _WIDTH_{600};
     const int32_t _HEIGHT_{400};
 
@@ -701,12 +746,40 @@ class Window
 // define a function to call here, because this is a convenient place to put it
 // until I find somewhere to move it
 // TODO
-void thefunctiontocall(Window& current_window, Textbox& current_textbox)
+void fc_enter_edit_mode(Window& current_window, Textbox& current_textbox)
 {
     if(current_window._editor_mode_ == EditorMode::NORMAL)
     {
         current_window._editor_mode_ = EditorMode::EDIT;
     }
+}
+
+
+// TODO: this won't work for multiple textboxes,
+// in addition, current_textbox is accessable from current_window
+void fc_quit_request(Window& current_window, Textbox& current_textbox)
+{
+    //quit_action
+    // quit request action
+    if(current_textbox.GetBuffer().NotSaved())
+    {
+        std::cout << "The buffer is not saved, cannot quit" << std::endl;
+        std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
+        // TODO: message above should be a variable, as user may
+        // change key combination
+        // TODO: better interactive error message here
+    }
+    else
+    {
+        current_window._quit_ = true;
+    }
+}
+
+
+// CTRL + SHIFT + Q -> immediate quit, without save
+void fc_quit_force(Window& current_window, Textbox& current_textbox)
+{
+    current_window._quit_ = true;
 }
 
 
