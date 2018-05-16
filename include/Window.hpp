@@ -269,24 +269,69 @@ class Window
                     const bool MOD_LSHIFT{_keyboard_.LShiftState()};
                     const bool MOD_NONE{!_keyboard_.ModState()};
 
+                    // process any keys which do not care about the editor mode
+                    if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
+                    {
+
+                        // Note: These keys do not appear anywhere else, in either
+                        // of the EditorMode if statements, so they can safely be
+                        // processed here (no chance of triggering 2 different
+                        // actions)
+                        switch(event.key.keysym.sym)
+                        {
+                            // movement keys
+                            case SDLK_UP:
+                                _textbox_ptr_->CursorUp();        
+                                break;
+
+
+                            case SDLK_DOWN:
+                                _textbox_ptr_->CursorDown();
+                                break;
+
+
+                            case SDLK_LEFT:
+                                _textbox_ptr_->CursorLeft();
+                                break;
+
+
+                            case SDLK_RIGHT:
+                                _textbox_ptr_->CursorRight();
+                                break;
+
+                        }
+                    }
+
+
+                    // switch on editor mode first
                     if(_editor_mode_ == EditorMode::NORMAL)
                     {
 
-                        if(MOD_CTRL)
-                        {
+                        // switch on modifier state second
+                        // TODO: change to switch on key second, and then
+                        // mod state third
+                        // NOTE: may not be required as new "action key"
+                        // is to be implemented
+                        //if(MOD_CTRL)
                             // process control keys
+                        // NOTE: done [+]
 
-                            switch(event.key.keysym.sym)
-                            {
+                        // TODO: this should not depend on the editor mode!
+                        // TODO: implement action key before returning to fix this
+                        // TODO: need to completely re-think how this text editor should behave
+                        switch(event.key.keysym.sym)
+                        {
 
-                                // CTRL-Q: quit action
-                                case SDLK_q:
-                                    if(MOD_CTRL && MOD_SHIFT)
+                            // CTRL-Q: quit action
+                            case SDLK_q:
+                                if(MOD_CTRL)
+                                {
+                                    if(MOD_SHIFT)
                                     {
+                                        // CTRL + SHIFT + Q -> immediate quit, without save
                                         quit = true;
-                                        break;
                                     }
-                                    if(MOD_CTRL) // not needed
+                                    else
                                     {
                                         //quit_action
                                         if(_textbox_ptr_->GetBuffer().NotSaved())
@@ -300,56 +345,48 @@ class Window
                                             quit = true;
                                         }
                                     }
-                                    break;
+                                }
+                                break;
 
-                                // CTRL-S: save action
-                                case SDLK_s:
-                                    if(MOD_CTRL) // not needed
-                                    {
-                                        //save_action
-                                        _textbox_ptr_->GetBuffer().Save("buffer.txt");
-                                        std::cout << "File " << "buffer.txt" << " written, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
-                                    }
-                                    break;
+                            // CTRL-S: save action
+                            case SDLK_s:
+                                if(MOD_CTRL)
+                                {
+                                    //save_action
+                                    _textbox_ptr_->GetBuffer().Save("buffer.txt");
+                                    std::cout << "File " << "buffer.txt" << " written, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
+                                }
+                                break;
 
-                                // CTRL-O: open action
-                                case SDLK_o:
-                                    if(MOD_CTRL) // not needed
-                                    {
-                                        //open_action
-                                        _textbox_ptr_->MutableBuffer().Open("buffer.txt");
-                                        std::cout << "File " << "buffer.txt" << " read, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
-                                    }
-                                    break;
+                            // CTRL-O: open action
+                            case SDLK_o:
+                                if(MOD_CTRL)
+                                {
+                                    //open_action
+                                    _textbox_ptr_->MutableBuffer().Open("buffer.txt");
+                                    std::cout << "File " << "buffer.txt" << " read, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
+                                }
+                                break;
 
-                                //default:
-                                //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
-                                //    break;
-                            }
-                    
+                            // enter insert (EDIT) mode
+                            case SDLK_e: // E = edit
+                                if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
+                                {
+                                    // normal mode -> edit mode action
+                                    _editor_mode_ = EditorMode::EDIT;
+                                }
+                                break;
+                            
+                            default:
+                            //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
+                                break;
+
                         }
-                        
-                        if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
-                        {
-                            switch(event.key.keysym.sym)
-                            {
-                                case SDLK_BACKSPACE:
-                                    // only move if the buffer could execute the backspace
-                                    // command; ie if a char was deleted
-                                    //if(_textbox_ptr_->BackspaceAtCursor() == true)
-                                    //{
-                                    //    std::cout << "moving cursor left" << std::endl;
-                                    //    _textbox_ptr_->CursorLeft();
-                                    //}
-                                    _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
-                                    // see Textbox.hpp for more details (implementation hiding)
-                                    break;
-                            }
-                        }
-                        
+
                     }
 
-                    if(_editor_mode_ == EditorMode::NORMAL || _editor_mode_ == EditorMode::EDIT)
+                    /*
+                    else if(_editor_mode_ == EditorMode::NORMAL || _editor_mode_ == EditorMode::EDIT)
                     {
 
                         if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
@@ -379,26 +416,12 @@ class Window
                             }
                         }
                     }
+                    */
 
-                    if(_editor_mode_ == EditorMode::NORMAL)
-                    {
-                        if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
-                        {
-                            switch(event.key.keysym.sym)
-                            {
-
-                                // enter insert (EDIT) mode
-                                case SDLK_e: // E = edit
-                                    _editor_mode_ = EditorMode::EDIT;
-                                    break;
-
-                            }
-                        }
-                    }
-                    
                     // process printable characters
                     // these either have shift or no modifier
-                    if(_editor_mode_ == EditorMode::EDIT)
+                    // also process ESC key for swap back to normal mode
+                    else if(_editor_mode_ == EditorMode::EDIT)
                     {
                         if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                         {
@@ -410,11 +433,41 @@ class Window
                                     _editor_mode_ = EditorMode::NORMAL;
                                     break;
 
-                                // inseert new line
+                                // insert new line
                                 case SDLK_RETURN:
                                     _textbox_ptr_->ReturnAtCursor();
                                     _textbox_ptr_->CursorCR();
                                     _textbox_ptr_->CursorDown();
+                                    break;
+
+                                default:
+                                    break;
+                                
+                            }
+                        }
+
+                        // backspace only works for NO MOD or SHIFT AND NOT CONTROL
+                        // NOTE: I am still not happy about the implementation of these mod keys
+                        // this states that we don't care about the WIN key for example!
+                        if(MOD_NONE || (MOD_SHIFT && !MOD_CTRL))
+                        {
+                            switch(event.key.keysym.sym)
+                            {
+
+                                // backspace
+                                case SDLK_BACKSPACE:
+                                    // only move if the buffer could execute the backspace
+                                    // command; ie if a char was deleted
+                                    //if(_textbox_ptr_->BackspaceAtCursor() == true)
+                                    //{
+                                    //    std::cout << "moving cursor left" << std::endl;
+                                    //    _textbox_ptr_->CursorLeft();
+                                    //}
+                                    _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
+                                    // see Textbox.hpp for more details (implementation hiding)
+                                    break;
+
+                                default:
                                     break;
 
                             }
