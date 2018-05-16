@@ -140,6 +140,9 @@ class Window
             // Reset SDL timer after load
             _timer_ = SDL_GetTicks();
 
+            _refresh_delay_ = std::floor((1000.0 / (double)config.GetInt("targetrefreshrate")));
+            std::cout << "refreshdelay set to: " << _refresh_delay_ << std::endl;
+
         }
 
         
@@ -559,9 +562,18 @@ class Window
 
     void draw_window()
     {
+
+        // sdl delay until time to draw
+        Uint32 current_time = SDL_GetTicks();
+        Uint32 elapsed_time{current_time - _timer_};
+        // 50 ms additional included
+        if(elapsed_time /*+ 50*/ < _refresh_delay_)
+        {
+            SDL_Delay(_refresh_delay_ - elapsed_time);
+        }
     
         // reset timer for cursor
-        _timer_ = SDL_GetTicks();
+        _timer_ = current_time; //SDL_GetTicks();
         
         // do graphics drawing
         //SDL_FillRect(_surface_, nullptr, COLOR_BACKGROUND);
@@ -631,6 +643,7 @@ class Window
 
 
     Uint32 _timer_;
+    Uint32 _refresh_delay_;
 
 
     // configuration options

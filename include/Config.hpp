@@ -270,6 +270,7 @@ class Config
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkdelay", ConfigOption<int>("cursorblinkdelay", 500, "set cursorblinkrate 500 # milliseconds")));
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("linenumber", ConfigOption<int>("linenumber", 0, "set linenumber 0 # false (off)")));
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("targetrefreshrate", ConfigOption<int>("targetrefreshrate", 60, "set targetrefreshrate 60 # 60 Hz")));
         //_config_float_option_map_.insert(std::map<const std::string, ConfigOption<double>>::value_type("")); // double not float
         
 

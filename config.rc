@@ -5,3 +5,4 @@ some nonsense that produces an error
 set linenumber 1 # TODO: would prefer "set linenumber" without the 1
 set maxmemory 512 # megabyte (-1 is no limit)
 set defaulteditormode NORMAL
+set targetrefreshrate 60 # 60 Hz target refresh rate
