@@ -49,8 +49,11 @@ enum class EditorEditMode
 
 // TODO: remove Textbox& by accessing textbox through Window&
 void fc_enter_edit_mode(Window&);
+void fc_exit_edit_mode(Window&);
 void fc_quit_request(Window&);
 void fc_quit_force(Window&);
+void fc_open(Window& current_window);
+void fc_save(Window& current_window);
 
 
 
@@ -59,8 +62,11 @@ class Window
 
     // list of callback functions
     friend void fc_enter_edit_mode(Window&);
+    friend void fc_exit_edit_mode(Window&);
     friend void fc_quit_request(Window&);
     friend void fc_quit_force(Window&);
+    friend void fc_open(Window& current_window);
+    friend void fc_save(Window& current_window);
 
 
     public:
@@ -302,10 +308,15 @@ class Window
                     // with NO alt state,
                     // with NO gui state
 
+                    // order: shift, ctrl, alt, gui
+
                     // e
                     ActionKey ak_enter_edit_mode(fc_enter_edit_mode, SDLK_e);
                     // TODO: change from fixed SDLK_* keys to variables, which can be changed in config?
                     // need to check how the key maps worked to figure out what to do here
+
+                    // esc
+                    ActionKey ak_exit_edit_mode(fc_exit_edit_mode, SDLK_ESCAPE);
 
                     // ctrl q
                     ActionKey ak_quit_request(fc_quit_request, SDLK_q, SCAModState::NONE, SCAModState::ANY);
@@ -313,21 +324,63 @@ class Window
                     // ctrl shift q
                     ActionKey ak_quit_force(fc_quit_force, SDLK_q, SCAModState::ANY, SCAModState::ANY);
 
+                    // ctrl s
+                    ActionKey ak_save(fc_save, SDLK_s, SCAModState::NONE, SCAModState::ANY);
+
+                    // ctrl o
+                    ActionKey ak_open(fc_save, SDLK_o, SCAModState::NONE, SCAModState::ANY);
+
+
+
+                    // TODO: move the action key vector definitions elsewhere
+                    // this is currently slow
+
                     // vector of all action keys
-                    std::vector<ActionKey*> akv;
-                    akv.push_back(&ak_enter_edit_mode);
-                    akv.push_back(&ak_quit_request);
-                    akv.push_back(&ak_quit_force);
+                    std::vector<std::pair<ActionKey*, EditorMode>> akv_editor_mode_specific;
+                    // this triggers for normal mode only
+                    akv_editor_mode_specific.push_back({&ak_enter_edit_mode, EditorMode::NORMAL});
+                    // this triggers for editor mode only
+                    akv_editor_mode_specific.push_back({&ak_exit_edit_mode, EditorMode::EDIT});
 
                     bool fired{false};
-                    std::vector<ActionKey*>::iterator it{akv.begin()};
-                    for(; it != akv.end(); ++ it)
+                    std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{akv_editor_mode_specific.begin()};
+                    for(; it != akv_editor_mode_specific.end(); ++ it)
                     {
-                        if(current_keyboard_action == **it)
+                        // check correct editor mode
+                        if(it->second == _editor_mode_)
                         {
-                            (*it)->Fire(*this);
-                            fired = true;
-                            break;
+                            // check keyboard action key matches
+                            if(current_keyboard_action == *(it->first))
+                            {
+                                it->first->Fire(*this);
+                                fired = true;
+                                break;
+                            }
+                        }
+                    }
+
+
+                    // vector of all action keys
+                    std::vector<ActionKey*> akv;
+                    // these trigger regardless of editor mode
+                    // or only for edit mode ?
+                    akv.push_back(&ak_quit_request);
+                    akv.push_back(&ak_quit_force);
+                    akv.push_back(&ak_save);
+                    akv.push_back(&ak_open);
+
+                    // iterate through akv
+                    if(!fired)
+                    {
+                        std::vector<ActionKey*>::iterator it{akv.begin()};
+                        for(; it != akv.end(); ++ it)
+                        {
+                            if(current_keyboard_action == **it)
+                            {
+                                (*it)->Fire(*this);
+                                fired = true;
+                                break;
+                            }
                         }
                     }
 
@@ -427,6 +480,7 @@ class Window
                                 break;
                             */
 
+                            /*
                             // CTRL-S: save action
                             case SDLK_s:
                                 if(MOD_CTRL)
@@ -446,6 +500,7 @@ class Window
                                     std::cout << "File " << "buffer.txt" << " read, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
                                 }
                                 break;
+                            */
 
                             // enter insert (EDIT) mode
                             /*
@@ -754,6 +809,15 @@ void fc_enter_edit_mode(Window& current_window)
     }
 }
 
+void fc_exit_edit_mode(Window& current_window)
+{
+    if(current_window._editor_mode_ == EditorMode::EDIT)
+    {
+        current_window._editor_mode_ = EditorMode::NORMAL;
+    }
+}
+
+
 
 // TODO: this won't work for multiple textboxes,
 // in addition, current_textbox is accessable from current_window
@@ -783,6 +847,29 @@ void fc_quit_force(Window& current_window)
 }
 
 
+// CTRL-S: save action
+void fc_save(Window& current_window)
+{
+    //save_action
+    current_window._textbox_ptr_->GetBuffer().Save("buffer.txt");
+    std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
+}
+
+
+// CTRL-O: open action
+void fc_open(Window& current_window)
+{
+    //open_action
+    if(current_window._textbox_ptr_->GetBuffer().NotSaved())
+    {
+        std::cout << "The buffer is not saved, cannot open" << std::endl;
+    }
+    else
+    {
+        current_window._textbox_ptr_->MutableBuffer().Open("buffer.txt");
+        std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
+    }
+}
 
 
 

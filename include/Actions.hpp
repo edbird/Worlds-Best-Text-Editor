@@ -268,10 +268,10 @@ class CurrentKeyboardAction
         if(keyboard.RightCTRLState()) _right_ctrl_state_ = Bistate::TRUE;
         else _right_ctrl_state_ = Bistate::FALSE;
 
-        if(keyboard.LeftShiftState()) _left_alt_state_ = Bistate::TRUE;
+        if(keyboard.LeftAltState()) _left_alt_state_ = Bistate::TRUE;
         else _left_alt_state_ = Bistate::FALSE;
 
-        if(keyboard.RightShiftState()) _right_alt_state_ = Bistate::TRUE;
+        if(keyboard.RightAltState()) _right_alt_state_ = Bistate::TRUE;
         else _right_alt_state_ = Bistate::FALSE;
 
         if(keyboard.LeftGUIState()) _left_gui_state_ = Bistate::TRUE;
@@ -316,7 +316,7 @@ bool operator==(const CurrentKeyboardAction &current_keyboard_action, const Acti
 bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &current_keyboard_action)
 {
     // check keycode
-    std::cout << "keycode" << std::endl;
+    //std::cout << "keycode" << std::endl;
     if(action_key._keycode_ != current_keyboard_action._keycode_)
     {
         return false;
@@ -328,7 +328,7 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     std::cout << "shift" << std::endl;
     if(action_key._shift_state_ == SCAModState::NONE)
     {
-        std::cout << "NONE" << std::endl;
+        //std::cout << "NONE" << std::endl;
         // both must be false
         if(!(current_keyboard_action._left_shift_state_ == Bistate::FALSE && current_keyboard_action._right_shift_state_ == Bistate::FALSE))
         {
@@ -337,14 +337,14 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     }
     else if(action_key._shift_state_ == SCAModState::LEFT_ONLY)
     {
-        std::cout << "LEFT_ONLY" << std::endl;
+        //std::cout << "LEFT_ONLY" << std::endl;
         // left must be true, right must be false
         if(!(current_keyboard_action._left_shift_state_ == Bistate::TRUE)) return false;
         if(!(current_keyboard_action._right_shift_state_ == Bistate::FALSE)) return false;
     }
     else if(action_key._shift_state_ == SCAModState::LEFT)
     {
-        std::cout << "LEFT" << std::endl;
+        //std::cout << "LEFT" << std::endl;
         // left must be true, don't check right
         if(!(current_keyboard_action._left_shift_state_ == Bistate::TRUE))
         {
@@ -353,14 +353,14 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     }
     else if(action_key._shift_state_ == SCAModState::RIGHT_ONLY)
     {
-        std::cout << "RIGHT_ONLY" << std::endl;
+        //std::cout << "RIGHT_ONLY" << std::endl;
         // left must be false, right must be true
         if(!(current_keyboard_action._left_shift_state_ == Bistate::FALSE)) return false;
         if(!(current_keyboard_action._right_shift_state_ == Bistate::TRUE)) return false;
     }
     else if(action_key._shift_state_ == SCAModState::RIGHT)
     {
-        std::cout << "RIGHT" << std::endl;
+        //std::cout << "RIGHT" << std::endl;
         // right must be true, don't check left
         if(!(current_keyboard_action._right_shift_state_ == Bistate::TRUE))
         {
@@ -369,7 +369,7 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     }
     else if(action_key._shift_state_ == SCAModState::BOTH)
     {
-        std::cout << "BOTH" << std::endl;
+        //std::cout << "BOTH" << std::endl;
         // both left and right must be true
         if(!(current_keyboard_action._left_shift_state_ == Bistate::TRUE && current_keyboard_action._right_shift_state_ == Bistate::TRUE))
         {
@@ -378,7 +378,7 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     }
     else if(action_key._shift_state_ == SCAModState::ANY)
     {
-        std::cout << "ANY" << std::endl;
+        //std::cout << "ANY" << std::endl;
         // either left or right must be true
         if(!(current_keyboard_action._left_shift_state_ == Bistate::TRUE || current_keyboard_action._right_shift_state_ == Bistate::TRUE))
         {
@@ -389,7 +389,7 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     }
     else if(action_key._shift_state_ == SCAModState::NOT_LEFT)
     {
-        std::cout << "NOT_LEFT" << std::endl;
+        //std::cout << "NOT_LEFT" << std::endl;
         // left must be false, don't check right
         if(!(current_keyboard_action._left_shift_state_ == Bistate::FALSE))
         {
@@ -398,7 +398,7 @@ bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &curren
     }
     else if(action_key._shift_state_ == SCAModState::NOT_RIGHT)
     {
-        std::cout << "NOT_RIGHT" << std::endl;
+        //std::cout << "NOT_RIGHT" << std::endl;
         // right must be false, don't check left
         if(!(current_keyboard_action._right_shift_state_ == Bistate::FALSE))
         {
