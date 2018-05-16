@@ -240,6 +240,12 @@ class Keyboard
         return 0;
     }
 
+    // get last pressed key
+    SDL_Keycode GetLastPressedKeycode() const
+    {
+        return _last_pressed_keycode_;
+    }
+
     // return the state of any of the modifier keys
     // does not include LOCK keys (nlock, clock, mode)
     bool ModState() const
@@ -279,9 +285,44 @@ class Keyboard
         return _mod_key_.at(SDLK_LGUI)   || _mod_key_.at(SDLK_RGUI);
     }
 
-    bool LShiftState() const
+    bool LeftShiftState() const
     {
         return _mod_key_.at(SDLK_LSHIFT);
+    }
+
+    bool RightShiftState() const
+    {
+        return _mode_key_.at(SDLK_RSHIFT);
+    }
+
+    bool LeftCTRLState() const
+    {
+        return _mod_key_.at(SDLK_LCTRL);
+    }
+
+    bool RightCTRLState() const
+    {
+        return _mode_key_.at(SDLK_RCTRL);
+    }
+
+    bool LeftAltState() const
+    {
+        return _mod_key_.at(SDLK_LALT);
+    }
+
+    bool RightAltState() const
+    {
+        return _mode_key_.at(SDLK_RALT);
+    }
+
+    bool LeftGUIState() const
+    {
+        return _mod_key_.at(SDLK_LGUI);
+    }
+
+    bool RightGUIState() const
+    {
+        return _mode_key_.at(SDLK_RGUI);
     }
 
     // TODO
