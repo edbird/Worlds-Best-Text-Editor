@@ -2,6 +2,11 @@
 #define SDLK_KEYMAP
 
 
+#include <map>
+
+#include <SDL.h>
+
+
 class SDLK_KeyMap
 {
 

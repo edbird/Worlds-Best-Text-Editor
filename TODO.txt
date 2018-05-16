@@ -28,3 +28,6 @@ update Window and Textbox classes so that functionality from Window is hidden in
 debug pannel:
 
 new SDL window with text = VALUE debug pannels
+
+2018-04-23:
+add a status bar, bottom left displays most recent status message such as "XX lines yanked"
