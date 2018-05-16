@@ -384,149 +384,18 @@ class Window
                         }
                     }
 
-                    //if(ak_enter_edit_mode == current_keyboard_action)
-                    //{
-                    //    std::cout << "equal" << std::endl;
-                        // "e" was pressed with NO MODS
-                        //if(_editor_mode_ == EditorMode::NORMAL)
-                        //{
-                        //    _editor_mode_ = EditorMode::EDIT;
-                        //}
-                    //    ak_enter_edit_mode.Fire(*this, *_textbox_ptr_);
-                    //}
-                    //else std::cout << "not equal" << std::endl;
-
+                    
                     if(!fired)
                     {
 
-                    // process any keys which do not care about the editor mode
-                    if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
-                    {
-
-                        // Note: These keys do not appear anywhere else, in either
-                        // of the EditorMode if statements, so they can safely be
-                        // processed here (no chance of triggering 2 different
-                        // actions)
-                        switch(event.key.keysym.sym)
-                        {
-                            // movement keys
-                            case SDLK_UP:
-                                _textbox_ptr_->CursorUp();        
-                                break;
-
-
-                            case SDLK_DOWN:
-                                _textbox_ptr_->CursorDown();
-                                break;
-
-
-                            case SDLK_LEFT:
-                                _textbox_ptr_->CursorLeft();
-                                break;
-
-
-                            case SDLK_RIGHT:
-                                _textbox_ptr_->CursorRight();
-                                break;
-
-                        }
-                    }
-
-
-                    // switch on editor mode first
-                    if(_editor_mode_ == EditorMode::NORMAL)
-                    {
-
-                        // switch on modifier state second
-                        // TODO: change to switch on key second, and then
-                        // mod state third
-                        // NOTE: may not be required as new "action key"
-                        // is to be implemented
-                        //if(MOD_CTRL)
-                            // process control keys
-                        // NOTE: done [+]
-
-                        // TODO: this should not depend on the editor mode!
-                        // TODO: implement action key before returning to fix this
-                        // TODO: need to completely re-think how this text editor should behave
-                        switch(event.key.keysym.sym)
-                        {
-
-                            // CTRL-Q: quit action
-                            /*
-                            case SDLK_q:
-                                if(MOD_CTRL)
-                                {
-                                    if(MOD_SHIFT)
-                                    {
-                                        // CTRL + SHIFT + Q -> immediate quit, without save
-                                        quit = true;
-                                    }
-                                    else
-                                    {
-                                        //quit_action
-                                        if(_textbox_ptr_->GetBuffer().NotSaved())
-                                        {
-                                            std::cout << "The buffer is not saved, cannot quit" << std::endl;
-                                            std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
-                                            // TODO: better interactive error message here
-                                        }
-                                        else
-                                        {
-                                            quit = true;
-                                        }
-                                    }
-                                }
-                                break;
-                            */
-
-                            /*
-                            // CTRL-S: save action
-                            case SDLK_s:
-                                if(MOD_CTRL)
-                                {
-                                    //save_action
-                                    _textbox_ptr_->GetBuffer().Save("buffer.txt");
-                                    std::cout << "File " << "buffer.txt" << " written, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
-                                }
-                                break;
-
-                            // CTRL-O: open action
-                            case SDLK_o:
-                                if(MOD_CTRL)
-                                {
-                                    //open_action
-                                    _textbox_ptr_->MutableBuffer().Open("buffer.txt");
-                                    std::cout << "File " << "buffer.txt" << " read, " << _textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
-                                }
-                                break;
-                            */
-
-                            // enter insert (EDIT) mode
-                            /*
-                               case SDLK_e: // E = edit
-                                if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
-                                {
-                                    // normal mode -> edit mode action
-                                    _editor_mode_ = EditorMode::EDIT;
-                                }
-                                break;
-                            */
-                            
-                            default:
-                            //    std::cerr << "Key: " << event.key.keysym.sym << " is not handled!" << std::endl;
-                                break;
-
-                        }
-
-                    }
-
-                    /*
-                    else if(_editor_mode_ == EditorMode::NORMAL || _editor_mode_ == EditorMode::EDIT)
-                    {
-
+                        // process any keys which do not care about the editor mode
                         if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                         {
+
+                            // Note: These keys do not appear anywhere else, in either
+                            // of the EditorMode if statements, so they can safely be
+                            // processed here (no chance of triggering 2 different
+                            // actions)
                             switch(event.key.keysym.sym)
                             {
                                 // movement keys
@@ -551,123 +420,103 @@ class Window
 
                             }
                         }
-                    }
-                    */
 
-                    // process printable characters
-                    // these either have shift or no modifier
-                    // also process ESC key for swap back to normal mode
-                    else if(_editor_mode_ == EditorMode::EDIT)
-                    {
-                        if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
+
+                        // switch on editor mode first
+                        if(_editor_mode_ == EditorMode::NORMAL)
                         {
-                            switch(event.key.keysym.sym)
-                            {
 
-                                // exit edit mode
-                                case SDLK_ESCAPE:
-                                    _editor_mode_ = EditorMode::NORMAL;
-                                    break;
+                            // switch on modifier state second
+                            // TODO: change to switch on key second, and then
+                            // mod state third
+                            // NOTE: may not be required as new "action key"
+                            // is to be implemented
+                            //if(MOD_CTRL)
+                                // process control keys
+                            // NOTE: done [+]
 
-                                // insert new line
-                                case SDLK_RETURN:
-                                    _textbox_ptr_->ReturnAtCursor();
-                                    _textbox_ptr_->CursorCR();
-                                    _textbox_ptr_->CursorDown();
-                                    break;
-
-                                default:
-                                    break;
-                                
-                            }
+                            // TODO: this should not depend on the editor mode!
+                            // TODO: implement action key before returning to fix this
+                            // TODO: need to completely re-think how this text editor should behave
+                           
                         }
 
-                        // backspace only works for NO MOD or SHIFT AND NOT CONTROL
-                        // NOTE: I am still not happy about the implementation of these mod keys
-                        // this states that we don't care about the WIN key for example!
-                        if(MOD_NONE || (MOD_SHIFT && !MOD_CTRL))
+                        
+                        // process printable characters
+                        // these either have shift or no modifier
+                        // also process ESC key for swap back to normal mode
+                        else if(_editor_mode_ == EditorMode::EDIT)
                         {
-                            switch(event.key.keysym.sym)
+                            if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                             {
+                                switch(event.key.keysym.sym)
+                                {
 
-                                // backspace
-                                case SDLK_BACKSPACE:
-                                    // only move if the buffer could execute the backspace
-                                    // command; ie if a char was deleted
-                                    //if(_textbox_ptr_->BackspaceAtCursor() == true)
-                                    //{
-                                    //    std::cout << "moving cursor left" << std::endl;
-                                    //    _textbox_ptr_->CursorLeft();
-                                    //}
-                                    _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
-                                    // see Textbox.hpp for more details (implementation hiding)
-                                    break;
+                                    // exit edit mode
+                                    case SDLK_ESCAPE:
+                                        _editor_mode_ = EditorMode::NORMAL;
+                                        break;
 
-                                default:
-                                    break;
+                                    // insert new line
+                                    case SDLK_RETURN:
+                                        _textbox_ptr_->ReturnAtCursor();
+                                        _textbox_ptr_->CursorCR();
+                                        _textbox_ptr_->CursorDown();
+                                        break;
+
+                                    default:
+                                        break;
+                                    
+                                }
+                            }
+
+                            // backspace only works for NO MOD or SHIFT AND NOT CONTROL
+                            // NOTE: I am still not happy about the implementation of these mod keys
+                            // this states that we don't care about the WIN key for example!
+                            if(MOD_NONE || (MOD_SHIFT && !MOD_CTRL))
+                            {
+                                switch(event.key.keysym.sym)
+                                {
+
+                                    // backspace
+                                    case SDLK_BACKSPACE:
+                                        // only move if the buffer could execute the backspace
+                                        // command; ie if a char was deleted
+                                        //if(_textbox_ptr_->BackspaceAtCursor() == true)
+                                        //{
+                                        //    std::cout << "moving cursor left" << std::endl;
+                                        //    _textbox_ptr_->CursorLeft();
+                                        //}
+                                        _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
+                                        // see Textbox.hpp for more details (implementation hiding)
+                                        break;
+
+                                    default:
+                                        break;
+
+                                }
+                            }
+
+                            // TODO: does MOD_NONE imply !MOD_CTRL, if not it should?
+                            if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
+                            {
+                                // how the event loop works:
+                                // the most recently pressed/released key is always stored
+                                // in event.key.keysym.sym
+                                // The Keyboard class maintains the current state of the
+                                // keyboard, which could include several pressed keys.
+                                // The Keyboard class is also used to map a SDL_Keycode
+                                // to a printable character
+                                char ch;
+                                //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
+                                if(_keyboard_.GetChar(ch))
+                                {
+                                    _textbox_ptr_->InsertAtCursor(ch);
+                                    _textbox_ptr_->CursorRight();
+                                }
 
                             }
                         }
-
-                        // TODO: does MOD_NONE imply !MOD_CTRL, if not it should?
-                        if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
-                        {
-                            // how the event loop works:
-                            // the most recently pressed/released key is always stored
-                            // in event.key.keysym.sym
-                            // The Keyboard class maintains the current state of the
-                            // keyboard, which could include several pressed keys.
-                            // The Keyboard class is also used to map a SDL_Keycode
-                            // to a printable character
-                            char ch;
-                            //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
-                            if(_keyboard_.GetChar(ch))
-                            {
-                                _textbox_ptr_->InsertAtCursor(ch);
-                                _textbox_ptr_->CursorRight();
-                            }
-
-                            // use map to process printable characters
-                            // (insertable characters - any character
-                            // which can be put into the buffer)
-                            //char ch;
-                            //if(_keymap_.Find(event.key.keysym.sym, ch))
-                            //{
-                                //std::cout << "found char " << ch << std::endl;
-                                // anything here is "buffer insertable"
-                                //if(('a' <= ch) && (ch <= 'z'))
-                                //{
-                                    // detect shift press
-                                //    if(MOD_SHIFT)
-                                //    {
-                                //        std::cout << "shift" << std::endl;
-
-                                        // shift all caps letters
-                                //        const char CHAR_SHIFT_DIFF{'a' - 'A'};
-                                //        std::cout << (int)CHAR_SHIFT_DIFF << std::endl;
-                                //        const char shift_ch{ch - CHAR_SHIFT_DIFF};
-                                //        _buffer_.InsertAtCursor(shift_ch);
-                                //        _buffer_.InsertAtCursor(ch);
-                                //        _buffer_.CursorRight();
-                                //    }
-                                //    else if(MOD_NONE)
-                                //    {
-                                //        std::cout << "no shift" << std::endl;
-
-                                        // no modifier: insert unchanged character ch
-                                        //_buffer_.InsertAtCursor(ch);
-                                        //_buffer_.CursorRight();
-                                //    }
-                                //}
-                                //else
-                                //{
-                                    // if not an a-z character, do not shift, just insert
-                                //    _buffer_.InsertAtCursor(ch);
-                                //    _buffer_.CursorRight();
-                                //}
-                            //}
-                        }
-                    }
                     } // if !fired
 
 
