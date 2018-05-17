@@ -151,6 +151,8 @@ class CharMatrix
         _matrix_.shrink_to_fit();
         _line_number_.clear();
         _line_number_.shrink_to_fit();
+        _line_wrap_count_.clear();
+        _line_wrap_count_.shrink_to_fit();
         
         // cursor tracking
         Cursor::CursorPos_t cursor_line{_cursor_.GetPosLine()};
@@ -178,10 +180,18 @@ class CharMatrix
             substr_pos = 0;
             substr_len = 0;
 
+            // add a new wrap count to the wrap count vector
+            _line_wrap_count_.push_back(0);
+
+            // used to trigger line number drawing
+            // TODO: remove and use _line_wrap_count_ instead?
             bool first{true};
             for(;;)
             {
 
+                // true if the remaining text in the line needs to be
+                // wrapped again, in other words, this is the escape
+                // condition of the infinite loop
                 bool wrapped{false};
 
                 // compute substr_len size
@@ -192,6 +202,9 @@ class CharMatrix
                     substr_len = _line_width_;
 
                     wrapped = true;
+
+                    // increment wrap count vector last element
+                    ++ _line_wrap_count_.back();
                 }
                 else
                 {
@@ -257,7 +270,15 @@ class CharMatrix
     ////////////////////////////////////////////////////////////////////////////
 
     std::vector<std::string> _matrix_;
+    
+    // Store bool to signal when the line is "first"
+    // ie; a line number should be drawn
     std::vector<int> _line_number_;
+    
+    // Need to know: how many lines is each line?
+    // How many lines is each line split over?
+    std::vector<unsigned int> _line_wrap_count_;
+
     //Cursor &_cursor_;
     std::size_t _cursor_x_;
     std::size_t _cursor_y_;
@@ -429,14 +450,37 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
     // DRAWING
     ////////////////////////////////////////////////////////////////////////////
 
+    // Note: if a complete line cannot be drawn it is not drawn
+    // Note: Actually I think lines which are split are partially drawn!
+    // Note: Need to fix this behaviour
+    // TODO
+
+    // TODO what if line wrap count size is 0
+
+    // initial check to see if characters can be drawn
+    // break if drawing beyond the end of the textbox drawing area
+    const int c_w{texture_chars_size.at(' ').w};
+    const int c_h{texture_chars_size.at(' ').h};
+    //const int space_for_num_chars{_size_x_ / c_w - _line_number_width_};
+    const int this_line_num_lines{_line_wrap_count_.at(0)};
+    if(c_h * (0 + this_line_num_lines + 1) >= _pos_y_ + _size_y_)
+    {
+        //break;
+    }
+    else
+    {
     for(std::size_t line_ix{0}; line_ix < _matrix_.size(); ++ line_ix)
     {
-    
+
+
+        // check was here
+
+        // print characters on this line
         for(std::size_t char_ix{0}; char_ix < _matrix_[line_ix].size(); ++ char_ix)
         {
         
-            const int c_h{texture_chars_size.at(' ').h};
-            const int c_w{texture_chars_size.at(' ').w};
+            //const int c_w{texture_chars_size.at(' ').w};
+            //const int c_h{texture_chars_size.at(' ').h};
         
             const int x_off{c_w * char_ix};
             const int y_off{c_h * line_ix};
@@ -450,6 +494,18 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
             // set the texture pointer
             SDL_Texture *texture{texture_chars.at(ch)};
             print_char_texture(renderer, texture, src_rect, dst_rect);
+        }
+
+        
+        // check for each new line number to be printed
+        // break if drawing beyond the end of the textbox drawing area
+        //const int c_w{texture_chars_size.at(' ').w};
+        //const int c_h{texture_chars_size.at(' ').h};
+        //const int space_for_num_chars{_size_x_ / c_w - _line_number_width_};
+        const int this_line_num_lines{_line_wrap_count_.at(line_ix)};
+        if(c_h * ((line_ix + 1) + this_line_num_lines + 1) >= _pos_y_ + _size_y_)
+        {
+            break;
         }
 
 
@@ -471,13 +527,14 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
         
         
     }
+    }
 
     
     ////////////////////////////////////////////////////////////////////////
     // Print cursor
     ////////////////////////////////////////////////////////////////////////
-    const int c_h{texture_chars_size.at(' ').h};
-    const int c_w{texture_chars_size.at(' ').w};
+    //const int c_h{texture_chars_size.at(' ').h};
+    //const int c_w{texture_chars_size.at(' ').w};
     const int x_off{c_w * _cursor_x_};
     const int y_off{c_h * _cursor_y_};
     SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + _pos_x_ + x_off, _pos_y_ + y_off, c_w, c_h};
