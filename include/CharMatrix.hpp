@@ -462,8 +462,11 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
     const int c_w{texture_chars_size.at(' ').w};
     const int c_h{texture_chars_size.at(' ').h};
     //const int space_for_num_chars{_size_x_ / c_w - _line_number_width_};
-    const int this_line_num_lines{_line_wrap_count_.at(0)};
-    if(c_h * (0 + this_line_num_lines + 1) >= _pos_y_ + _size_y_)
+    std::size_t line_wrap_count_ix{0}; // index for _line_wrap_count_ vector
+    unsigned int line_wrap_count_jx{0}; // count with line_ix to know when
+    // this_line_num_lines needs to be changed because we are on a new "line"
+    int this_line_num_lines{_line_wrap_count_.at(line_wrap_count_ix)};
+    if(c_h * (0 + this_line_num_lines) >= _pos_y_ + _size_y_)
     {
         //break;
     }
@@ -496,17 +499,25 @@ void CharMatrix::Draw(SDL_Renderer *const renderer,
             print_char_texture(renderer, texture, src_rect, dst_rect);
         }
 
-        
-        // check for each new line number to be printed
-        // break if drawing beyond the end of the textbox drawing area
-        //const int c_w{texture_chars_size.at(' ').w};
-        //const int c_h{texture_chars_size.at(' ').h};
-        //const int space_for_num_chars{_size_x_ / c_w - _line_number_width_};
-        const int this_line_num_lines{_line_wrap_count_.at(line_ix)};
-        if(c_h * ((line_ix + 1) + this_line_num_lines + 1) >= _pos_y_ + _size_y_)
+        ++ line_wrap_count_jx;
+        if(line_wrap_count_jx == this_line_num_lines)
         {
-            break;
+            ++ line_wrap_count_ix;
+            this_line_num_lines = _line_wrap_count_.at(line_wrap_count_ix);
+            std::cout << "this_line_num_lines=" << this_line_num_lines << std::endl;
+
+            // check for each new line number to be printed
+            // break if drawing beyond the end of the textbox drawing area
+            //const int c_w{texture_chars_size.at(' ').w};
+            //const int c_h{texture_chars_size.at(' ').h};
+            //const int space_for_num_chars{_size_x_ / c_w - _line_number_width_};
+            //const int this_line_num_lines{_line_wrap_count_.at(line_wrap_count_ix)};
+            if(c_h * ((line_ix + 1) + this_line_num_lines) >= _pos_y_ + _size_y_)
+            {
+                break;
+            }
         }
+
 
 
         // TODO: this does not print line numbers correctly!
