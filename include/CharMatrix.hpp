@@ -126,7 +126,15 @@ class CharMatrix
     ////////////////////////////////////////////////////////////////////////////
 
     std::vector<std::string> _matrix_;
+    
+    // Store bool to signal when the line is "first"
+    // ie; a line number should be drawn
     std::vector<int> _line_number_;
+    
+    // Need to know: how many lines is each line?
+    // How many lines is each line split over?
+    std::vector<unsigned int> _line_wrap_count_;
+
     //Cursor &_cursor_;
     std::size_t _cursor_x_;
     std::size_t _cursor_y_;
@@ -151,7 +159,6 @@ class CharMatrix
     int _line_number_width_;
 
 };
-
 
 
 #endif

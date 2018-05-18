@@ -462,6 +462,7 @@ class Window
                         //else
                         if(_editor_mode_ == EditorMode::EDIT)
                         {
+
                             if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                             {
                                 switch(event.key.keysym.sym)
@@ -515,6 +516,7 @@ class Window
                             // TODO: does MOD_NONE imply !MOD_CTRL, if not it should?
                             if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
                             {
+
                                 // how the event loop works:
                                 // the most recently pressed/released key is always stored
                                 // in event.key.keysym.sym
