@@ -123,6 +123,9 @@ class Textbox
         //CharMatrix cm(/*line_width,*/ _buffer_, _pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
         _charmatrix_ptr_->Update(_buffer_, renderer, _timer_);
 
+        // set first line to draw from
+        _charmatrix_ptr_->SetFirstLine(_line_text_first_line_);
+
         //cm.Draw(renderer, _timer_);
         _charmatrix_ptr_->Draw(renderer, _timer_);
         
@@ -143,8 +146,13 @@ class Textbox
 
     private:
 
+    ////////////////////////////////////////////////////////////////////////////
+    // DATA MEMBERS
+    ////////////////////////////////////////////////////////////////////////////
+
 
     std::unique_ptr<Cursor> _cursor_;
+
     
     
     const Config& _config_;
@@ -165,6 +173,7 @@ class Textbox
     
 
     // first line of text to print
+    // first line to start printing from
     std::size_t _line_text_first_line_;
 
 };
@@ -310,6 +319,14 @@ void Textbox::CursorDown()
         std::cout << "cannot go down" << std::endl;
         // _line_ is the maximum line, cannot go down, do nothing
     }
+
+
+    // set the first line variable
+    if(_cursor_->GetPosLine() > 5) // TODO: 5 is a nonsense number
+    {
+        _line_text_first_line_ = _cursor_->GetPosLine() - 5;
+    }
+
 
     //if(_cursor_.GetPosLine() < _line_text_.size())
     //{

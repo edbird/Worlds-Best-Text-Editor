@@ -2,13 +2,7 @@
 #define WINDOW_HPP
 
 
-#include <SDL.h>
-#include <SDL_ttf.h>
-
-
-
 #include "Actions.hpp"
-
 #include "Config.hpp"
 #include "FontTextureManager.hpp"
 //#include "Buffer.hpp"
@@ -17,6 +11,10 @@
 #include "KeyMap.hpp"
 #include "Keyboard.hpp"
 #include "ColorPalette.hpp"
+
+
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 
 #include <iostream>
@@ -55,6 +53,9 @@ void fc_quit_force(Window&);
 void fc_open(Window& current_window);
 void fc_save(Window& current_window);
 
+// debug function
+void fc_print_buffer(Window& current_window);
+
 
 
 class Window
@@ -67,6 +68,7 @@ class Window
     friend void fc_quit_force(Window&);
     friend void fc_open(Window& current_window);
     friend void fc_save(Window& current_window);
+    friend void fc_print_buffer(Window& current_window);
 
 
     public:
@@ -335,6 +337,9 @@ class Window
                     // ctrl o
                     ActionKey ak_open(fc_save, SDLK_o, SCAModState::NONE, SCAModState::ANY);
 
+                    // F12
+                    ActionKey ak_print_buffer(fc_print_buffer, SDLK_F12, SCAModState::DONT_CARE, SCAModState::DONT_CARE);
+
 
 
                     // TODO: move the action key vector definitions elsewhere
@@ -357,6 +362,7 @@ class Window
                             // check keyboard action key matches
                             if(current_keyboard_action == *(it->first))
                             {
+                                std::cout << "FIRE" << std::endl;
                                 it->first->Fire(*this);
                                 fired = true;
                                 break;
@@ -373,6 +379,8 @@ class Window
                     akv.push_back(&ak_quit_force);
                     akv.push_back(&ak_save);
                     akv.push_back(&ak_open);
+                    akv.push_back(&ak_print_buffer);
+
 
                     // iterate through akv
                     if(!fired)
@@ -382,6 +390,7 @@ class Window
                         {
                             if(current_keyboard_action == **it)
                             {
+                                std::cout << "FIRE" << std::endl;
                                 (*it)->Fire(*this);
                                 fired = true;
                                 break;
@@ -450,7 +459,8 @@ class Window
                         // process printable characters
                         // these either have shift or no modifier
                         // also process ESC key for swap back to normal mode
-                        else if(_editor_mode_ == EditorMode::EDIT)
+                        //else
+                        if(_editor_mode_ == EditorMode::EDIT)
                         {
                             if((MOD_NONE && !MOD_SHIFT) && !MOD_CTRL)
                             {
@@ -516,6 +526,7 @@ class Window
                                 //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
                                 if(_keyboard_.GetChar(ch))
                                 {
+                                    std::cout << "insert: " << ch << std::endl;
                                     _textbox_ptr_->InsertAtCursor(ch);
                                     _textbox_ptr_->CursorRight();
                                 }
@@ -669,6 +680,7 @@ void fc_enter_edit_mode(Window& current_window)
 {
     if(current_window._editor_mode_ == EditorMode::NORMAL)
     {
+        std::cout << "EDIT" << std::endl;
         current_window._editor_mode_ = EditorMode::EDIT;
     }
 }
@@ -677,6 +689,7 @@ void fc_exit_edit_mode(Window& current_window)
 {
     if(current_window._editor_mode_ == EditorMode::EDIT)
     {
+        std::cout << "NORMAL" << std::endl;
         current_window._editor_mode_ = EditorMode::NORMAL;
     }
 }
@@ -735,6 +748,11 @@ void fc_open(Window& current_window)
     }
 }
 
+
+void fc_print_buffer(Window& current_window)
+{
+    std::cout << current_window._textbox_ptr_->GetBuffer().Get() << std::endl;
+}
 
 
 

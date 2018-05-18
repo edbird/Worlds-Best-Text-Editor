@@ -12,7 +12,7 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2TTF REQUIRED)
 include_directories(WorldsBestTextEditor include ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
 
-set(SOURCE_FILES src/main.cpp src/Buffer.cpp)
+set(SOURCE_FILES src/main.cpp src/Buffer.cpp src/CharMatrix.cpp)
 
 add_executable(WorldsBestTextEditor ${SOURCE_FILES})
 target_link_libraries(WorldsBestTextEditor ${SDL2_LIBRARIES} ${SDL2TTF_LIBRARY})

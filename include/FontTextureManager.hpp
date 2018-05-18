@@ -5,6 +5,10 @@
 #include "ColorPalette.hpp"
 
 
+#include <SDL_ttf.h>
+
+
+
 // store things such as the texture chars
 class FontTextureManager
 {
