@@ -279,7 +279,7 @@ class Window
                 // user request quit
                 if(event.type == SDL_QUIT)
                 {
-                    if(_textbox_ptr_->GetBuffer().NotSaved())
+                    if(_textbox_ptr_->NotSaved())
                     {
                         std::cout << "cannot quit, not saved" << std::endl;
                     }
@@ -606,6 +606,7 @@ class Window
 
         //Update screen
         SDL_RenderPresent(_renderer_);
+
     }
 
     bool _quit_;
@@ -704,7 +705,7 @@ void fc_quit_request(Window& current_window)
 {
     //quit_action
     // quit request action
-    if(current_window._textbox_ptr_->GetBuffer().NotSaved())
+    if(current_window._textbox_ptr_->NotSaved())
     {
         std::cout << "The buffer is not saved, cannot quit" << std::endl;
         std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
@@ -730,8 +731,8 @@ void fc_quit_force(Window& current_window)
 void fc_save(Window& current_window)
 {
     //save_action
-    current_window._textbox_ptr_->GetBuffer().Save("buffer.txt");
-    std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
+    current_window._textbox_ptr_->Save("buffer.txt");
+    std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
 }
 
 
@@ -739,21 +740,21 @@ void fc_save(Window& current_window)
 void fc_open(Window& current_window)
 {
     //open_action
-    if(current_window._textbox_ptr_->GetBuffer().NotSaved())
+    if(current_window._textbox_ptr_->NotSaved())
     {
         std::cout << "The buffer is not saved, cannot open" << std::endl;
     }
     else
     {
-        current_window._textbox_ptr_->MutableBuffer().Open("buffer.txt");
-        std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->GetBuffer().Size() << " bytes" << std::endl;
+        current_window._textbox_ptr_->Open("buffer.txt");
+        std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
     }
 }
 
 
 void fc_print_buffer(Window& current_window)
 {
-    std::cout << current_window._textbox_ptr_->GetBuffer().Get() << std::endl;
+    std::cout << current_window._textbox_ptr_->Get() << std::endl;
 }
 
 

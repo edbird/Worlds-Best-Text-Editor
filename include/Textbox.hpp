@@ -1,10 +1,19 @@
 #ifndef TEXTBOX_HPP
 #define TEXTBOX_HPP
 
-#include "Textbox.hpp"
-#include "CharMatrix.hpp"
+#include "Buffer.hpp"
+#include "FontTextureManager.hpp"
+//#include "CharMatrix.hpp"
 
-class Textbox
+
+#include <SDL_ttf.h>
+
+
+#include <string>
+#include <sstream>
+
+
+class Textbox : public Buffer
 {
 
     public:
@@ -16,7 +25,9 @@ class Textbox
         , _size_y_{300}
         , _pos_x_{0} // TODO: test with/out line number
         , _pos_y_{0}
-        , _line_text_first_line_{0}
+        //, _line_text_first_line_{0}
+        , _scroll_index_{0}
+        , _line_number_enabled_{false}
     {
         
         //const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
@@ -32,7 +43,20 @@ class Textbox
                                 // size however the cursor will be drawn at position 0
                                 // even though the buffer is not of size 1
        
-        _charmatrix_ptr_ = new CharMatrix(_pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
+        //_charmatrix_ptr_ = new CharMatrix(_pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
+        
+        
+        ////////////////////////////////////////////////////////////////////////////
+        // READ CONFIG
+        ////////////////////////////////////////////////////////////////////////////
+
+        //bool line_number_enabled{false};
+        //int line_number_width{0};
+        // Note: only 1 is true, any other integer is false
+        if(_config_.GetInt("linenumber") == 1)
+        {
+            _line_number_enabled_ = true;
+        }
 
     }
     
@@ -97,7 +121,7 @@ class Textbox
 
     // TODO: pass dst_rect by reference and modify within function
     // TODO: remove _texture_chars_ arguments
-    void print_line_number(const int line_number, const int line_number_width, SDL_Rect /*&*/dst_rect, SDL_Renderer *const _renderer_, const std::map<const char, SDL_Texture*>& _texture_chars_, const std::map<const char, SDL_Rect>& _texture_chars_size_);
+    void print_line_number(const int line_number, const int line_number_width, const unsigned int print_index_y, SDL_Renderer *const _renderer_);
     
 
 
@@ -109,10 +133,11 @@ class Textbox
     public:
     
     // TODO: the buffer object should know its own WIDTH and HEIGHT
-    void Draw(SDL_Renderer *const renderer, const Uint32 _timer_)
-    {
+    void Draw(SDL_Renderer *const renderer, const Uint32 timer);
+    
+    //{
         //const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
-        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+    //    const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
         
         // compute line width
         // TODO: can be done inside CharMatrix
@@ -121,27 +146,27 @@ class Textbox
         // create character matrix object
         // TODO: this should be a long life object
         //CharMatrix cm(/*line_width,*/ _buffer_, _pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
-        _charmatrix_ptr_->Update(_buffer_, renderer, _timer_);
+        //_charmatrix_ptr_->Update(_buffer_, renderer, _timer_);
 
         // set first line to draw from
-        _charmatrix_ptr_->SetFirstLine(_line_text_first_line_);
+        //_charmatrix_ptr_->SetFirstLine(_line_text_first_line_);
 
         //cm.Draw(renderer, _timer_);
-        _charmatrix_ptr_->Draw(renderer, _timer_);
+        //_charmatrix_ptr_->Draw(renderer, _timer_);
         
-    }
+    //}
     
     
     // get const buffer reference
-    const Buffer& GetBuffer() const
-    {
-        return _buffer_;
-    }
+    //const Buffer& GetBuffer() const
+    //{
+    //    return _buffer_;
+    //}
     
-    Buffer& MutableBuffer()
-    {
-        return _buffer_;
-    }
+    //Buffer& MutableBuffer()
+    //{
+    //    return _buffer_;
+    //}
     
 
     private:
@@ -151,16 +176,21 @@ class Textbox
     ////////////////////////////////////////////////////////////////////////////
 
 
+    // cursor
     std::unique_ptr<Cursor> _cursor_;
+    //std::size_t _cursor_x_;
+    //std::size_t _cursor_y_;
 
     
     
     const Config& _config_;
     const FontTextureManager& _ftm_;
+    
+    
 
-    CharMatrix *_charmatrix_ptr_;
+    //CharMatrix *_charmatrix_ptr_;
 
-    Buffer _buffer_;
+    //Buffer _buffer_;
 
     // size of buffer on screen (for drawing)
     int _size_x_;
@@ -171,10 +201,23 @@ class Textbox
     int _pos_y_;
     
     
+    /// Drawing specific members ///
+    
+    // break lines (wrap)
+    //std::vector<std::string> _matrix;
+    
+    //std::vector<int> _line_number_;
+    
+    //std::vector<unsigned int> _line_wrap_count_;
+    
+    
 
     // first line of text to print
     // first line to start printing from
-    std::size_t _line_text_first_line_;
+    //std::size_t _line_text_first_line_;
+    std::size_t _scroll_index_;
+    
+    bool _line_number_enabled_;
 
 };
 
@@ -209,212 +252,7 @@ Cursor::CursorPos_t Textbox::GetCursorCol() const
 */
 
 
-// TODO: should the buffer be responsible for setting the cursor
-// position or should the cursor be responsible for setting its own
-// bounds ?
-void Textbox::CursorLeft()
-{
-    //_cursor_->Left();
-    //_cursor_.RememberPosCol(); // TODO: can be done by call to left / right
-    //if(_col_ > 0)
-    if(_cursor_->GetPosCol() > 0)
-        _cursor_->Left();
-}
 
-
-void Textbox::CursorRight()
-{
-    const std::vector<std::string>& _line_text_{_buffer_.GetContainer()};
-
-    // TODO DEBUG
-    //if(_col_ < line_size)
-    if(_cursor_->GetPosCol() < _line_text_.at(_cursor_->GetPosLine()).size())
-        _cursor_->Right(); // TODO
-    //_cursor_.RememberPosCol(); // TODO: can be done by call to left / right
-}
-
-
-// TODO: remember target line position
-// TODO: config: set rememberlineposition
-void Textbox::CursorUp()
-{
-    const std::vector<std::string>& _line_text_{_buffer_.GetContainer()};
-    
-    if(_cursor_->GetPosLine() > 0)
-    {
-        std::size_t _line_size_{_line_text_.at(_cursor_->GetPosLine() - 1).size()};
-        Cursor::CursorPos_t _cursor_pos_{_cursor_->GetPosCol()};
-        Cursor::CursorPos_t _cursor_pos_target_{_cursor_->GetTargetCol()};
-        if(_cursor_pos_target_ > _line_size_)
-        {
-            // target position is too far along the line
-            // as the line is too short!
-            // check against the current cursor position
-            // rather than the target cursor position
-            // which is set whenever the user moves left / right
-            if(_cursor_pos_ > _line_size_)
-            {
-                _cursor_pos_ = _line_size_;
-            }
-            else
-            {
-                // _cursor_pos_ has the correct value
-                // don't do anything
-            }
-        }
-        else
-        {
-            // target position is ok:
-            // set the cursor position to be the target position
-            _cursor_pos_ = _cursor_pos_target_;
-        }
-        _cursor_->SetPos(_cursor_->GetPosLine() - 1, _cursor_pos_);
-    }
-    else
-    {
-        // _line_ is 0, do nothing
-    }
-    //_cursor_.Up();
-}
-
-
-void Textbox::CursorDown()
-{
-    const std::vector<std::string>& _line_text_{_buffer_.GetContainer()};
-    
-    std::cout << "cursor down" << std::endl;
-    if(_cursor_->GetPosLine() < _line_text_.size() - 1)
-    {
-        std::cout << "first if" << std::endl;
-        std::size_t _line_size_{_line_text_.at(_cursor_->GetPosLine() + 1).size()};
-        Cursor::CursorPos_t _cursor_pos_{_cursor_->GetPosCol()};
-        Cursor::CursorPos_t _cursor_pos_target_{_cursor_->GetTargetCol()};
-        if(_cursor_pos_target_ > _line_size_)
-        {
-            // target position is too far along the line
-            // as the line is too short!
-            // check against the current cursor position
-            // rather than the target cursor position
-            // which is set whenever the user moves left / right
-            if(_cursor_pos_ > _line_size_)
-            {
-                _cursor_pos_ = _line_size_;
-            }
-            else
-            {
-                // _cursor_pos_ has the correct value
-                // don't do anything
-            }
-        }
-        else
-        {
-            // target position is ok:
-            // set the cursor position to be the target position
-            _cursor_pos_ = _cursor_pos_target_;
-        }
-        _cursor_->SetPos(_cursor_->GetPosLine() + 1, _cursor_pos_);
-    }
-    else
-    {
-        std::cout << "cannot go down" << std::endl;
-        // _line_ is the maximum line, cannot go down, do nothing
-    }
-
-
-    // set the first line variable
-    if(_cursor_->GetPosLine() > 5) // TODO: 5 is a nonsense number
-    {
-        _line_text_first_line_ = _cursor_->GetPosLine() - 5;
-    }
-
-
-    //if(_cursor_.GetPosLine() < _line_text_.size())
-    //{
-    //_cursor_.Down(_line_text_.size()); // TODO
-    //}
-}
-
-
-void Textbox::CursorCR()
-{
-    _cursor_->CR();
-}
-
-
-void Textbox::InsertAtCursor(const char ch)
-{
-
-    // current line and col
-    Cursor::CursorPos_t c_line{_cursor_->GetPosLine()};
-    Cursor::CursorPos_t c_col{_cursor_->GetPosCol()};
-
-    //std::cout << "c_col=" << c_col << std::endl;
-    
-    _buffer_.Insert(ch, c_line, c_col);
-
-    // TODO: not all chars increment?
-    // incrementing is done by the sdl event loop
-    //std::cout << "_line_text_.at(c_line)=" << _line_text_.at(c_line) << std::endl;
-}
-
-
-void Textbox::ReturnAtCursor()
-{
-
-    // current line and col
-    Cursor::CursorPos_t c_line{_cursor_->GetPosLine()};
-    Cursor::CursorPos_t c_col{_cursor_->GetPosCol()};
-
-    //std::cout << "c_col=" << c_col << std::endl;
-    
-    _buffer_.InsertNewLine(c_line, c_col);
-}
-
-// Note: motion of cursor was being done by the Window class
-// it is now handled by Textbox class
-// TODO: other functions
-void Textbox::BackspaceAtCursor()
-{
-
-    // current line and col
-    Cursor::CursorPos_t c_line{_cursor_->GetPosLine()};
-    Cursor::CursorPos_t c_col{_cursor_->GetPosCol()};
-    
-    std::cout << "c_line=" << c_line << ", c_col=" << c_col << std::endl;
-        
-    if(c_col > 0)
-    {
-        if(_buffer_.Delete(c_line, c_col) == true)
-        {
-            _cursor_->Left(); // TODO: probably always true?
-        }
-        else
-        {
-            // ?
-        }
-    }
-    else
-    {
-        // TODO: move to else if
-        if(c_line > 0)
-        {
-            Cursor::CursorPos_t goto_line{_cursor_->GetPosLine() - 1};
-            std::size_t prev_line_length{_buffer_.LineLength(goto_line)};
-
-            std::cout << "goto_line=" << goto_line << " prev_ll=" << prev_line_length << std::endl;
-
-            if(_buffer_.Delete(c_line, c_col) == true)
-            {
-                _cursor_->SetPos(goto_line, prev_line_length);
-            }
-            else
-            {
-                // ?
-            }
-        }
-    }  
-    
-}
 
 
 

@@ -1,18 +1,18 @@
-cmake_minimum_required(VERSION 3.7)
-project(WorldsBestTextEditor)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
+PROJECT(WorldsBestTextEditor)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_BUILD_TYPE DEBUG)
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_BUILD_TYPE DEBUG)
 
 #set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_MODULE_PATH /home/ecb/Worlds-Best-Text-Editor)
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2TTF REQUIRED)
-include_directories(WorldsBestTextEditor include ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
+FIND_PACKAGE(SDL2 REQUIRED)
+FIND_PACKAGE(SDL2TTF REQUIRED)
+INCLUDE_DIRECTORIES(WorldsBestTextEditor include ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
 
-set(SOURCE_FILES src/main.cpp src/Buffer.cpp src/CharMatrix.cpp)
+SET(SOURCE_FILES src/main.cpp src/Buffer.cpp src/Textbox.cpp)
 
-add_executable(WorldsBestTextEditor ${SOURCE_FILES})
-target_link_libraries(WorldsBestTextEditor ${SDL2_LIBRARIES} ${SDL2TTF_LIBRARY})
+ADD_EXECUTABLE(WorldsBestTextEditor ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(WorldsBestTextEditor ${SDL2_LIBRARIES} ${SDL2TTF_LIBRARY})
