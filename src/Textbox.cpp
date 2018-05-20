@@ -299,8 +299,8 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                 // copy
                 // TODO: remove variable next_line
                 // optimize out
-                std::string next_line{buffer_contents[line_ix].substr(substr_pos, substr_len)};
-                substr_pos += substr_len;
+                //std::string next_line{buffer_contents[line_ix].substr(substr_pos, substr_len)};
+                //substr_pos += substr_len;
                 //std::cout << next_line << std::endl;
                 //_matrix_.emplace_back(next_line);
                 //_line_number_.emplace_back(first);
@@ -308,7 +308,8 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                 
                 // print the substring contained next_line
                 // print characters on this line
-                for(std::size_t char_ix{0}; char_ix < next_line.size(); ++ char_ix)
+                //for(std::size_t char_ix{0}; char_ix < next_line.size(); ++ char_ix)
+                for(std::size_t char_ix{substr_pos}; char_ix < substr_pos + substr_len; ++ char_ix)
                 {
                 
                     //const int c_w{texture_chars_size.at(' ').w};
@@ -323,12 +324,16 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                     SDL_Rect dst_rect{_pos_x_ + dst_rect_origin_x + x_off, _pos_y_ + y_off, c_w, c_h};
                 
                     // character to print
-                    const char ch{next_line[char_ix]};
+                    //const char ch{next_line[char_ix]};
+                    const char ch{buffer_contents[line_ix][char_ix]};
                 
                     // set the texture pointer
                     SDL_Texture *texture{texture_chars.at(ch)};
                     print_char_texture(renderer, texture, src_rect, dst_rect);
                 }
+                
+                // moved to here because this variable needed for for loop index
+                substr_pos += substr_len;
                 
                 // line wrapped, finished wrapping, increment the y position index
                 ++ print_index_y;
