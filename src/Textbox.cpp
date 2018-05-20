@@ -180,12 +180,16 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     
     // Testing purposes
     int overhang{_size_x_ % (texture_chars_size.at(' ').w)};
-    SDL_Rect rect1{_pos_x_, _pos_y_, _size_x_ - overhang, _size_y_};
-    SDL_Rect rect2{_pos_x_ + _size_x_ - overhang, _pos_y_, overhang, _size_y_};
+    int y_overhang{_size_y_ % (texture_chars_size.at(' ').h)};
+    SDL_Rect rect1{_pos_x_, _pos_y_, _size_x_ - overhang, _size_y_ - y_overhang};
+    SDL_Rect rect2{_pos_x_ + _size_x_ - overhang, _pos_y_, overhang, _size_y_ - y_overhang};
+    SDL_Rect rect3{_pos_x_, _pos_y_ + _size_y_ - y_overhang, _size_x_ - overhang, y_overhang};
     SDL_SetRenderDrawColor(renderer, 0xCC, 0xCC, 0xCC, 0xFF);
     SDL_RenderFillRect(renderer, &rect1);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
     SDL_RenderFillRect(renderer, &rect2);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
+    SDL_RenderFillRect(renderer, &rect3);
     
     // line width - the number of characters which can fit in the textbox in
     // the width direction
@@ -221,7 +225,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     
     
     // current line number to print, starts from 1
-    unsigned int line_number{1};
+    unsigned int line_number{1 + _scroll_index_};
     
     // line index for printing line numbers and characters
     unsigned int print_index_y{0}; // this variable like line_ix, but increments when lines are wrapped
@@ -230,7 +234,8 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     // TODO: this is slightly slower, but better code?
     
     // iterate over all lines in buffer
-    for(std::size_t line_ix{0 + _scroll_index_}; line_ix < buffer_contents.size(); ++ line_ix)
+    bool quit_now = false; // TODO: this is a hack
+    for(std::size_t line_ix{0 + _scroll_index_}; line_ix < buffer_contents.size() && quit_now == false; ++ line_ix)
     {
         
         // draw line number
@@ -247,6 +252,10 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
             ++ line_number;
             //dst_rect_line_number.y += dst_rect_line_number.h;
             //}
+            
+            // TODO: line number at bottom of window is printed even if no text
+            // is printed! (due to text being wrapped and entire line not fitting
+            // in window)
         }
         
     
@@ -257,7 +266,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     
     
         // compute the number of wrapped lines taken up by the current line
-        std::size_t current_line_wrap_count{1 + buffer_contents.size() / line_width};
+        std::size_t current_line_wrap_count{1 + buffer_contents[line_ix].size() / line_width};
         
         // check for each new line number to be printed
         // break if drawing beyond the end of the textbox drawing area
@@ -309,12 +318,14 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                 // print the substring contained next_line
                 // print characters on this line
                 //for(std::size_t char_ix{0}; char_ix < next_line.size(); ++ char_ix)
-                for(std::size_t char_ix{substr_pos}; char_ix < substr_pos + substr_len; ++ char_ix)
+                //for(std::size_t char_ix{substr_pos}; char_ix < substr_pos + substr_len; ++ char_ix)
+                for(std::size_t char_ix{0}; char_ix < substr_len; ++ char_ix)
                 {
                 
                     //const int c_w{texture_chars_size.at(' ').w};
                     //const int c_h{texture_chars_size.at(' ').h};
                 
+                    //const int x_off{c_w * (char_ix - substr_pos)};
                     const int x_off{c_w * char_ix};
                     //const int y_off{c_h * (line_ix - _scroll_index_)}; // line_ix here is WRONG if scroll != 0 TODO (FIXED)
                     const int y_off{c_h * print_index_y};
@@ -325,7 +336,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                 
                     // character to print
                     //const char ch{next_line[char_ix]};
-                    const char ch{buffer_contents[line_ix][char_ix]};
+                    const char ch{buffer_contents[line_ix][char_ix + substr_pos]};
                 
                     // set the texture pointer
                     SDL_Texture *texture{texture_chars.at(ch)};
@@ -337,7 +348,12 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                 
                 // line wrapped, finished wrapping, increment the y position index
                 ++ print_index_y;
-                
+
+                //int window_line_count{_size_y_ / c_h}; // the number of lines there is space for in the textbox window
+                //if(print_index_y >= window_line_count) break;
+                if(print_index_y >= line_count) quit_now = true;
+                // TODO: can remove ^^^
+
 
                 //if(substr_len == line_width)
                 //if(wrapped == true)
@@ -385,6 +401,10 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     
     
         } // if the current line, including the number of wraps, will fix in the remaining textbox space
+        else
+        {
+            quit_now = true;
+        }
     
     
         // set cursor x and y
@@ -469,27 +489,37 @@ void Textbox::CursorRight()
 }
 
 
+// TODO: I actually want "cursor down" to move down 1 position, not 1 whole line
+// because I want to be able to move within wrapped lines using the up and down
+// arrows, this is not how vim works
+// however this would not work with simple macro recording. macro recording would
+// have to translate cursor positions into delta positions using line/char indices
+// rather than the naieve number of up/down keys pressed
+
+
 // TODO: remember target line position
 // TODO: config: set rememberlineposition
 void Textbox::CursorUp()
 {
-    const std::vector<std::string>& _line_text_{GetContainer()};
+
+    // const reference to data structure
+    const std::vector<std::string> &buffer_contents{GetContainer()};
     
     if(_cursor_->GetPosLine() > 0)
     {
-        std::size_t _line_size_{_line_text_.at(_cursor_->GetPosLine() - 1).size()};
-        Cursor::CursorPos_t _cursor_pos_{_cursor_->GetPosCol()};
-        Cursor::CursorPos_t _cursor_pos_target_{_cursor_->GetTargetCol()};
-        if(_cursor_pos_target_ > _line_size_)
+        std::size_t line_size{buffer_contents.at(_cursor_->GetPosLine() - 1).size()};
+        Cursor::CursorPos_t cursor_pos{_cursor_->GetPosCol()};
+        Cursor::CursorPos_t cursor_pos_target{_cursor_->GetTargetCol()};
+        if(cursor_pos_target > line_size)
         {
             // target position is too far along the line
             // as the line is too short!
             // check against the current cursor position
             // rather than the target cursor position
             // which is set whenever the user moves left / right
-            if(_cursor_pos_ > _line_size_)
+            if(cursor_pos > line_size)
             {
-                _cursor_pos_ = _line_size_;
+                cursor_pos = line_size;
             }
             else
             {
@@ -501,39 +531,142 @@ void Textbox::CursorUp()
         {
             // target position is ok:
             // set the cursor position to be the target position
-            _cursor_pos_ = _cursor_pos_target_;
+            cursor_pos = cursor_pos_target;
         }
-        _cursor_->SetPos(_cursor_->GetPosLine() - 1, _cursor_pos_);
+        //_cursor_->SetPos(_cursor_->GetPosLine() - 1, cursor_pos);
+
+        // check cursor position does not scroll off end of window
+        if(_cursor_->GetPosLine() - 1 - _scroll_index_ > 0) // TODO: are these signed? does it matter?
+        {
+            _cursor_->SetPos(_cursor_->GetPosLine() - 1, cursor_pos);
+            // TODO: appears twice, move out of if statement
+        }
+        else
+        {
+            std::cout << "trying to scroll up" << std::endl;
+            // TODO: this isn't going to work, can scroll off end of screen
+            if(_scroll_index_ > 0)
+            {
+                -- _scroll_index_;
+            }
+            _cursor_->SetPos(_cursor_->GetPosLine() - 1, cursor_pos);
+            // TODO: appears twice, move out of if statement
+        }
     }
     else
     {
         // _line_ is 0, do nothing
+        std::cout << "cannot go up" << std::endl;
     }
-    //_cursor_.Up();
+}
+
+
+void Textbox::update_wrap_count()
+{
+    wrap_count.clear();
+    
+    // get reference to texture chars size and texture pointers
+    const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
+    const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+    
+    // monospace character width and height
+    const int c_w{texture_chars_size.at(' ').w};
+    const int c_h{texture_chars_size.at(' ').h};
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // CODE FROM UPDATE FUNCTION
+    ////////////////////////////////////////////////////////////////////////////
+    
+    
+    /// COMPUTE LINE NUMBER WIDTH ///
+    
+    // get line count
+    unsigned long long buffer_line_count{GetLineCount()};
+
+    // compute line number width required
+    unsigned int line_number_width = 0;
+    if(_line_number_enabled_)
+    {
+        // set line number character count
+        //int line_count{_buffer_.GetLineCount()};
+        int line_count{buffer_line_count};
+        for(;;)
+        {
+            ++ line_number_width;
+            line_count = line_count / 10;
+            if(line_count > 0)
+            {
+                continue;
+            }
+            else
+            {
+                break;
+                // line_number_char_count contains correct value
+                // line_count is invalid
+            }
+        }
+    }
+        
+    // line width - the number of characters which can fit in the textbox in
+    // the width direction
+    std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+    
+    // const reference to data structure
+    const std::vector<std::string> &buffer_contents{GetContainer()};
+
+    // iterate over all lines in buffer
+    for(std::size_t line_ix{0 + _scroll_index_}; line_ix < buffer_contents.size(); ++ line_ix)
+    {
+        // compute the number of wrapped lines taken up by the current line
+        std::size_t current_line_wrap_count{1 + buffer_contents[line_ix].size() / line_width};
+        wrap_count.push_back(current_line_wrap_count);
+    }
+
+    // print the wrap count
+    for(std::size_t i{0}; i < wrap_count.size(); ++ i)
+        std::cout << wrap_count[i] << ", ";
+    std::cout << std::endl;
+
+
 }
 
 
 void Textbox::CursorDown()
 {
-    const std::vector<std::string>& _line_text_{GetContainer()};
+
+    update_wrap_count();
     
+    // get reference to texture chars size and texture pointers
+    const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
+    const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+    
+    // monospace character width and height
+    const int c_w{texture_chars_size.at(' ').w};
+    const int c_h{texture_chars_size.at(' ').h};
+
+
+    // const reference to data structure
+    const std::vector<std::string> &buffer_contents{GetContainer()};
+    
+
     std::cout << "cursor down" << std::endl;
-    if(_cursor_->GetPosLine() < _line_text_.size() - 1)
+    if(_cursor_->GetPosLine() < buffer_contents.size() - 1)
     {
         std::cout << "first if" << std::endl;
-        std::size_t _line_size_{_line_text_.at(_cursor_->GetPosLine() + 1).size()};
-        Cursor::CursorPos_t _cursor_pos_{_cursor_->GetPosCol()};
-        Cursor::CursorPos_t _cursor_pos_target_{_cursor_->GetTargetCol()};
-        if(_cursor_pos_target_ > _line_size_)
+        std::size_t line_size{buffer_contents.at(_cursor_->GetPosLine() + 1).size()};
+        Cursor::CursorPos_t cursor_pos{_cursor_->GetPosCol()};
+        Cursor::CursorPos_t cursor_pos_target{_cursor_->GetTargetCol()};
+        if(cursor_pos_target > line_size)
         {
             // target position is too far along the line
             // as the line is too short!
             // check against the current cursor position
             // rather than the target cursor position
             // which is set whenever the user moves left / right
-            if(_cursor_pos_ > _line_size_)
+            if(cursor_pos > line_size)
             {
-                _cursor_pos_ = _line_size_;
+                cursor_pos = line_size;
             }
             else
             {
@@ -545,29 +678,63 @@ void Textbox::CursorDown()
         {
             // target position is ok:
             // set the cursor position to be the target position
-            _cursor_pos_ = _cursor_pos_target_;
+            cursor_pos = cursor_pos_target;
         }
-        _cursor_->SetPos(_cursor_->GetPosLine() + 1, _cursor_pos_);
+
+        // check cursor position does not scroll off end of window
+        int window_line_count{_size_y_ / c_h}; // the number of lines there is space for in the textbox window
+        std::cout << "size_y=" << _size_y_ << " c_h=" << c_h << std::endl;
+        std::cout << "window_line_count=" << window_line_count << std::endl;
+        int delta_cursor_position{_cursor_->GetPosLine() - _scroll_index_};
+        int window_cursor_position{0}; // starts at index 0, cursor index starts at 0
+        // TODO: still confused by above ^, delta index starts from 1 but this var is not used
+        // TODO: cursor index starts from zero!
+        std::cout << "scroll index: " << _scroll_index_ << " GetPosLine: " << _cursor_->GetPosLine() << std::endl;
+        // add 1 to cursor position in for loop because we want to test the location at which the cursor
+        // will be IF it is to be moved
+        // TODO but cursor->GetPosLine() index starts from 1?
+        //for(std::size_t count_ix{_scroll_index_}; count_ix < _cursor_->GetPosLine() + 1; ++ count_ix)
+        for(std::size_t count_ix{0}; count_ix < _cursor_->GetPosLine() + 1 - _scroll_index_; ++ count_ix)
+        {
+            std::cout << "count_ix=" << count_ix << std::endl;
+            std::cout << "add " << wrap_count.at(count_ix) << " to ";
+            window_cursor_position += wrap_count.at(count_ix);
+            std::cout << "window_cursor_position -> " << window_cursor_position << std::endl;
+        }
+        if(window_cursor_position >= window_line_count)
+        {
+            std::cout << "scroll down, index=" << _cursor_->GetPosLine() - _scroll_index_ << " count=" << wrap_count.at(_cursor_->GetPosLine() - _scroll_index_) << std::endl;
+            //if(_scroll_index_ < buffer_contents.size() - 1)
+            if(_scroll_index_ < buffer_contents.size() - wrap_count.at(_cursor_->GetPosLine() - _scroll_index_))
+            {
+                _scroll_index_ += wrap_count.at(_cursor_->GetPosLine() - _scroll_index_);
+            }
+        }
+        // TODO an if statement is needed here to make sure this doesn't overflow
+        _cursor_->SetPos(_cursor_->GetPosLine() + 1, cursor_pos);
+      //  if(_cursor_->GetPosLine() + 1 - _scroll_index_ < the number of lines that can fit in a window, but they are wrapped!)
+            // TODO: might be better to have a function that can translate cursor position into x,y screen position
+            // would need an update function which tracks the number of wraps per line
+      //  {
+      //      _cursor_->SetPos(_cursor_->GetPosLine() + 1, cursor_pos);
+            // TODO: appears twice, move out of if statement
+      //  }
+      //  else
+      //  {
+      //      std::cout << "trying to scroll down" << std::endl;
+      //      {
+      //          ++ _scroll_index_;
+      //      }
+      //      _cursor_->SetPos(_cursor_->GetPosLine() + 1, cursor_pos);
+            // TODO: appears twice, move out of if statement
+      //  }
     }
     else
     {
         std::cout << "cannot go down" << std::endl;
         // _line_ is the maximum line, cannot go down, do nothing
+
     }
-
-
-    // set the first line variable
-    if(_cursor_->GetPosLine() > 5) // TODO: 5 is a nonsense number
-    {
-        //_line_text_first_line_ = _cursor_->GetPosLine() - 5;
-        _scroll_index_ = _cursor_->GetPosLine() - 5; // TODO
-    }
-
-
-    //if(_cursor_.GetPosLine() < _line_text_.size())
-    //{
-    //_cursor_.Down(_line_text_.size()); // TODO
-    //}
 }
 
 
