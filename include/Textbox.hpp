@@ -169,7 +169,15 @@ class Textbox : public Buffer
     //}
     
 
+    void ResetCursor() // used when opening new file
+    {
+        _cursor_->SetPos(0, 0);
+    }
+
+
     private:
+
+    void update_wrap_count();
 
     ////////////////////////////////////////////////////////////////////////////
     // DATA MEMBERS
@@ -218,6 +226,8 @@ class Textbox : public Buffer
     std::size_t _scroll_index_;
     
     bool _line_number_enabled_;
+
+    std::vector<unsigned int> wrap_count;
 
 };
 
