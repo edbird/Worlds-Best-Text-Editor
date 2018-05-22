@@ -27,6 +27,7 @@ class Textbox : public Buffer
         , _pos_y_{0}
         //, _line_text_first_line_{0}
         , _scroll_index_{0}
+        , _scroll_sub_index_{0}
         , _line_number_enabled_{false}
     {
         
@@ -117,7 +118,9 @@ class Textbox : public Buffer
     
     // Convert line number to string
     std::string line_number_to_string(const int line_number, const int line_number_width);
-        
+
+    // compute line number width
+    unsigned int get_line_number_width() const;        
 
     // TODO: pass dst_rect by reference and modify within function
     // TODO: remove _texture_chars_ arguments
@@ -174,6 +177,10 @@ class Textbox : public Buffer
         _cursor_->SetPos(0, 0);
     }
 
+    void ScrollDown();
+    void ScrollUp();
+    void ScrollDownSub();
+    void ScrollUpSub();
 
     private:
 
@@ -223,7 +230,10 @@ class Textbox : public Buffer
     // first line of text to print
     // first line to start printing from
     //std::size_t _line_text_first_line_;
+    // Note: new system: this index counts the number of wrapped lines
+    // a line wrapped 3 times is counted through 3 times
     std::size_t _scroll_index_;
+    std::size_t _scroll_sub_index_;
     
     bool _line_number_enabled_;
 
