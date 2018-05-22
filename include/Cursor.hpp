@@ -72,6 +72,8 @@ class Cursor
     {
         _line_ = line;
         _col_ = col;
+        // TODO: added 2018-05-20
+        _remember_col_ = col;
         Print();
     }
 
