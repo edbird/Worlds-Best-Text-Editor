@@ -53,6 +53,13 @@ void fc_quit_force(Window&);
 void fc_open(Window& current_window);
 void fc_save(Window& current_window);
 
+// for debugging, increment / decrement the scroll index
+void fc_scroll_inc(Window& current_window);
+void fc_scroll_dec(Window& current_window);
+void fc_scroll_inc_sub(Window& current_window);
+void fc_scroll_dec_sub(Window& current_window);
+
+
 // debug function
 void fc_print_buffer(Window& current_window);
 
@@ -69,6 +76,11 @@ class Window
     friend void fc_open(Window& current_window);
     friend void fc_save(Window& current_window);
     friend void fc_print_buffer(Window& current_window);
+
+    friend void fc_scroll_inc(Window& current_window);
+    friend void fc_scroll_dec(Window& current_window);
+    friend void fc_scroll_inc_sub(Window& current_window);
+    friend void fc_scroll_dec_sub(Window& current_window);
 
 
     public:
@@ -143,6 +155,8 @@ class Window
             _timer_ = SDL_GetTicks();
 
             _refresh_delay_ = std::floor((1000.0 / (double)config.GetInt("targetrefreshrate")));
+            // TODO: remove, temp hack to make slow
+            //_refresh_delay_ = 500.0;
             std::cout << "refreshdelay set to: " << _refresh_delay_ << std::endl;
             // TODO: keep track of the rounded part and add it on to the next refresh delay to get
             // a more accurage 60 Hz refresh
@@ -335,11 +349,17 @@ class Window
                     ActionKey ak_save(fc_save, SDLK_s, SCAModState::NONE, SCAModState::ANY);
 
                     // ctrl o
-                    ActionKey ak_open(fc_save, SDLK_o, SCAModState::NONE, SCAModState::ANY);
+                    ActionKey ak_open(fc_open, SDLK_o, SCAModState::NONE, SCAModState::ANY);
 
                     // F12
                     ActionKey ak_print_buffer(fc_print_buffer, SDLK_F12, SCAModState::DONT_CARE, SCAModState::DONT_CARE);
 
+                    // TODO: PLUS key maps to same as EQUALS, but with different shift state!
+                    // TODO: some keys have double maps
+                    ActionKey ak_scroll_inc(fc_scroll_inc, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
+                    ActionKey ak_scroll_dec(fc_scroll_dec, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
+                    ActionKey ak_scroll_inc_sub(fc_scroll_inc_sub, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
+                    ActionKey ak_scroll_dec_sub(fc_scroll_dec_sub, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
 
 
                     // TODO: move the action key vector definitions elsewhere
@@ -380,6 +400,10 @@ class Window
                     akv.push_back(&ak_save);
                     akv.push_back(&ak_open);
                     akv.push_back(&ak_print_buffer);
+                    akv.push_back(&ak_scroll_inc);
+                    akv.push_back(&ak_scroll_dec);
+                    akv.push_back(&ak_scroll_inc_sub);
+                    akv.push_back(&ak_scroll_dec_sub);
 
 
                     // iterate through akv
@@ -528,7 +552,6 @@ class Window
                                 //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
                                 if(_keyboard_.GetChar(ch))
                                 {
-                                    std::cout << "insert: " << ch << std::endl;
                                     _textbox_ptr_->InsertAtCursor(ch);
                                     _textbox_ptr_->CursorRight();
                                 }
@@ -746,6 +769,9 @@ void fc_open(Window& current_window)
     }
     else
     {
+        // reset cursor position
+        current_window._textbox_ptr_->ResetCursor();
+
         current_window._textbox_ptr_->Open("buffer.txt");
         std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
     }
@@ -757,6 +783,30 @@ void fc_print_buffer(Window& current_window)
     std::cout << current_window._textbox_ptr_->Get() << std::endl;
 }
 
+
+void fc_scroll_inc(Window& current_window)
+{
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.ScrollDown();
+}
+
+void fc_scroll_dec(Window& current_window)
+{
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.ScrollUp();
+}
+
+void fc_scroll_inc_sub(Window& current_window)
+{
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.ScrollDownSub();
+}
+
+void fc_scroll_dec_sub(Window& current_window)
+{
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.ScrollUpSub();
+}
 
 
 #endif
