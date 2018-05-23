@@ -50,18 +50,23 @@ void fc_enter_edit_mode(Window&);
 void fc_exit_edit_mode(Window&);
 void fc_quit_request(Window&);
 void fc_quit_force(Window&);
-void fc_open(Window& current_window);
-void fc_save(Window& current_window);
+void fc_open(Window&);
+void fc_save(Window&);
 
 // for debugging, increment / decrement the scroll index
-void fc_scroll_inc(Window& current_window);
-void fc_scroll_dec(Window& current_window);
-void fc_scroll_inc_sub(Window& current_window);
-void fc_scroll_dec_sub(Window& current_window);
+void fc_scroll_inc(Window&);
+void fc_scroll_dec(Window&);
+void fc_scroll_inc_sub(Window&);
+void fc_scroll_dec_sub(Window&);
 
 
 // debug function
-void fc_print_buffer(Window& current_window);
+void fc_print_buffer(Window&);
+
+void fc_up(Window&);
+void fc_down(Window&);
+void fc_left(Window&);
+void fc_right(Window&);
 
 
 
@@ -73,14 +78,19 @@ class Window
     friend void fc_exit_edit_mode(Window&);
     friend void fc_quit_request(Window&);
     friend void fc_quit_force(Window&);
-    friend void fc_open(Window& current_window);
-    friend void fc_save(Window& current_window);
-    friend void fc_print_buffer(Window& current_window);
+    friend void fc_open(Window&);
+    friend void fc_save(Window&);
+    friend void fc_print_buffer(Window&);
 
-    friend void fc_scroll_inc(Window& current_window);
-    friend void fc_scroll_dec(Window& current_window);
-    friend void fc_scroll_inc_sub(Window& current_window);
-    friend void fc_scroll_dec_sub(Window& current_window);
+    friend void fc_scroll_inc(Window&);
+    friend void fc_scroll_dec(Window&);
+    friend void fc_scroll_inc_sub(Window&);
+    friend void fc_scroll_dec_sub(Window&);
+
+    friend void fc_up(Window&);
+    friend void fc_down(Window&);
+    friend void fc_left(Window&);
+    friend void fc_right(Window&);
 
 
     public:
@@ -156,7 +166,7 @@ class Window
 
             _refresh_delay_ = std::floor((1000.0 / (double)config.GetInt("targetrefreshrate")));
             // TODO: remove, temp hack to make slow
-            //_refresh_delay_ = 500.0;
+            _refresh_delay_ = 500.0;
             std::cout << "refreshdelay set to: " << _refresh_delay_ << std::endl;
             // TODO: keep track of the rounded part and add it on to the next refresh delay to get
             // a more accurage 60 Hz refresh
@@ -361,6 +371,16 @@ class Window
                     ActionKey ak_scroll_inc_sub(fc_scroll_inc_sub, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
                     ActionKey ak_scroll_dec_sub(fc_scroll_dec_sub, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
 
+                    // ijkl left right up down, edit mode
+                    ActionKey ak_up_edit(fc_up, SDLK_i, SCAModState::DONT_CARE, SCAModState::ANY);
+                    ActionKey ak_down_edit(fc_down, SDLK_k, SCAModState::DONT_CARE, SCAModState::ANY);
+                    ActionKey ak_left_edit(fc_left, SDLK_j, SCAModState::DONT_CARE, SCAModState::ANY);
+                    ActionKey ak_right_edit(fc_right, SDLK_l, SCAModState::DONT_CARE, SCAModState::ANY);
+                    // ijkl left right up down, normal mode
+                    ActionKey ak_up_normal(fc_up, SDLK_i);
+                    ActionKey ak_down_normal(fc_down, SDLK_k);
+                    ActionKey ak_left_normal(fc_left, SDLK_j);
+                    ActionKey ak_right_normal(fc_right, SDLK_l);
 
                     // TODO: move the action key vector definitions elsewhere
                     // this is currently slow
@@ -371,6 +391,15 @@ class Window
                     akv_editor_mode_specific.push_back({&ak_enter_edit_mode, EditorMode::NORMAL});
                     // this triggers for editor mode only
                     akv_editor_mode_specific.push_back({&ak_exit_edit_mode, EditorMode::EDIT});
+
+                    akv_editor_mode_specific.push_back({&ak_up_edit, EditorMode::EDIT});
+                    akv_editor_mode_specific.push_back({&ak_down_edit, EditorMode::EDIT});
+                    akv_editor_mode_specific.push_back({&ak_left_edit, EditorMode::EDIT});
+                    akv_editor_mode_specific.push_back({&ak_right_edit, EditorMode::EDIT});
+                    akv_editor_mode_specific.push_back({&ak_up_normal, EditorMode::NORMAL});
+                    akv_editor_mode_specific.push_back({&ak_down_normal, EditorMode::NORMAL});
+                    akv_editor_mode_specific.push_back({&ak_left_normal, EditorMode::NORMAL});
+                    akv_editor_mode_specific.push_back({&ak_right_normal, EditorMode::NORMAL});
 
                     bool fired{false};
                     std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{akv_editor_mode_specific.begin()};
@@ -697,7 +726,9 @@ class Window
 
 
 
-
+////////////////////////////////////////////////////////////////////////////////
+// EDITOR CHANGE MODES
+////////////////////////////////////////////////////////////////////////////////
 
 // define a function to call here, because this is a convenient place to put it
 // until I find somewhere to move it
@@ -721,6 +752,9 @@ void fc_exit_edit_mode(Window& current_window)
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// PROGRAM QUIT AND REQUEST QUIT
+////////////////////////////////////////////////////////////////////////////////
 
 // TODO: this won't work for multiple textboxes,
 // in addition, current_textbox is accessable from current_window
@@ -750,6 +784,11 @@ void fc_quit_force(Window& current_window)
 }
 
 
+
+////////////////////////////////////////////////////////////////////////////////
+// BUFFER OPEN / SAVE
+////////////////////////////////////////////////////////////////////////////////
+
 // CTRL-S: save action
 void fc_save(Window& current_window)
 {
@@ -778,11 +817,19 @@ void fc_open(Window& current_window)
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// DEBUG
+////////////////////////////////////////////////////////////////////////////////
+
 void fc_print_buffer(Window& current_window)
 {
     std::cout << current_window._textbox_ptr_->Get() << std::endl;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// MANUAL SCROLL LINE AND SCROLL SUB LINE, DEBUG
+////////////////////////////////////////////////////////////////////////////////
 
 void fc_scroll_inc(Window& current_window)
 {
@@ -806,6 +853,35 @@ void fc_scroll_dec_sub(Window& current_window)
 {
     Textbox &textbox{*current_window._textbox_ptr_};
     textbox.ScrollUpSub();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// up down left right arrow keys
+////////////////////////////////////////////////////////////////////////////////
+
+void fc_up(Window& current_window)
+{ 
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.CursorUp();
+}
+
+void fc_down(Window& current_window)
+{ 
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.CursorDown();
+}
+
+void fc_left(Window& current_window)
+{ 
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.CursorLeft();
+}
+
+void fc_right(Window& current_window)
+{ 
+    Textbox &textbox{*current_window._textbox_ptr_};
+    textbox.CursorRight();
 }
 
 
