@@ -77,12 +77,30 @@ class Cursor
         Print();
     }
 
+    void set_pos_passive(const CursorPos_t line, const CursorPos_t col)
+    {
+        _line_ = line;
+        _col_ = col;
+        Print();
+    }
+
     public:
 
     // TODO: what if an invalid value is given?
+    // this function sets the remember col variable
+    // used when setting the cursor position due to the user clicking
+    // at a particular point
     void SetPos(const CursorPos_t line, const CursorPos_t col)
     {
         set_pos(line, col);
+    }
+    
+    // does not set the remember col variable
+    // this function used when setting the cursor position from the
+    // Textbox CursorUp / CursorDown functions
+    void SetPosPassive(const CursorPos_t line, const CursorPos_t col)
+    {
+        set_pos_passive(line, col);
     }
 
     void SetPos(const CursorPos_t line, const CursorPos_t col, const Uint32 timer, const bool reset_blink_time = true)
