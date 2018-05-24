@@ -84,6 +84,10 @@ class Config
     {
         initialize();
         //set_defaults();
+
+        // TODO: function which adds default config options to file if they are
+        // not present by default
+      
     
         std::ifstream ifile(_filename_.c_str());
         if(ifile.is_open())
@@ -274,6 +278,8 @@ class Config
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkdelay", ConfigOption<int>("cursorblinkdelay", 500, "set cursorblinkrate 500 # milliseconds")));
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("linenumber", ConfigOption<int>("linenumber", 0, "set linenumber 0 # false (off)")));
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("targetrefreshrate", ConfigOption<int>("targetrefreshrate", 60, "set targetrefreshrate 60 # 60 Hz")));
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("width", ConfigOption<int>("width", 800, "set width 800")));
+        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("height", ConfigOption<int>("height", 600, "set height 600")));
         //_config_float_option_map_.insert(std::map<const std::string, ConfigOption<double>>::value_type("")); // double not float
         
 
@@ -333,8 +339,8 @@ class Config
         default_config_string.pop_back();
 
         return default_config_string;
-
     }
+
 
     void set_defaults()
     {
