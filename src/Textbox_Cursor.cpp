@@ -96,7 +96,17 @@ void Textbox::CursorUp()
 
         // cursor wants to go up
 //        if(cursor_pos_y < 1)
-        if(false)
+        //int cursor_pos_y{0};
+        // check cursor position does not scroll off end of window
+        int cursor_screen_pos_y{0}; // count cursor screen position
+        // count from scroll position (line index) to cursor line index
+        for(std::size_t ix{_scroll_index_}; ix < _cursor_->GetPosLine(); ++ ix)
+        {
+            cursor_screen_pos_y += wrap_count.at(ix);
+        }
+        cursor_screen_pos_y += _cursor_->GetPosCol() / line_width - _scroll_sub_index_;
+        std::cout << "cursor_screen_pos_y=" << cursor_screen_pos_y << std::endl;
+        if(cursor_screen_pos_y < 1)
         {
             // cursor_pos_y must currently be 0
             ScrollUp();
@@ -110,9 +120,9 @@ void Textbox::CursorUp()
         if(_cursor_->GetPosCol() / line_width > 0)
         {
             // cursor moves up analagously to sub scroll
-            std::cout << "CursorUp: A" << std::endl;
+            //std::cout << "CursorUp: A" << std::endl;
             //_cursor_->SetPos(_cursor_->GetPosLine(), _cursor_->GetPosCol() - line_width);
-            if(_cursor_->GetPosCol() - line_width > 0)
+            if(_cursor_->GetPosCol() - line_width >= 0)
             {
                 // this always happens
                 _cursor_->SetPos(_cursor_->GetPosLine(), _cursor_->GetPosCol() - line_width);
@@ -120,6 +130,7 @@ void Textbox::CursorUp()
             else
             {
                 // this can never happen
+                std::cout << "this happened but it isn't supposed to" << std::endl;
                 _cursor_->SetPos(_cursor_->GetPosLine(), buffer_content.at(_cursor_->GetPosLine()).size());
             }
         }
@@ -129,14 +140,20 @@ void Textbox::CursorUp()
             //_cursor_->SetPos(_cursor_->GetPosLine() - 1, _cursor_->GetPosCol());
             // cursor moves up analagously to scroll
             // TODO: I added % line_width without thinking about it
-            if(_cursor_->GetPosCol() % line_width <= buffer_content.at(_cursor_->GetPosLine() - 1).size()) // TODO changed this to <= what about other function
+            if(_cursor_->GetPosCol() % line_width \
+                    + (wrap_count.at(_cursor_->GetPosLine() - 1) - 1) * line_width\
+                    <= buffer_content.at(_cursor_->GetPosLine() - 1).size()) // TODO changed this to <= what about other function
             {
-                std::cout << "CursorUp: B" << std::endl;
-                _cursor_->SetPos(_cursor_->GetPosLine() - 1, _cursor_->GetPosCol() % line_width);
+                std::cout << (wrap_count.at(_cursor_->GetPosLine() - 1) - 1) << " * " << line_width << std::endl;
+                std::cout << _cursor_->GetPosCol() % line_width << std::endl;
+                std::cout << _cursor_->GetPosCol() % line_width + (wrap_count.at(_cursor_->GetPosLine() - 1) - 1) * line_width << std::endl;
+                std::cout << buffer_content.at(_cursor_->GetPosLine() - 1).size() << std::endl;
+                //std::cout << "CursorUp: B" << std::endl;
+                _cursor_->SetPos(_cursor_->GetPosLine() - 1, _cursor_->GetPosCol() % line_width + (wrap_count.at(_cursor_->GetPosLine() - 1) - 1) * line_width);
             }
             else
             {
-                std::cout << "CursorUp: C" << std::endl;
+                //std::cout << "CursorUp: C" << std::endl;
                 _cursor_->SetPos(_cursor_->GetPosLine() - 1, buffer_content.at(_cursor_->GetPosLine() - 1).size());
             }
         }
@@ -172,7 +189,7 @@ void Textbox::CursorDown()
     if(_cursor_->GetPosLine() + 1 < buffer_content.size() - 1)
     {
 
-        std::cout << "aA" << std::endl;
+        //std::cout << "aA" << std::endl;
 
         // set the cursor position using the target position and current position
         /*std::size_t line_size{buffer_content.at(_cursor_->GetPosLine() + 1).size()};
@@ -215,9 +232,23 @@ void Textbox::CursorDown()
 
         // cursor wants to go down
 //        if(cursor_pos_y > _size_y_ / c_h - 2)
-        if(false)
+        //int cursor_pos_y{0};
+        // check cursor position does not scroll off end of window
+        int cursor_screen_pos_y{0}; // count cursor screen position
+        // count from scroll position (line index) to cursor line index
+        for(std::size_t ix{_scroll_index_}; ix < _cursor_->GetPosLine(); ++ ix)
         {
-            std::cout << "aB" << std::endl;
+            cursor_screen_pos_y += wrap_count.at(ix);
+        }
+        cursor_screen_pos_y += _cursor_->GetPosCol() / line_width - _scroll_sub_index_;
+        std::cout << "cursor_screen_pos_y=" << cursor_screen_pos_y << std::endl;
+        if(cursor_screen_pos_y > _size_y_ / c_h - 2)
+        // Note, one of the +1's above is for the fact that the cursor is
+        // going to move down, unless ScrollDown is called in which case
+        // 1 should be subtracted from cursor_screen_pos_y due to the scroll
+        // motion
+        {
+            //std::cout << "aB" << std::endl;
 
             // cursor_pos_y must currently be _size_y_ / c_h - 1
             ScrollDown();
@@ -230,7 +261,7 @@ void Textbox::CursorDown()
         //if(cursor_pos / line_width < wrap_count.at(_cursor_->GetPosLine()) - 1)
         if(_cursor_->GetPosCol() / line_width < wrap_count.at(_cursor_->GetPosLine()) - 1) 
         {
-            std::cout << "aC2" << std::endl;
+            //std::cout << "aC2" << std::endl;
             // there is room on the current line to go down at least 1 more sub
             // line
 
@@ -257,20 +288,20 @@ void Textbox::CursorDown()
         }
         else
         {
-            std::cout << "PosCol: " << _cursor_->GetPosCol() << std::endl;
-            std::cout << "next line size: " << buffer_content.at(_cursor_->GetPosLine() + 1).size() << std::endl;
+            //std::cout << "PosCol: " << _cursor_->GetPosCol() << std::endl;
+            //std::cout << "next line size: " << buffer_content.at(_cursor_->GetPosLine() + 1).size() << std::endl;
 
             // cursor moves down analagously to scroll
             if(_cursor_->GetPosCol() % line_width <= buffer_content.at(_cursor_->GetPosLine() + 1).size()) // changed to <=
             {
-                std::cout << "aD2" << std::endl;
-                std::cout << _cursor_->GetPosCol() % line_width << std::endl;
-                std::cout << line_width << std::endl;
+                //std::cout << "aD2" << std::endl;
+                //std::cout << _cursor_->GetPosCol() % line_width << std::endl;
+                //std::cout << line_width << std::endl;
                 _cursor_->SetPos(_cursor_->GetPosLine() + 1, _cursor_->GetPosCol() % line_width);
             }
             else
             {
-                std::cout << "aE2" << std::endl;
+                //std::cout << "aE2" << std::endl;
                 _cursor_->SetPos(_cursor_->GetPosLine() + 1, buffer_content.at(_cursor_->GetPosLine() + 1).size());
             }
         }
