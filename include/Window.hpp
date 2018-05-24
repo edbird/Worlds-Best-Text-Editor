@@ -107,12 +107,24 @@ class Window
         //, COLOR_BACKGROUND{0x00000000}
         //, COLOR_TEXT_DEFAULT{0xFFFFFFFF}
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
+        , _WIDTH_{_DEFAULT_WIDTH_}
+        , _HEIGHT_{_DEFAULT_HEIGHT_}
     {
         
-        
+        if(config.GetInt("width") != -1)
+        {
+            _WIDTH_ = config.GetInt("width");
+        }
+        if(config.GetInt("height") != -1)
+        {
+            _HEIGHT_ = config.GetInt("height");
+        }
 
-            
+        
+        // create window
         _window_.reset(SDL_CreateWindow("SDL Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _WIDTH_, _HEIGHT_, SDL_WINDOW_SHOWN));
+        SDL_SetWindowResizable(_window_.get(), SDL_TRUE);
+
 
         if(_window_ == nullptr)
         {
@@ -160,7 +172,8 @@ class Window
 
             // TODO: do not pass this as an argument, pass a pointer to a resources class
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
-            _textbox_ptr_ = new Textbox(_config_, *_ftm_);
+            _textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
+            _textbox_ptr_->SetBackgroundColor();
         
             _status_label_ = new Label("Worlds Best Text Editor", *_ftm_);
             //_status_label_->SetPosition(0, _size_y_);
@@ -717,8 +730,10 @@ class Window
     bool _quit_;
 
     // TODO: make default variables as consts
-    const int32_t _WIDTH_{600};
-    const int32_t _HEIGHT_{400};
+    const int32_t _DEFAULT_WIDTH_{800};
+    const int32_t _DEFAULT_HEIGHT_{600};
+    int32_t _WIDTH_;
+    int32_t _HEIGHT_;
 
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> _window_;
     //std::unique_ptr<SDL_Surface> _surface_;
