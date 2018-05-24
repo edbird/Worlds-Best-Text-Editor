@@ -186,7 +186,7 @@ void Textbox::CursorDown()
     std::cout << _cursor_->GetPosLine() << std::endl;
 
     // check cursor can go up, not at top of buffer
-    if(_cursor_->GetPosLine() + 1 < buffer_content.size() - 1)
+    if(_cursor_->GetPosLine() + 1 < buffer_content.size())
     {
 
         //std::cout << "aA" << std::endl;
