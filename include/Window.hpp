@@ -171,6 +171,9 @@ class Window
             // TODO: keep track of the rounded part and add it on to the next refresh delay to get
             // a more accurage 60 Hz refresh
 
+
+            init_action_keys();
+
         }
 
         
@@ -262,6 +265,97 @@ class Window
     //    }
     //}
     
+    void init_action_keys()
+    {
+
+        // this ActionKey is the object we check the above against
+        // this action for key "e"
+        // with NO shift state,
+        // with NO ctrl state,
+        // with NO alt state,
+        // with NO gui state
+
+        // order: shift, ctrl, alt, gui
+
+        // e
+        ActionKey ak_enter_edit_mode(fc_enter_edit_mode, SDLK_e);
+        // TODO: change from fixed SDLK_* keys to variables, which can be changed in config?
+        // need to check how the key maps worked to figure out what to do here
+
+        // esc
+        ActionKey ak_exit_edit_mode(fc_exit_edit_mode, SDLK_ESCAPE);
+
+        // ctrl q
+        ActionKey ak_quit_request(fc_quit_request, SDLK_q, SCAModState::NONE, SCAModState::ANY);
+
+        // ctrl shift q
+        ActionKey ak_quit_force(fc_quit_force, SDLK_q, SCAModState::ANY, SCAModState::ANY);
+
+        // ctrl s
+        ActionKey ak_save(fc_save, SDLK_s, SCAModState::NONE, SCAModState::ANY);
+
+        // ctrl o
+        ActionKey ak_open(fc_open, SDLK_o, SCAModState::NONE, SCAModState::ANY);
+
+        // F12
+        ActionKey ak_print_buffer(fc_print_buffer, SDLK_F12, SCAModState::DONT_CARE, SCAModState::DONT_CARE);
+
+        // TODO: PLUS key maps to same as EQUALS, but with different shift state!
+        // TODO: some keys have double maps
+        ActionKey ak_scroll_inc(fc_scroll_inc, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
+        ActionKey ak_scroll_dec(fc_scroll_dec, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
+        ActionKey ak_scroll_inc_sub(fc_scroll_inc_sub, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
+        ActionKey ak_scroll_dec_sub(fc_scroll_dec_sub, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
+
+        // ijkl left right up down, edit mode
+        ActionKey ak_up_edit(fc_up, SDLK_i, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey ak_down_edit(fc_down, SDLK_k, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey ak_left_edit(fc_left, SDLK_j, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey ak_right_edit(fc_right, SDLK_l, SCAModState::DONT_CARE, SCAModState::ANY);
+        // ijkl left right up down, normal mode
+        ActionKey ak_up_normal(fc_up, SDLK_i);
+        ActionKey ak_down_normal(fc_down, SDLK_k);
+        ActionKey ak_left_normal(fc_left, SDLK_j);
+        ActionKey ak_right_normal(fc_right, SDLK_l);
+
+        // TODO: move the action key vector definitions elsewhere
+        // this is currently slow
+        
+        
+        
+        
+        
+        
+        
+        
+        // these trigger regardless of editor mode
+        // or only for edit mode ?
+        akv.push_back(&ak_quit_request);
+        akv.push_back(&ak_quit_force);
+        akv.push_back(&ak_save);
+        akv.push_back(&ak_open);
+        akv.push_back(&ak_print_buffer);
+        akv.push_back(&ak_scroll_inc);
+        akv.push_back(&ak_scroll_dec);
+        akv.push_back(&ak_scroll_inc_sub);
+        akv.push_back(&ak_scroll_dec_sub);
+                    
+        
+        // this triggers for normal mode only
+        akv_editor_mode_specific.push_back({&ak_enter_edit_mode, EditorMode::NORMAL});
+        // this triggers for editor mode only
+        akv_editor_mode_specific.push_back({&ak_exit_edit_mode, EditorMode::EDIT});
+
+        akv_editor_mode_specific.push_back({&ak_up_edit, EditorMode::EDIT});
+        akv_editor_mode_specific.push_back({&ak_down_edit, EditorMode::EDIT});
+        akv_editor_mode_specific.push_back({&ak_left_edit, EditorMode::EDIT});
+        akv_editor_mode_specific.push_back({&ak_right_edit, EditorMode::EDIT});
+        akv_editor_mode_specific.push_back({&ak_up_normal, EditorMode::NORMAL});
+        akv_editor_mode_specific.push_back({&ak_down_normal, EditorMode::NORMAL});
+        akv_editor_mode_specific.push_back({&ak_left_normal, EditorMode::NORMAL});
+        akv_editor_mode_specific.push_back({&ak_right_normal, EditorMode::NORMAL});
+
+    }
     
 
 
@@ -332,74 +426,6 @@ class Window
                     // in an ActionKey2 object
                     CurrentKeyboardAction current_keyboard_action(_keyboard_);
 
-                    // this ActionKey is the object we check the above against
-                    // this action for key "e"
-                    // with NO shift state,
-                    // with NO ctrl state,
-                    // with NO alt state,
-                    // with NO gui state
-
-                    // order: shift, ctrl, alt, gui
-
-                    // e
-                    ActionKey ak_enter_edit_mode(fc_enter_edit_mode, SDLK_e);
-                    // TODO: change from fixed SDLK_* keys to variables, which can be changed in config?
-                    // need to check how the key maps worked to figure out what to do here
-
-                    // esc
-                    ActionKey ak_exit_edit_mode(fc_exit_edit_mode, SDLK_ESCAPE);
-
-                    // ctrl q
-                    ActionKey ak_quit_request(fc_quit_request, SDLK_q, SCAModState::NONE, SCAModState::ANY);
-
-                    // ctrl shift q
-                    ActionKey ak_quit_force(fc_quit_force, SDLK_q, SCAModState::ANY, SCAModState::ANY);
-
-                    // ctrl s
-                    ActionKey ak_save(fc_save, SDLK_s, SCAModState::NONE, SCAModState::ANY);
-
-                    // ctrl o
-                    ActionKey ak_open(fc_open, SDLK_o, SCAModState::NONE, SCAModState::ANY);
-
-                    // F12
-                    ActionKey ak_print_buffer(fc_print_buffer, SDLK_F12, SCAModState::DONT_CARE, SCAModState::DONT_CARE);
-
-                    // TODO: PLUS key maps to same as EQUALS, but with different shift state!
-                    // TODO: some keys have double maps
-                    ActionKey ak_scroll_inc(fc_scroll_inc, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
-                    ActionKey ak_scroll_dec(fc_scroll_dec, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
-                    ActionKey ak_scroll_inc_sub(fc_scroll_inc_sub, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
-                    ActionKey ak_scroll_dec_sub(fc_scroll_dec_sub, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
-
-                    // ijkl left right up down, edit mode
-                    ActionKey ak_up_edit(fc_up, SDLK_i, SCAModState::DONT_CARE, SCAModState::ANY);
-                    ActionKey ak_down_edit(fc_down, SDLK_k, SCAModState::DONT_CARE, SCAModState::ANY);
-                    ActionKey ak_left_edit(fc_left, SDLK_j, SCAModState::DONT_CARE, SCAModState::ANY);
-                    ActionKey ak_right_edit(fc_right, SDLK_l, SCAModState::DONT_CARE, SCAModState::ANY);
-                    // ijkl left right up down, normal mode
-                    ActionKey ak_up_normal(fc_up, SDLK_i);
-                    ActionKey ak_down_normal(fc_down, SDLK_k);
-                    ActionKey ak_left_normal(fc_left, SDLK_j);
-                    ActionKey ak_right_normal(fc_right, SDLK_l);
-
-                    // TODO: move the action key vector definitions elsewhere
-                    // this is currently slow
-
-                    // vector of all action keys
-                    std::vector<std::pair<ActionKey*, EditorMode>> akv_editor_mode_specific;
-                    // this triggers for normal mode only
-                    akv_editor_mode_specific.push_back({&ak_enter_edit_mode, EditorMode::NORMAL});
-                    // this triggers for editor mode only
-                    akv_editor_mode_specific.push_back({&ak_exit_edit_mode, EditorMode::EDIT});
-
-                    akv_editor_mode_specific.push_back({&ak_up_edit, EditorMode::EDIT});
-                    akv_editor_mode_specific.push_back({&ak_down_edit, EditorMode::EDIT});
-                    akv_editor_mode_specific.push_back({&ak_left_edit, EditorMode::EDIT});
-                    akv_editor_mode_specific.push_back({&ak_right_edit, EditorMode::EDIT});
-                    akv_editor_mode_specific.push_back({&ak_up_normal, EditorMode::NORMAL});
-                    akv_editor_mode_specific.push_back({&ak_down_normal, EditorMode::NORMAL});
-                    akv_editor_mode_specific.push_back({&ak_left_normal, EditorMode::NORMAL});
-                    akv_editor_mode_specific.push_back({&ak_right_normal, EditorMode::NORMAL});
 
                     bool fired{false};
                     std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{akv_editor_mode_specific.begin()};
@@ -418,22 +444,6 @@ class Window
                             }
                         }
                     }
-
-
-                    // vector of all action keys
-                    std::vector<ActionKey*> akv;
-                    // these trigger regardless of editor mode
-                    // or only for edit mode ?
-                    akv.push_back(&ak_quit_request);
-                    akv.push_back(&ak_quit_force);
-                    akv.push_back(&ak_save);
-                    akv.push_back(&ak_open);
-                    akv.push_back(&ak_print_buffer);
-                    akv.push_back(&ak_scroll_inc);
-                    akv.push_back(&ak_scroll_dec);
-                    akv.push_back(&ak_scroll_inc_sub);
-                    akv.push_back(&ak_scroll_dec_sub);
-
 
                     // iterate through akv
                     if(!fired)
@@ -720,6 +730,16 @@ class Window
 
     // Editor mode
     EditorMode _editor_mode_;
+
+
+    // vector of all action keys
+    std::vector<ActionKey*> akv;
+
+    // vector of all action keys
+    std::vector<std::pair<ActionKey*, EditorMode>> akv_editor_mode_specific;
+
+
+
 
 };
 
