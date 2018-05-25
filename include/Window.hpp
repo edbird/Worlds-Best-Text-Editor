@@ -45,11 +45,23 @@ enum class EditorEditMode
 
 
 
+//class Inputbox;
+//class Textbox;
+//class Label;
+
 
 class Window
 {
 
-    // list of callback functions
+    // list of friend classes
+    //friend class Inputbox;
+    //friend class Textbox;
+    //friend class Label;
+
+    // list of callback functions - inputbox
+    friend void fc_inputbox_enter_pressed(Window&);
+
+    // list of callback functions - window
     friend void fc_enter_edit_mode(Window&);
     friend void fc_exit_edit_mode(Window&);
     friend void fc_quit_request(Window&);
@@ -84,6 +96,8 @@ class Window
         //, COLOR_CURRENT_LINE_BACKGROUND{0xFFFFFF00}
         , _WIDTH_{_DEFAULT_WIDTH_}
         , _HEIGHT_{_DEFAULT_HEIGHT_}
+        //, _name_generator_current_{"a"}
+        , _name_generator_count_{1}
     {
         
         if(config.GetInt("width") != -1)
@@ -135,7 +149,6 @@ class Window
             {
                 // initialize renderer color
                 SDL_SetRenderDrawColor(_renderer_, COLOR_BACKGROUND.r, COLOR_BACKGROUND.g, COLOR_BACKGROUND.b, COLOR_BACKGROUND.a);
-
             }
 
 
@@ -194,8 +207,8 @@ class Window
 
         // clean action key vectors
         {
-            std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{akv_editor_mode_specific.begin()};
-            for(; it != akv_editor_mode_specific.end(); ++ it)
+            std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{_akv_editor_mode_specific_.begin()};
+            for(; it != _akv_editor_mode_specific_.end(); ++ it)
             {
                 delete it->first;
             }
@@ -203,8 +216,8 @@ class Window
 
         // clean action key vectors
         {
-            std::vector<ActionKey*>::iterator it{akv.begin()};
-            for(; it != akv.end(); ++ it)
+            std::vector<ActionKey*>::iterator it{_akv_.begin()};
+            for(; it != _akv_.end(); ++ it)
             {
                 delete *it;
             }
@@ -320,30 +333,30 @@ class Window
         
         // these trigger regardless of editor mode
         // or only for edit mode ?
-        akv.push_back(ak_quit_request);
-        akv.push_back(ak_quit_force);
-        akv.push_back(ak_save);
-        akv.push_back(ak_open);
-        akv.push_back(ak_print_buffer);
-        akv.push_back(ak_scroll_inc);
-        akv.push_back(ak_scroll_dec);
-        akv.push_back(ak_scroll_inc_sub);
-        akv.push_back(ak_scroll_dec_sub);
+        _akv_.push_back(ak_quit_request);
+        _akv_.push_back(ak_quit_force);
+        _akv_.push_back(ak_save);
+        _akv_.push_back(ak_open);
+        _akv_.push_back(ak_print_buffer);
+        _akv_.push_back(ak_scroll_inc);
+        _akv_.push_back(ak_scroll_dec);
+        _akv_.push_back(ak_scroll_inc_sub);
+        _akv_.push_back(ak_scroll_dec_sub);
                     
         
         // this triggers for normal mode only
-        akv_editor_mode_specific.push_back({ak_enter_edit_mode, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_enter_edit_mode, EditorMode::NORMAL});
         // this triggers for editor mode only
-        akv_editor_mode_specific.push_back({ak_exit_edit_mode, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_exit_edit_mode, EditorMode::EDIT});
 
-        akv_editor_mode_specific.push_back({ak_up_edit, EditorMode::EDIT});
-        akv_editor_mode_specific.push_back({ak_down_edit, EditorMode::EDIT});
-        akv_editor_mode_specific.push_back({ak_left_edit, EditorMode::EDIT});
-        akv_editor_mode_specific.push_back({ak_right_edit, EditorMode::EDIT});
-        akv_editor_mode_specific.push_back({ak_up_normal, EditorMode::NORMAL});
-        akv_editor_mode_specific.push_back({ak_down_normal, EditorMode::NORMAL});
-        akv_editor_mode_specific.push_back({ak_left_normal, EditorMode::NORMAL});
-        akv_editor_mode_specific.push_back({ak_right_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_up_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_down_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_left_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_right_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_up_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_down_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_left_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_right_normal, EditorMode::NORMAL});
 
     }
     
@@ -382,6 +395,18 @@ class Window
                 
                 // send data to Keyboard class
                 _keyboard_.ProcessEvent(event);
+
+
+                ////////////////////////////////////////////////////////////////
+                // GUI OBJECT EVENTS
+                ////////////////////////////////////////////////////////////////
+                
+                std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+                for(; it != _guiobject_.end(); ++ it)
+                {
+                    it->second->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
+                }
+
 
                 ////////////////////////////////////////////////////////////////
                 // WINDOW EVENTS
@@ -467,8 +492,8 @@ class Window
 
 
                     bool fired{false};
-                    std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{akv_editor_mode_specific.begin()};
-                    for(; it != akv_editor_mode_specific.end(); ++ it)
+                    std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{_akv_editor_mode_specific_.begin()};
+                    for(; it != _akv_editor_mode_specific_.end(); ++ it)
                     {
                         // check correct editor mode
                         if(it->second == _editor_mode_)
@@ -484,11 +509,11 @@ class Window
                         }
                     }
 
-                    // iterate through akv
+                    // iterate through _akv_
                     if(!fired)
                     {
-                        std::vector<ActionKey*>::iterator it{akv.begin()};
-                        for(; it != akv.end(); ++ it)
+                        std::vector<ActionKey*>::iterator it{_akv_.begin()};
+                        for(; it != _akv_.end(); ++ it)
                         {
                             if(current_keyboard_action == **it)
                             {
@@ -681,6 +706,38 @@ class Window
     }
 
 
+    std::string GenerateName() const
+    {
+        //if(_name_generator_current_[_name_generator_current.size() - 1] == 'z')
+        //{
+        //
+        //}
+        return std::to_string(_name_generator_count_);
+    }
+
+    void AddGUIObject(const std::string& name, GUIObject* const guiobject)
+    {
+        std::pair<const std::string, GUIObject*> p(name, const_cast<GUIObject*>(guiobject));
+        //_guiobject_.insert({name, guiobject});
+        _guiobject_.insert(p);
+    }
+
+
+    int Width() const
+    {
+        int *w;
+        SDL_GetWindowSize(_window_.get(), w, nullptr);
+        return *w;
+    }
+
+    int Height() const
+    {
+        int *h;
+        SDL_GetWindowSize(_window_.get(), nullptr, h);
+        return *h;
+    }
+
+
     void OpenFile(const std::string& filename)
     {
         static_cast<Textbox*>(_guiobject_.at("textbox"))->Open(filename);
@@ -802,13 +859,18 @@ class Window
 
 
     // vector of all action keys
-    std::vector<ActionKey*> akv;
+    std::vector<ActionKey*> _akv_;
 
     // vector of all action keys
-    std::vector<std::pair<ActionKey*, EditorMode>> akv_editor_mode_specific;
+    std::vector<std::pair<ActionKey*, EditorMode>> _akv_editor_mode_specific_;
 
 
+    // TODO: MOST OF THE TEXTBOX RELEVANT ACTION KEYS SHOULD BE PROCESSED 
+    // BY TEXTBOX
 
+    // name generator
+    //mutable std::string _name_generator_current_;
+    mutable uint64_t _name_generator_count_;
 
 };
 
