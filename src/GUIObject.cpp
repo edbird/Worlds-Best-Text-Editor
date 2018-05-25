@@ -5,6 +5,9 @@ GUIObject::GUIObject()
     , _pos_y_{0}
     , _size_x_{0}
     , _size_y_{0}
+    , _background_color_r_{_DEFAULT_BACKGROUND_COLOR_R_}
+    , _background_color_g_{_DEFAULT_BACKGROUND_COLOR_G_}
+    , _background_color_b_{_DEFAULT_BACKGROUND_COLOR_B_}
 {
 }
 
@@ -13,6 +16,9 @@ GUIObject::GUIObject(const int size_x, const int size_y)
     , _pos_y_{0}
     , _size_x_{size_x}
     , _size_y_{size_y}
+    , _background_color_r_{_DEFAULT_BACKGROUND_COLOR_R_}
+    , _background_color_g_{_DEFAULT_BACKGROUND_COLOR_G_}
+    , _background_color_b_{_DEFAULT_BACKGROUND_COLOR_B_}
 {
 }
 
@@ -21,6 +27,9 @@ GUIObject::GUIObject(const int pos_x, const int pos_y, const int size_x, const i
     , _pos_y_{pos_y}
     , _size_x_{size_x}
     , _size_y_{size_y}
+    , _background_color_r_{_DEFAULT_BACKGROUND_COLOR_R_}
+    , _background_color_g_{_DEFAULT_BACKGROUND_COLOR_G_}
+    , _background_color_b_{_DEFAULT_BACKGROUND_COLOR_B_}
 {
 }
 
@@ -64,5 +73,12 @@ void GUIObject::SetWidth(const int size_x)
 void GUIObject::SetHeight(const int size_y)
 {
     _size_y_ = size_y;
+}
+
+void GUIObject::SetBackgroundColor(const Uint8 r, const Uint8 g, const Uint8 b)
+{
+    _background_color_r_ = r;
+    _background_color_g_ = g;
+    _background_color_b_ = b;
 }
 

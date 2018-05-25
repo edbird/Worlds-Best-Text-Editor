@@ -670,6 +670,12 @@ class Window
     }
 
 
+    void OpenFile(const std::string& filename)
+    {
+        _textbox_ptr_->Open(filename);
+    }
+
+
     private:
 
     

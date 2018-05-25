@@ -25,9 +25,6 @@ class Statusbar : public GUIObject
         , _ftm_{ftm}
         , _text_left_offset_{4}
         , _text_right_offset_{4}
-        , _background_color_r_{_DEFAULT_BACKGROUND_COLOR_R_};
-        , _background_color_g_{_DEFAULT_BACKGROUND_COLOR_G_};
-        , _background_color_b_{_DEFAULT_BACKGROUND_COLOR_B_};
     {
     }
 
@@ -37,9 +34,6 @@ class Statusbar : public GUIObject
         , _ftm_{ftm}
         , _text_left_offset_{4}
         , _text_right_offset_{4}
-        , _background_color_r_{_DEFAULT_BACKGROUND_COLOR_R_};
-        , _background_color_g_{_DEFAULT_BACKGROUND_COLOR_G_};
-        , _background_color_b_{_DEFAULT_BACKGROUND_COLOR_B_};
     {
     }
 
@@ -90,13 +84,7 @@ class Statusbar : public GUIObject
     }
 
 
-    void SetBackgroundColor(const Uint8 r, const Uint8 g, const Uint8 b)
-    {
-        _background_color_r_ = r;
-        _backggound_colog_g_ = g;
-        _backgbound_colob_b_ = b;
-    }
-
+    
     private:
 
 
@@ -108,13 +96,6 @@ class Statusbar : public GUIObject
     int _text_left_offset_;
     int _text_right_offset_;
 
-    // TODO: base class for this
-    Uint8 _DEFAULT_BACKGROUND_COLOR_R_{0xCC};
-    Uint8 _DEFAULT_BACKGROUND_COLOR_G_{0xCC};
-    Uint8 _DEFAULT_BACKGROUND_COLOR_B_{0xCC};
-    Uint8 _background_color_r_;
-    Uint8 _background_color_g_;
-    Uint8 _background_color_b_;
 
 }
 

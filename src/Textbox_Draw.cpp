@@ -99,7 +99,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
     SDL_Rect rect1{PosX(), PosY(), Width() - overhang, Height() - y_overhang};
     SDL_Rect rect2{PosX() + Width() - overhang, PosY(), overhang, Height() - y_overhang};
     SDL_Rect rect3{PosX(), PosY() + Height() - y_overhang, Width() - overhang, y_overhang};
-    SDL_SetRenderDrawColor(renderer, 0xCC, 0xCC, 0xCC, 0xFF);
+    SDL_SetRenderDrawColor(renderer, _background_color_r_, _background_color_g_, _background_color_b_, 0xFF);
     SDL_RenderFillRect(renderer, &rect1);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
     SDL_RenderFillRect(renderer, &rect2);

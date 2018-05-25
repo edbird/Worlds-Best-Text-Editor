@@ -11,6 +11,7 @@ set(CMAKE_MODULE_PATH /home/ecb/Worlds-Best-Text-Editor)
 FIND_PACKAGE(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2TTF REQUIRED)
 INCLUDE_DIRECTORIES(WorldsBestTextEditor include ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(~/Program-Arguments)
 
 SET(SOURCE_FILES src/main.cpp src/Functions.cpp src/FunctionCallback.cpp src/GUIObject.cpp src/Buffer.cpp src/Textbox.cpp src/Textbox_Draw.cpp src/Textbox_Scroll.cpp src/Textbox_Cursor.cpp src/Actions.cpp)
 

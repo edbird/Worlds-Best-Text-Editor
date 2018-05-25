@@ -3,6 +3,10 @@
 #include "Config.hpp"
 #include "Window.hpp"
 
+
+#include "program_arguments.hpp"
+
+
 #include <cstdint>
 #include <cmath>
 
@@ -10,12 +14,44 @@
 // TODO: implement application
 
 
+void print_help(std::ostream& os)
+{
+    os << "help" << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // PROCESS PROGRAM ARGUMENTS
+    ////////////////////////////////////////////////////////////////////////////
+
+    ProgramArguments pa;
+    pa.Add("help", "--help", "false");
+    pa.Add("filename", "--filename", "buffer.txt");
+    pa.Print();
+    pa.Process(argc, argv);
+
+    std::string arg_help{pa.Get("help")};
+    std::string arg_filename{pa.Get("filename")};
+
+    if(arg_help == std::string("true"))
+    {
+        print_help(std::cout);
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // LOAD CONFIG
+    ////////////////////////////////////////////////////////////////////////////
 
     Config config;
     const Config &_config_{config};
 
+
+    ////////////////////////////////////////////////////////////////////////////
+    // LOAD SDL
+    ////////////////////////////////////////////////////////////////////////////
 
     // font pointer
     TTF_Font *_font_ = nullptr;
@@ -56,6 +92,7 @@ int main(int argc, char* argv[])
 
             // pass the font to the window
             Window window(config, _font_);
+            window.OpenFile(arg_filename);
             window.Run();
 
         }
