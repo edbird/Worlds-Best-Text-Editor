@@ -173,7 +173,7 @@ class Window
             // TODO: do not pass this as an argument, pass a pointer to a resources class
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
             _textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
-            _textbox_ptr_->SetBackgroundColor();
+            //_textbox_ptr_->SetBackgroundColor();
         
             _status_label_ = new Label("Worlds Best Text Editor", *_ftm_);
             //_status_label_->SetPosition(0, _size_y_);
@@ -444,10 +444,42 @@ class Window
                 // send data to Keyboard class
                 _keyboard_.ProcessEvent(event);
 
+                ////////////////////////////////////////////////////////////////
+                // WINDOW EVENTS
+                ////////////////////////////////////////////////////////////////
+
+                // window resize
+                if(event.type == SDL_WINDOWEVENT)
+                {
+                    
+                    switch(event.window.event)
+                    {
+
+                        case SDL_WINDOWEVENT_RESIZED:
+                            SDL_Log("Window %d resized to %d x %d", event.window.windowID, event.window.data1, event.window.data2);
+                            //_textbox_ptr_->SetSize(event.window.data1, event.window.data2);
+                            break;
+
+                        case SDL_WINDOWEVENT_SIZE_CHANGED:
+                            SDL_Log("Window %d size changed to %d x %d", event.window.windowID, event.window.data1, event.window.data2);
+                            _textbox_ptr_->SetSize(event.window.data1, event.window.data2);
+                            //_status_label_->SetSize(event.window.data1, _status_label_->Height());
+                            _status_label_->SetWidth(event.window.data1);
+                            break;
+
+                    }
+
+
+                }
+
+                ////////////////////////////////////////////////////////////////
+                // SDL QUIT EVENT
+                ////////////////////////////////////////////////////////////////
+
                 // TODO: what to do about this thing? it is not a keyboard action!
                 // but functionality is the same
                 // user request quit
-                if(event.type == SDL_QUIT)
+                else if(event.type == SDL_QUIT)
                 {
                     if(_textbox_ptr_->NotSaved())
                     {
@@ -459,6 +491,10 @@ class Window
                         _quit_ = true;
                     }
                 }
+
+                ////////////////////////////////////////////////////////////////
+                // KEY PRESS EVENTS
+                ////////////////////////////////////////////////////////////////
 
                 // keypress events
                 else if((event.type == SDL_KEYDOWN) /*|| (event.type == SDL_KEYUP)*/)
