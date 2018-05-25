@@ -20,8 +20,9 @@ class Statusbar : public GUIObject
 
     public:
 
-    Statusbar(const FontTextureManager& ftm)
-        : _ftm_{ftm}
+    Statusbar(const int width, const FontTextureManager& ftm)
+        : GUIObject(width, ftm.GetCharSize().at(' ').h)
+        , _ftm_{ftm}
         , _text_left_offset_{4}
         , _text_right_offset_{4}
         , _background_color_r_{_DEFAULT_BACKGROUND_COLOR_R_};
@@ -30,8 +31,9 @@ class Statusbar : public GUIObject
     {
     }
 
-    StatusBar(const std::string& text, const FontTexutureManager& ftm)
-        : _text_{text}
+    StatusBar(const std::string& text, const int width, const FontTexutureManager& ftm)
+        : GUIObject(width, ftm.GetCharSize().at(' ').h)
+        , _text_{text}
         , _ftm_{ftm}
         , _text_left_offset_{4}
         , _text_right_offset_{4}

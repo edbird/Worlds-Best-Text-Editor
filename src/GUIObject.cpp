@@ -1,13 +1,17 @@
 #include "GUIObject.hpp"
 
 GUIObject::GUIObject()
-    : _size_x_{0}
+    : _pos_x_{0}
+    , _pos_y_{0}
+    , _size_x_{0}
     , _size_y_{0}
 {
 }
 
 GUIObject::GUIObject(const int size_x, const int size_y)
-    : _size_x_{size_x}
+    : _pos_x_{0}
+    , _pos_y_{0}
+    , _size_x_{size_x}
     , _size_y_{size_y}
 {
 }

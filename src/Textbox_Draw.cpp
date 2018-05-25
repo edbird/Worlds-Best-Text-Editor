@@ -92,6 +92,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
     // Initialize cursor destination rect for cursor drawing
     //SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + PosX(), PosY(), _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
     
+
     // Testing purposes
     int overhang{Width() % (texture_chars_size.at(' ').w)};
     int y_overhang{Height() % (texture_chars_size.at(' ').h)};
@@ -150,7 +151,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
     // iterate over all lines in buffer
     bool quit_now = false; // TODO: this is a hack
     //std::size_t scroll_index_counter{0};
-    std::cout << _scroll_index_ << " " << _scroll_sub_index_ << " <- si, ssi" << std::endl;
+    //std::cout << _scroll_index_ << " " << _scroll_sub_index_ << " <- si, ssi" << std::endl;
     for(std::size_t line_ix{_scroll_index_}; line_ix < buffer_contents.size() && quit_now == false; ++ line_ix)//, ++ scroll_index_counter)
     {
 

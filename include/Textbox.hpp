@@ -23,7 +23,8 @@ class Textbox : public Buffer, public GUIObject
     public:
     
     Textbox(const Config& config, const FontTextureManager& ftm, const int width, const int height)
-        : _config_{config}
+        : GUIObject(width, height)
+        , _config_{config}
         , _ftm_{ftm}
         //, _size_x_{width}
         //, _size_y_{height}

@@ -159,10 +159,11 @@ class Window
 
             _refresh_delay_ = std::floor((1000.0 / (double)config.GetInt("targetrefreshrate")));
             // TODO: remove, temp hack to make slow
-            _refresh_delay_ = 500.0;
+            //_refresh_delay_ = 2000.0;
             std::cout << "refreshdelay set to: " << _refresh_delay_ << std::endl;
             // TODO: keep track of the rounded part and add it on to the next refresh delay to get
             // a more accurage 60 Hz refresh
+            //_next_refresh_delay_ = _refresh_delay_;
 
 
             init_action_keys();
@@ -432,6 +433,7 @@ class Window
                         case SDL_WINDOWEVENT_RESIZED:
                             SDL_Log("Window %d resized to %d x %d", event.window.windowID, event.window.data1, event.window.data2);
                             //_textbox_ptr_->SetSize(event.window.data1, event.window.data2);
+                            //draw_window();
                             break;
 
                         case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -442,6 +444,9 @@ class Window
                             std::stringstream status_text;
                             status_text << "Window size " << event.window.data1 << "x" << event.window.data2;
                             _status_label_->SetText(status_text.str());
+                            //draw_window();
+                            // NOTE: no point drawing here, because of loop behaviour
+                            // where there is a delay at the end
                             break;
 
                     }
@@ -679,7 +684,28 @@ class Window
             if(_quit_ == true) break;
 
 
-            //SDL_Delay(500);
+            SDL_Delay(_refresh_delay_);
+            // sdl delay until time to draw
+            // 50 ms additional included
+            /*
+            Uint32 current_time = SDL_GetTicks();
+            Uint32 elapsed_time{current_time - _timer_}; 
+            Uint32 delayed_time{0};
+            while(elapsed_time < _next_refresh_delay_)
+            {
+                SDL_Delay(_next_refresh_delay_ - elapsed_time);
+                delayed_time += _next_refresh_delay_ - elapsed_time;
+                current_time = SDL_GetTicks();
+                elapsed_time = current_time - _timer_; 
+            }
+            // TODO: next refresh delay
+            _next_refresh_delay_ = 2 * _refresh_delay_ - delayed_time;
+            std::cout << "_next_refresh_delay_=" << _next_refresh_delay_ << std::endl;
+            */
+        
+            // reset timer for cursor
+            //_timer_ = current_time; //SDL_GetTicks();
+            _timer_ = SDL_GetTicks();
 
         }
 
@@ -705,19 +731,7 @@ class Window
 
     void draw_window()
     {
-
-        // sdl delay until time to draw
-        Uint32 current_time = SDL_GetTicks();
-        Uint32 elapsed_time{current_time - _timer_};
-        // 50 ms additional included
-        if(elapsed_time /*+ 50*/ < _refresh_delay_)
-        {
-            SDL_Delay(_refresh_delay_ - elapsed_time);
-        }
-    
-        // reset timer for cursor
-        _timer_ = current_time; //SDL_GetTicks();
-        
+ 
         // do graphics drawing
         //SDL_FillRect(_surface_, nullptr, COLOR_BACKGROUND);
         
@@ -794,6 +808,7 @@ class Window
 
     Uint32 _timer_;
     Uint32 _refresh_delay_;
+    //Uint32 _next_refresh_delay_;
 
 
     // configuration options

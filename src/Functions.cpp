@@ -1,5 +1,9 @@
 #include "Functions.hpp"
 
+
+#include <iostream>
+
+
 // TODO: duplicated from CharMatrix
 // print char
 // TODO: optimize this, flag might not be required

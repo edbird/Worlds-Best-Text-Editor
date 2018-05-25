@@ -38,7 +38,8 @@ class Label : public GUIObject
     public:
 
     Label(const FontTextureManager& ftm)
-        : _ftm_{ftm}
+        : GUIObject()
+        , _ftm_{ftm}
         , _anchor_{LabelAnchor::TOP_LEFT}
     {
         set_size();
@@ -46,7 +47,8 @@ class Label : public GUIObject
 
     
     Label(const std::string& text, const FontTextureManager& ftm)
-        : _text_{text}
+        : GUIObject()
+        , _text_{text}
         , _ftm_{ftm}
         , _anchor_{LabelAnchor::TOP_LEFT}
     {
