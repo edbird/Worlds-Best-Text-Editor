@@ -3,6 +3,7 @@
 
 
 #include "Functions.hpp"
+#include "FunctionCallback.hpp"
 #include "GUIObject.hpp"
 #include "Buffer.hpp"
 #include "FontTextureManager.hpp"
@@ -140,6 +141,14 @@ class Textbox : public Buffer, public GUIObject
 
     public:
     
+
+
+    void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer)
+    {
+        // TODO
+    }
+
+
     // TODO: the buffer object should know its own WIDTH and HEIGHT
     void Draw(SDL_Renderer *const renderer, const Uint32 timer) const;
     
