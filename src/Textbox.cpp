@@ -8,7 +8,7 @@
 
 
 // Convert line number to string
-std::string Textbox::line_number_to_string(const int line_number, const int line_number_width)
+std::string Textbox::line_number_to_string(const int line_number, const int line_number_width) const
 {
     std::ostringstream ss;
     ss << std::setw(line_number_width) << std::setfill('0') << line_number;
@@ -19,7 +19,7 @@ std::string Textbox::line_number_to_string(const int line_number, const int line
 
 // TODO: pass dst_rect by reference and modify within function
 // TODO: remove _texture_chars_ arguments
-void Textbox::print_line_number(const int line_number, const int line_number_width, const unsigned int print_index_y, SDL_Renderer *const renderer)
+void Textbox::print_line_number(const int line_number, const int line_number_width, const unsigned int print_index_y, SDL_Renderer *const renderer) const
 {
     
     // get reference to texture chars size and texture pointers
@@ -30,7 +30,7 @@ void Textbox::print_line_number(const int line_number, const int line_number_wid
     // dst_rect must be moved manually by calling function
     // Note: update, dst_rect managed by this function
     const unsigned int y_off{print_index_y * texture_chars_size.at(' ').h};
-    SDL_Rect dst_rect{_pos_x_, _pos_y_ + y_off, texture_chars_size.at(' ').w, texture_chars_size.at(' ').h};
+    SDL_Rect dst_rect{PosX(), PosY() + y_off, texture_chars_size.at(' ').w, texture_chars_size.at(' ').h};
 
     std::string line_number_str{line_number_to_string(line_number, line_number_width)};
     //SDL_Rect dst_rect{0, 0, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
@@ -51,10 +51,10 @@ void Textbox::print_line_number(const int line_number, const int line_number_wid
 
 // print char
 // TODO: optimize this, flag might not be required
-// TODO: better if _pos_x_ and _pos_y_ were added here rather than adding them included with the dst_rect
+// TODO: better if PosX() and PosY() were added here rather than adding them included with the dst_rect
 // do this by passing by value
 void Textbox::print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture,
-                                    const SDL_Rect& src_rect, SDL_Rect& dst_rect)
+                                    const SDL_Rect& src_rect, SDL_Rect& dst_rect) const
 {
 
     // space for character already checked
@@ -133,7 +133,7 @@ void Textbox::update_wrap_count()
 
     // line width - the number of characters which can fit in the textbox in
     // the width direction
-    std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+    std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
     
     // const reference to data structure
     const std::vector<std::string> &buffer_contents{GetContainer()};

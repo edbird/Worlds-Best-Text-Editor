@@ -2,7 +2,11 @@
 #define LABEL_HPP
 
 
-#include "SDL.h"
+#include "GUIObject.hpp"
+
+
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 
 #include <string>
@@ -26,7 +30,7 @@ enum class LabelAnchor
 
 // label
 // can be used for debugging
-class Label
+class Label : public GUIObject
 {
 
 
@@ -36,6 +40,7 @@ class Label
         : _ftm_{ftm}
         , _anchor_{LabelAnchor::TOP_LEFT}
     {
+        set_size();
     }
 
     
@@ -44,9 +49,10 @@ class Label
         , _ftm_{ftm}
         , _anchor_{LabelAnchor::TOP_LEFT}
     {
+        set_size();
     }
 
-
+    /*
     int Width() const
     {
         // get reference to texture chars size and texture pointers
@@ -58,9 +64,11 @@ class Label
 
         return c_w * _text_.size();
     }
+    */
 
 
     // TODO: base class with width and height for drawable objects
+    /*
     int Height() const
     {
         // get reference to texture chars size and texture pointers
@@ -72,23 +80,53 @@ class Label
 
         return c_h;
     }
+    */
 
 
     void SetText(const std::string& text)
     {
         _text_ = text;
+
+        set_size();
     }
+
+
+    private:
+
+    // call after doing anything to object that changes the size,
+    // at the moment, only changing the text contents changes the size
+    // so this function must be called after the contents of _text_ is changed
+    void set_size()
+    {
+    
+        // get reference to texture chars size and texture pointers
+        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
+        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+        
+        int c_w{texture_chars_size.at(' ').w};
+        int c_h{texture_chars_size.at(' ').h};
+
+        //GUIObject::_size_x_ = c_w * _text_.size();
+        //GUIObject::_size_y_ = c_h;
+
+        SetSize(c_w * _text_.size(), c_h);
+
+    }
+
+    public:
 
 
     ////////////////////////////////////////////////////////////////////////////
     // SET POSITION AND ANCHOR
     ////////////////////////////////////////////////////////////////////////////
 
+    /*
     void SetPosition(const int pos_x, const int pos_y)
     {
         _pos_x_ = pos_x;
         _pos_y_ = pos_y;
     }
+    */
     
     void SetAnchor(const LabelAnchor anchor)
     {
@@ -154,7 +192,7 @@ class Label
         int size_y{c_h};
 
         // draw background
-        SDL_Rect rect{_pos_x_ + x_off, _pos_y_ + y_off, size_x, size_y};
+        SDL_Rect rect{PosX() + x_off, PosY() + y_off, size_x, size_y};
         SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
         SDL_RenderFillRect(renderer, &rect);
 
@@ -163,7 +201,7 @@ class Label
         // DRAW BUFFER TEXT
         ////////////////////////////////////////////////////////////////////////////
         
-        SDL_Rect dst_rect{_pos_x_ + x_off, _pos_y_ + y_off, c_w, c_h};
+        SDL_Rect dst_rect{PosX() + x_off, PosY() + y_off, c_w, c_h};
         SDL_Rect src_rect{0, 0, c_w, c_h};
 
         for(std::size_t char_ix{0}; char_ix < _text_.size(); ++ char_ix)
@@ -188,8 +226,8 @@ class Label
     private:
 
     std::string _text_;
-    int _pos_x_;
-    int _pos_y_;
+    //int _pos_x_;
+    //int _pos_y_;
 
     const FontTextureManager& _ftm_;
 

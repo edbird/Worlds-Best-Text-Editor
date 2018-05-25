@@ -86,7 +86,7 @@ void Textbox::CursorUp()
         
         // get line_width
         unsigned int line_number_width = get_line_number_width();
-        const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+        const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
 
         // TODO: should not need these variables
         // get the cursor x and y position
@@ -222,7 +222,7 @@ void Textbox::CursorDown()
         
         // get line_width
         unsigned int line_number_width = get_line_number_width();
-        const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+        const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
 
         // TODO: should not need these variables
         // get the cursor x and y position
@@ -231,7 +231,7 @@ void Textbox::CursorDown()
 //        std::cout << "cursor_pos_x=" << cursor_pos_x << " cursor_pos_y=" << cursor_pos_y << std::endl;
 
         // cursor wants to go down
-//        if(cursor_pos_y > _size_y_ / c_h - 2)
+//        if(cursor_pos_y > Height() / c_h - 2)
         //int cursor_pos_y{0};
         // check cursor position does not scroll off end of window
         int cursor_screen_pos_y{0}; // count cursor screen position
@@ -242,7 +242,7 @@ void Textbox::CursorDown()
         }
         cursor_screen_pos_y += _cursor_->GetPosCol() / line_width - _scroll_sub_index_;
         std::cout << "cursor_screen_pos_y=" << cursor_screen_pos_y << std::endl;
-        if(cursor_screen_pos_y > _size_y_ / c_h - 2)
+        if(cursor_screen_pos_y > Height() / c_h - 2)
         // Note, one of the +1's above is for the fact that the cursor is
         // going to move down, unless ScrollDown is called in which case
         // 1 should be subtracted from cursor_screen_pos_y due to the scroll
@@ -250,7 +250,7 @@ void Textbox::CursorDown()
         {
             //std::cout << "aB" << std::endl;
 
-            // cursor_pos_y must currently be _size_y_ / c_h - 1
+            // cursor_pos_y must currently be Height() / c_h - 1
             ScrollDown();
             // option: can choose either depending on desired behaviour
             //SubScrollDown();
@@ -372,7 +372,7 @@ void Textbox::CursorDown()
         
         // TODO: move elsewhere?
         unsigned int line_number_width = get_line_number_width();
-        const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+        const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
 
         // check cursor position does not scroll off end of window
         //int cursor_screen_pos_y{_cursor_->GetPosLine() + 1 - _scroll_index_ - _scroll_sub_index_}; // weird but should work
@@ -385,7 +385,7 @@ void Textbox::CursorDown()
         // subtract the sub scroll counter
         // as this part of a wrapped line is not drawn
         cursor_screen_pos_y -= _scroll_sub_index_;
-        const int screen_line_count{_size_y_ / c_h};
+        const int screen_line_count{Height() / c_h};
         if(cursor_screen_pos_y < screen_line_count)
         {
             std::cout << "cursor_screen_pos_y < screen_line_count" << std::endl;
@@ -397,7 +397,7 @@ void Textbox::CursorDown()
                 std::cout << "sub scroll" << std::endl;
                 // move cursor
                 //unsigned int line_number_width = get_line_number_width();
-                //const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+                //const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
                 _cursor_->SetPos(_cursor_->GetPosLine(), _cursor_->GetPosCol() + line_width); // no check required here
             }
             else
@@ -407,7 +407,7 @@ void Textbox::CursorDown()
                 if(_cursor_->GetPosLine() + 1 < buffer_content.size())
                 {
                     //unsigned int line_number_width = get_line_number_width();
-                    //const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+                    //const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
                     _cursor_->SetPos(_cursor_->GetPosLine() + 1, _cursor_->GetPosCol() % line_width);
                 }
             }
@@ -422,7 +422,7 @@ void Textbox::CursorDown()
                 ++ _scroll_sub_index_;
                 // move cursor
                 //unsigned int line_number_width = get_line_number_width();
-                //const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+                //const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
                 _cursor_->SetPos(_cursor_->GetPosLine(), _cursor_->GetPosCol() + line_width); // no check required here
             }
             else
@@ -436,7 +436,7 @@ void Textbox::CursorDown()
                     if(_cursor_->GetPosLine() + 1 < buffer_content.size())
                     {
                         //unsigned int line_number_width = get_line_number_width();
-                        //const std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
+                        //const std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
                         _cursor_->SetPos(_cursor_->GetPosLine() + 1, _cursor_->GetPosCol() % line_width);
                     }
                 }
@@ -451,8 +451,8 @@ void Textbox::CursorDown()
 #endif
 
 #if 0
-        int window_line_count{_size_y_ / c_h}; // the number of lines there is space for in the textbox window
-        std::cout << "size_y=" << _size_y_ << " c_h=" << c_h << std::endl;
+        int window_line_count{Height() / c_h}; // the number of lines there is space for in the textbox window
+        std::cout << "size_y=" << Height() << " c_h=" << c_h << std::endl;
         std::cout << "window_line_count=" << window_line_count << std::endl;
         int delta_cursor_position{_cursor_->GetPosLine() - _scroll_index_};
         int window_cursor_position{0}; // starts at index 0, cursor index starts at 0
@@ -564,8 +564,8 @@ void Textbox::CursorDown()
         }
 
         // check cursor position does not scroll off end of window
-        int window_line_count{_size_y_ / c_h}; // the number of lines there is space for in the textbox window
-        std::cout << "size_y=" << _size_y_ << " c_h=" << c_h << std::endl;
+        int window_line_count{Height() / c_h}; // the number of lines there is space for in the textbox window
+        std::cout << "size_y=" << Height() << " c_h=" << c_h << std::endl;
         std::cout << "window_line_count=" << window_line_count << std::endl;
         int delta_cursor_position{_cursor_->GetPosLine() - _scroll_index_};
         int window_cursor_position{0}; // starts at index 0, cursor index starts at 0

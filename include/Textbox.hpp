@@ -1,11 +1,13 @@
 #ifndef TEXTBOX_HPP
 #define TEXTBOX_HPP
 
+#include "GUIObject.hpp"
 #include "Buffer.hpp"
 #include "FontTextureManager.hpp"
 //#include "CharMatrix.hpp"
 
 
+#include <SDL.h>
 #include <SDL_ttf.h>
 
 
@@ -13,7 +15,7 @@
 #include <sstream>
 
 
-class Textbox : public Buffer
+class Textbox : public Buffer, public GUIObject
 {
 
     public:
@@ -21,10 +23,10 @@ class Textbox : public Buffer
     Textbox(const Config& config, const FontTextureManager& ftm, const int width, const int height)
         : _config_{config}
         , _ftm_{ftm}
-        , _size_x_{width}
-        , _size_y_{height}
-        , _pos_x_{0} // TODO: test with/out line number
-        , _pos_y_{0}
+        //, _size_x_{width}
+        //, _size_y_{height}
+        //, _pos_x_{0} // TODO: test with/out line number
+        //, _pos_y_{0}
         //, _line_text_first_line_{0}
         , _scroll_index_{0}
         , _scroll_sub_index_{0}
@@ -117,26 +119,26 @@ class Textbox : public Buffer
     ////////////////////////////////////////////////////////////////////////////
     
     // Convert line number to string
-    std::string line_number_to_string(const int line_number, const int line_number_width);
+    std::string line_number_to_string(const int line_number, const int line_number_width) const;
 
     // compute line number width
     unsigned int get_line_number_width() const;        
 
     // TODO: pass dst_rect by reference and modify within function
     // TODO: remove _texture_chars_ arguments
-    void print_line_number(const int line_number, const int line_number_width, const unsigned int print_index_y, SDL_Renderer *const _renderer_);
+    void print_line_number(const int line_number, const int line_number_width, const unsigned int print_index_y, SDL_Renderer *const _renderer_) const;
     
 
 
     // print char
     // TODO: optimize this, flag might not be required
     void print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture,
-                            const SDL_Rect& src_rect, SDL_Rect& dst_rect);
+                            const SDL_Rect& src_rect, SDL_Rect& dst_rect) const;
 
     public:
     
     // TODO: the buffer object should know its own WIDTH and HEIGHT
-    void Draw(SDL_Renderer *const renderer, const Uint32 timer);
+    void Draw(SDL_Renderer *const renderer, const Uint32 timer) const;
     
     //{
         //const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
@@ -208,12 +210,12 @@ class Textbox : public Buffer
     //Buffer _buffer_;
 
     // size of buffer on screen (for drawing)
-    int _size_x_;
-    int _size_y_;
+    //int _size_x_;
+    //int _size_y_;
 
     // position (for drawing)
-    int _pos_x_;
-    int _pos_y_;
+    //int _pos_x_;
+    //int _pos_y_;
     
     
     /// Drawing specific members ///
