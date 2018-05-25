@@ -173,7 +173,7 @@ class Window
             // TODO: do not pass this as an argument, pass a pointer to a resources class
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
             _textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
-            _textbox_ptr_->SetBackgroundColor();
+            //_textbox_ptr_->SetBackgroundColor();
         
             _status_label_ = new Label("Worlds Best Text Editor", *_ftm_);
             //_status_label_->SetPosition(0, _size_y_);
