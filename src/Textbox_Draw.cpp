@@ -1,6 +1,6 @@
 #include "Textbox.hpp"
 
-void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
+void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
 {
 
     // line wrap count, line number count, line number draw boolean, std::vector<std::string>
@@ -67,7 +67,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     // size of individual characters
     // position set to origin of screen and character 'a' (first
     // character in the character string)
-    //int dst_rect_origin_x{_pos_x_}; // origin x for text, leaving space for line numbers
+    //int dst_rect_origin_x{PosX()}; // origin x for text, leaving space for line numbers
 
     // Move dst_rect_origin_x if line numbers are enabled
     // this is the starting x position for text drawing
@@ -84,20 +84,20 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     SDL_Rect src_rect{0, 0, c_w, c_h};
     
     // Initialize destination rect for line number printing
-    //SDL_Rect dst_rect_line_number{_pos_x_, _pos_y_, texture_chars_size.at(' ').w, texture_chars_size.at(' ').h};
+    //SDL_Rect dst_rect_line_number{PosX(), PosY(), texture_chars_size.at(' ').w, texture_chars_size.at(' ').h};
 
     // Initialize destination rect for character printing
-    //SDL_Rect dst_rect{dst_rect_origin_x, _pos_y_, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+    //SDL_Rect dst_rect{dst_rect_origin_x, PosY(), _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
 
     // Initialize cursor destination rect for cursor drawing
-    //SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + _pos_x_, _pos_y_, _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+    //SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + PosX(), PosY(), _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
     
     // Testing purposes
-    int overhang{_size_x_ % (texture_chars_size.at(' ').w)};
-    int y_overhang{_size_y_ % (texture_chars_size.at(' ').h)};
-    SDL_Rect rect1{_pos_x_, _pos_y_, _size_x_ - overhang, _size_y_ - y_overhang};
-    SDL_Rect rect2{_pos_x_ + _size_x_ - overhang, _pos_y_, overhang, _size_y_ - y_overhang};
-    SDL_Rect rect3{_pos_x_, _pos_y_ + _size_y_ - y_overhang, _size_x_ - overhang, y_overhang};
+    int overhang{Width() % (texture_chars_size.at(' ').w)};
+    int y_overhang{Height() % (texture_chars_size.at(' ').h)};
+    SDL_Rect rect1{PosX(), PosY(), Width() - overhang, Height() - y_overhang};
+    SDL_Rect rect2{PosX() + Width() - overhang, PosY(), overhang, Height() - y_overhang};
+    SDL_Rect rect3{PosX(), PosY() + Height() - y_overhang, Width() - overhang, y_overhang};
     SDL_SetRenderDrawColor(renderer, 0xCC, 0xCC, 0xCC, 0xFF);
     SDL_RenderFillRect(renderer, &rect1);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
@@ -107,8 +107,8 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     
     // line width - the number of characters which can fit in the textbox in
     // the width direction
-    std::size_t line_width{(std::size_t)(_size_x_ / c_w - line_number_width)}; // TODO remove std::size_t ?
-    std::size_t line_count{(_size_y_ / c_h)};
+    std::size_t line_width{(std::size_t)(Width() / c_w - line_number_width)}; // TODO remove std::size_t ?
+    std::size_t line_count{(Height() / c_h)};
     
     
     ////////////////////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                 // TODO: are these needed anymore?
                 //if(check_space_y(dst_rect_line_number))
                 //{
-                //SDL_Rect dst_rect_line_number{_pos_x_ + 0, _pos_y_ + print_index_y * c_h, c_w, c_h};
+                //SDL_Rect dst_rect_line_number{PosX() + 0, PosY() + print_index_y * c_h, c_w, c_h};
                 //print_line_number(line_number, line_number_width, dst_rect_line_number, renderer);
                 // set the line number
                 line_number = 1 + line_ix;
@@ -265,7 +265,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                             // TODO: line_ix is also wrong if lines are wrapped
                         
                             // character dst rect
-                            SDL_Rect dst_rect{_pos_x_ + dst_rect_origin_x + x_off, _pos_y_ + y_off, c_w, c_h};
+                            SDL_Rect dst_rect{PosX() + dst_rect_origin_x + x_off, PosY() + y_off, c_w, c_h};
                         
                             // character to print
                             //const char ch{next_line[char_ix]};
@@ -291,7 +291,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
                     // line wrapped, finished wrapping, increment the y position index
                     //++ print_index_y;
 
-                    //int window_line_count{_size_y_ / c_h}; // the number of lines there is space for in the textbox window
+                    //int window_line_count{Height() / c_h}; // the number of lines there is space for in the textbox window
                     //if(print_index_y >= window_line_count) break;
                     //if(print_index_y >= line_count) quit_now = true;
                     // TODO: can remove ^^^
@@ -334,7 +334,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
 
                     //if(_line_number_[line_ix + 1] == true)
                     //{
-                    SDL_Rect dst_rect_line_number{_pos_x_ + 0, _pos_y_ + print_index_y * c_h, c_w, c_h};
+                    SDL_Rect dst_rect_line_number{PosX() + 0, PosY() + print_index_y * c_h, c_w, c_h};
                     print_line_number(line_number, _line_number_width_, dst_rect_line_number, renderer);
                     ++ line_number;
                     //}
@@ -379,7 +379,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     //const int c_w{texture_chars_size.at(' ').w};
     const int x_off{c_w * cursor_x};
     const int y_off{c_h * cursor_y};
-    SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + _pos_x_ + x_off, _pos_y_ + y_off, c_w, c_h};
+    SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + PosX() + x_off, PosY() + y_off, c_w, c_h};
 
     // make cursor blink (TODO: use config option)
     //int cursor_blink_rate{500}; // TODO
@@ -402,7 +402,7 @@ void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer)
     //if(_timer_ / 500 % 2 == 1)
     //{
         //_current_cursor_texture_ptr_ = _cursor_texture_.at(3); // TODO: FIX THIS SHOULD NOT BE A CONST!
-    //SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + _texture_chars_size_.at(' ').w * _cursor_->GetPosCol(), _pos_y_ + _texture_chars_size_.at(' ').h * _cursor_->GetPosLine(), _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
+    //SDL_Rect cursor_texture_dst_rect{dst_rect_origin_x + _texture_chars_size_.at(' ').w * _cursor_->GetPosCol(), PosY() + _texture_chars_size_.at(' ').h * _cursor_->GetPosLine(), _texture_chars_size_.at(' ').w, _texture_chars_size_.at(' ').h};
     _cursor_->Draw(renderer, cursor_texture_dst_rect, timer);
     // TODO: passing timer here is a bit weird, better to do Cursor.Update(timer) somewhere else
     // before this function call?
