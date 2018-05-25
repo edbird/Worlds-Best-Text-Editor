@@ -234,53 +234,6 @@ class Window
     
     private:
     
-    // old function - moved to FontTextureManager
-    //void init_texture_chars()
-    //{
-    //            
-    //    // init printable characters
-    //    for(char ch{' '}; ; )
-    //    {
-    //
-    //        // render text surface
-    //        const char ch_string[2]{ch, '\0'};
-    //        
-    //        // render text
-    //        SDL_Color COLOR_TEXT_DEFAULT = _color_palette_.Get("black");
-    //        SDL_Surface* text_surface = TTF_RenderText_Solid((TTF_Font*)_font_, ch_string /*_texture_chars_.c_str()*/, COLOR_TEXT_DEFAULT);
-    //        
-    //        if(text_surface == nullptr)
-    //        {
-    //            std::cout << TTF_GetError() << std::endl;
-    //        }
-    //        else
-    //        {
-    //            // create texture from surface pixels
-    //            SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer_, text_surface);
-    //            if(texture == nullptr)
-    //            {
-    //                std::cout << SDL_GetError() << std::endl;
-    //            }
-    //            else
-    //            {
-    //                //Get image dimensions
-    //                //_texture_width_ = _text_surface_->w;
-    //                //_texture_height_ = _text_surface_->h;
-    //
-    //                _texture_chars_[ch] = texture;
-    //                _texture_chars_size_[ch].w = text_surface->w;
-    //                _texture_chars_size_[ch].h = text_surface->h;
-    //            }
-    //
-    //            //Get rid of old surface
-    //            SDL_FreeSurface(text_surface);
-    //        } 
-    //
-    //        if(ch == '~') break;
-    //        ++ ch;
-    //    }
-    //}
-    
     void init_action_keys()
     {
 
@@ -440,7 +393,11 @@ class Window
                             SDL_Log("Window %d size changed to %d x %d", event.window.windowID, event.window.data1, event.window.data2);
                             _textbox_ptr_->SetSize(event.window.data1, event.window.data2);
                             //_status_label_->SetSize(event.window.data1, _status_label_->Height());
-                            _status_label_->SetWidth(event.window.data1);
+                            
+                            // TODO should not be able to call SetWidth on status label, this is auto
+                            //_status_label_->SetWidth(event.window.data1);
+                            _status_label_->SetPosition(0, event.window.data2);
+
                             std::stringstream status_text;
                             status_text << "Window size " << event.window.data1 << "x" << event.window.data2;
                             _status_label_->SetText(status_text.str());
