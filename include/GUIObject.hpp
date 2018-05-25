@@ -2,8 +2,13 @@
 #define GUIOBJECT_HPP
 
 
+#include "Keyboard.hpp"
+#include "Actions.hpp"
+
+
 #include <SDL.h>
 
+class Window;
 
 class GUIObject
 {
@@ -13,6 +18,8 @@ class GUIObject
     GUIObject();
     GUIObject(const int, const int);
     GUIObject(const int, const int, const int, const int);
+
+    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) = 0;
 
     virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const = 0;
 
