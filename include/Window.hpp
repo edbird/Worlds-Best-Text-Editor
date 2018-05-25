@@ -3,6 +3,7 @@
 
 
 #include "Actions.hpp"
+#include "FunctionCallback.hpp"
 #include "Config.hpp"
 #include "FontTextureManager.hpp"
 //#include "Buffer.hpp"
@@ -41,33 +42,6 @@ enum class EditorEditMode
     REPLACE
 };
 
-
-
-
-
-
-// TODO: remove Textbox& by accessing textbox through Window&
-void fc_enter_edit_mode(Window&);
-void fc_exit_edit_mode(Window&);
-void fc_quit_request(Window&);
-void fc_quit_force(Window&);
-void fc_open(Window&);
-void fc_save(Window&);
-
-// for debugging, increment / decrement the scroll index
-void fc_scroll_inc(Window&);
-void fc_scroll_dec(Window&);
-void fc_scroll_inc_sub(Window&);
-void fc_scroll_dec_sub(Window&);
-
-
-// debug function
-void fc_print_buffer(Window&);
-
-void fc_up(Window&);
-void fc_down(Window&);
-void fc_left(Window&);
-void fc_right(Window&);
 
 
 
@@ -465,6 +439,9 @@ class Window
                             _textbox_ptr_->SetSize(event.window.data1, event.window.data2);
                             //_status_label_->SetSize(event.window.data1, _status_label_->Height());
                             _status_label_->SetWidth(event.window.data1);
+                            std::stringstream status_text;
+                            status_text << "Window size " << event.window.data1 << "x" << event.window.data2;
+                            _status_label_->SetText(status_text.str());
                             break;
 
                     }
@@ -911,6 +888,9 @@ void fc_save(Window& current_window)
 {
     //save_action
     current_window._textbox_ptr_->Save("buffer.txt");
+    std::stringstream status_text;
+    status_text << "Save: buffer.txt, " << current_window._textbox_ptr_->Size() << " bytes";
+    current_window._status_label_->SetText(status_text.str());
     std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
 }
 

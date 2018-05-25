@@ -133,24 +133,6 @@ class Label : public GUIObject
         _anchor_ = anchor;
     }
 
-
-
-    // TODO: duplicated from CharMatrix
-    // print char
-    // TODO: optimize this, flag might not be required
-    // TODO: better if _pos_x_ and _pos_y_ were added here rather than adding them included with the dst_rect
-    // do this by passing by value
-    void print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture,
-                                        const SDL_Rect& src_rect, SDL_Rect& dst_rect) const
-    {
-
-        // space for character already checked
-        // do print
-        SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
-
-    }
-
-
     void Draw(SDL_Renderer *const renderer, const Uint32 timer) const
     {
 
@@ -188,11 +170,11 @@ class Label : public GUIObject
         int c_h{texture_chars_size.at(' ').h};
 
         // compute size
-        int size_x{c_w * _text_.size()};
-        int size_y{c_h};
+        //int size_x{c_w * _text_.size()};
+        //int size_y{c_h};
 
         // draw background
-        SDL_Rect rect{PosX() + x_off, PosY() + y_off, size_x, size_y};
+        SDL_Rect rect{PosX() + x_off, PosY() + y_off, Width(), Height()};
         SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
         SDL_RenderFillRect(renderer, &rect);
 

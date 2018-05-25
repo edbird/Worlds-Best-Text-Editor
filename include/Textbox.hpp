@@ -132,8 +132,8 @@ class Textbox : public Buffer, public GUIObject
 
     // print char
     // TODO: optimize this, flag might not be required
-    void print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture,
-                            const SDL_Rect& src_rect, SDL_Rect& dst_rect) const;
+    //void print_char_texture(SDL_Renderer *const renderer, SDL_Texture* const texture,
+    //                        const SDL_Rect& src_rect, SDL_Rect& dst_rect) const;
 
     public:
     
