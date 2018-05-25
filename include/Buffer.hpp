@@ -30,6 +30,12 @@ class Buffer
 
     std::size_t Size() const;
 
+    std::string GetFilename() const;
+    void SetFilename(const std::string& filename);
+
+    void Save() const;
+    void Open();
+
     // save to text file
     void Save(const std::string& filename) const;
 
@@ -101,6 +107,9 @@ class Buffer
 
     // const
     const std::string _new_line_string_{std::string("\n")};
+
+    // filename associated with buffer
+    mutable std::string _filename_;
 
 };
 

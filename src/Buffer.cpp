@@ -31,10 +31,29 @@ std::size_t Buffer::Size() const
 }
 
 
+std::string Buffer::GetFilename() const
+{
+    return _filename_;
+}
+
+
+void Buffer::SetFilename(const std::string& filename)
+{
+    _filename_ = filename;
+}
+
+
 // save to text file
 void Buffer::Save(const std::string& filename) const
 {
-    std::ofstream ofs(filename, std::ios::out | std::ios::trunc);
+    _filename_ = filename;
+    
+    Save();
+}
+
+void Buffer::Save() const
+{
+    std::ofstream ofs(_filename_, std::ios::out | std::ios::trunc);
     const std::string stream_data{Get()};
     ofs.write(stream_data.data(), stream_data.size());
     ofs.flush();
@@ -49,11 +68,19 @@ void Buffer::Save(const std::string& filename) const
 // and sets the _not_saved_ flag to FALSE
 void Buffer::Open(const std::string& filename)
 {
+    _filename_ = filename;
+
+    Open();
+}
+
+void Buffer::Open()
+{
+
     // TODO: maximum memory useage (virtual machine memory)
     // clear old contents
     _line_text_.clear();
 
-    std::ifstream ifs(filename, std::ios::in | std::ios::ate);
+    std::ifstream ifs(_filename_, std::ios::in | std::ios::ate);
     std::streampos fsize{ifs.tellg()};
     //std::cout << "file size is " << fsize << ". read" << std::endl;
     ifs.seekg(std::ios::beg);
@@ -112,7 +139,7 @@ void Buffer::Open(const std::string& filename)
         {
             // some other character was found which is invalid
             // abort
-            std::cerr << "Error opening file " << filename << "\nData corruption or invalid file type detected\nPosition: " << buf_p1 - buf << std::endl;
+            std::cerr << "Error opening file " << _filename_ << "\nData corruption or invalid file type detected\nPosition: " << buf_p1 - buf << std::endl;
             break; // abort immediate
         }
     }

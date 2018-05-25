@@ -77,15 +77,18 @@ void fc_quit_force(Window& current_window)
 // CTRL-S: save action
 void fc_save(Window& current_window)
 {
+    // TODO: request a filename
+    //current_window.AddGUIObject(new Inputbox());
+
     //save_action
     //current_window._textbox_ptr_->Save("buffer.txt");
-    current_window._textbox_ptr_->Save("buffer.txt");
+    current_window._textbox_ptr_->Save();
     std::stringstream status_text;
     //status_text << "Save: buffer.txt, " << current_window._textbox_ptr_->Size() << " bytes";
-    status_text << "Save: buffer.txt, " << current_window._textbox_ptr_->Size() << " bytes";
+    status_text << "Save: " << current_window._textbox_ptr_->GetFilename() << ", " << current_window._textbox_ptr_->Size() << " bytes";
     current_window._status_label_->SetText(status_text.str());
     //std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
-    std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
+    std::cout << "File " << current_window._textbox_ptr_->GetFilename() << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
 }
 
 
@@ -103,9 +106,9 @@ void fc_open(Window& current_window)
         current_window._textbox_ptr_->ResetCursor();
 
         //current_window._textbox_ptr_->Open("buffer.txt");
-        current_window._textbox_ptr_->Open("buffer.txt");
+        current_window._textbox_ptr_->Open(current_window._textbox_ptr_->GetFilename());
         //std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
-        std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
+        std::cout << "File " << current_window._textbox_ptr_->GetFilename() << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
     }
 }
 

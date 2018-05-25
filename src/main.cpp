@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     pa.Process(argc, argv);
 
     std::string arg_help{pa.Get("help")};
-    std::string arg_filename{pa.Get("filename")};
+    //std::string arg_filename{pa.Get("filename")};
 
     if(arg_help == std::string("true"))
     {
@@ -92,7 +92,10 @@ int main(int argc, char* argv[])
 
             // pass the font to the window
             Window window(config, _font_);
-            window.OpenFile(arg_filename);
+            if(pa.WasProvided("filename"))
+            {
+                window.OpenFile(pa.Get("filename"));
+            }
             window.Run();
 
         }
