@@ -4,9 +4,32 @@
 #include "Window.hpp"
 #include "Textbox.hpp"
 #include "Label.hpp"
+#include "Inputbox.hpp"
 
 
 #include <iostream>
+
+////////////////////////////////////////////////////////////////////////////////
+// INPUTBOX CALLBACKS
+////////////////////////////////////////////////////////////////////////////////
+
+// TODO: should Window& be replaced with GUIObject& ?
+// would require Window to become part of gui unless
+// events for window are processed differently
+void fc_inputbox_enter_pressed(Window& current_window)
+{
+
+    // get filename from inputbox contents
+    const std::string filename{static_cast<Inputbox*>(current_window._guiobject_.at("inputbox"))->GetText()};
+
+    // set textbox filename
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->SetFilename(filename);
+
+}
+
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +119,12 @@ void fc_save(Window& current_window)
 void fc_open(Window& current_window)
 {
     // TODO: request a filename
-    //current_window.AddGUIObject(new Inputbox());
+    Inputbox *inputbox = new Inputbox(*current_window._ftm_);
+    inputbox->SetPosition(current_window.Width() / 2, current_window.Height() / 2);
+    // TODO: anchor
+    current_window.AddGUIObject(current_window.GenerateName(), inputbox);
+
+    // TODO: check if valid filename returned in fc_inputbox_enter_pressed
 
     //open_action
     if(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->NotSaved())
