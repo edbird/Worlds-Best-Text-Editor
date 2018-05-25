@@ -1,6 +1,7 @@
 #ifndef FUNCTIONCALLBACK_HPP
 #define FUNCTIONCALLBACK_HPP
 
+class Window;
 
 void fc_enter_edit_mode(Window&);
 void fc_exit_edit_mode(Window&);

@@ -1,3 +1,4 @@
+#include "Functions.hpp"
 
 // TODO: duplicated from CharMatrix
 // print char
