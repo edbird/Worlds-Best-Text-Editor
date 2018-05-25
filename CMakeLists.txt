@@ -12,7 +12,7 @@ FIND_PACKAGE(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2TTF REQUIRED)
 INCLUDE_DIRECTORIES(WorldsBestTextEditor include ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
 
-SET(SOURCE_FILES src/main.cpp src/GUIObject.cpp src/Buffer.cpp src/Textbox.cpp src/Textbox_Draw.cpp src/Textbox_Scroll.cpp src/Textbox_Cursor.cpp)
+SET(SOURCE_FILES src/main.cpp ./src/Functions.cpp src/GUIObject.cpp src/Buffer.cpp src/Textbox.cpp src/Textbox_Draw.cpp src/Textbox_Scroll.cpp src/Textbox_Cursor.cpp)
 
 ADD_EXECUTABLE(WorldsBestTextEditor ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(WorldsBestTextEditor ${SDL2_LIBRARIES} ${SDL2TTF_LIBRARY})
