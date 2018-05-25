@@ -2,8 +2,10 @@
 #define LABEL_HPP
 
 
+#include "FontTextureManager.hpp"
 #include "Functions.hpp"
 #include "GUIObject.hpp"
+#include "FunctionCallback.hpp"
 
 
 #include <SDL.h>
@@ -93,6 +95,11 @@ class Label : public GUIObject
         set_size();
     }
 
+    std::string GetText() const
+    {
+        return _text_;
+    }
+
 
     private:
 
@@ -134,6 +141,13 @@ class Label : public GUIObject
     void SetAnchor(const LabelAnchor anchor)
     {
         _anchor_ = anchor;
+    }
+
+    void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer)
+    {
+        // do nothing
+
+        // TODO: make label blink ?
     }
 
     void Draw(SDL_Renderer *const renderer, const Uint32 timer) const
