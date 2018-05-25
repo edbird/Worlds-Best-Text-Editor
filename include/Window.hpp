@@ -75,7 +75,7 @@ class Window
         , _window_(nullptr, SDL_DestroyWindow)
         , _surface_{nullptr}
         //, _font_{font}
-        , _editor_mode_{EditorMode::NORMAL} // TODO: config file default mode
+        , _editor_mode_{EditorMode::EDIT} // TODO: config file default mode
         , _config_{config}
         //, _ftm_{ftm}
         //, COLOR_BACKGROUND{0x00000000}
