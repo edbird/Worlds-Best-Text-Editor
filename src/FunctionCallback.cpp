@@ -78,10 +78,13 @@ void fc_quit_force(Window& current_window)
 void fc_save(Window& current_window)
 {
     //save_action
+    //current_window._textbox_ptr_->Save("buffer.txt");
     current_window._textbox_ptr_->Save("buffer.txt");
     std::stringstream status_text;
+    //status_text << "Save: buffer.txt, " << current_window._textbox_ptr_->Size() << " bytes";
     status_text << "Save: buffer.txt, " << current_window._textbox_ptr_->Size() << " bytes";
     current_window._status_label_->SetText(status_text.str());
+    //std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
     std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
 }
 
@@ -99,7 +102,9 @@ void fc_open(Window& current_window)
         // reset cursor position
         current_window._textbox_ptr_->ResetCursor();
 
+        //current_window._textbox_ptr_->Open("buffer.txt");
         current_window._textbox_ptr_->Open("buffer.txt");
+        //std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
         std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
     }
 }
