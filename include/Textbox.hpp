@@ -1,6 +1,8 @@
 #ifndef TEXTBOX_HPP
 #define TEXTBOX_HPP
 
+
+#include "Functions.hpp"
 #include "GUIObject.hpp"
 #include "Buffer.hpp"
 #include "FontTextureManager.hpp"

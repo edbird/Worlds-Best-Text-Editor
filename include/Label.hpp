@@ -2,6 +2,7 @@
 #define LABEL_HPP
 
 
+#include "Functions.hpp"
 #include "GUIObject.hpp"
 
 
