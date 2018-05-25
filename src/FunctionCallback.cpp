@@ -46,7 +46,7 @@ void fc_quit_request(Window& current_window)
     std::cout << "QUIT" << std::endl;
     //quit_action
     // quit request action
-    if(current_window._textbox_ptr_->NotSaved())
+    if(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->NotSaved())
     {
         std::cout << "The buffer is not saved, cannot quit" << std::endl;
         std::cout << "CTRL+SHIFT+Q to quit anyway" << std::endl;
@@ -81,34 +81,37 @@ void fc_save(Window& current_window)
     //current_window.AddGUIObject(new Inputbox());
 
     //save_action
-    //current_window._textbox_ptr_->Save("buffer.txt");
-    current_window._textbox_ptr_->Save();
+    //current_window._guiobject_.at("textbox")->Save("buffer.txt");
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Save();
     std::stringstream status_text;
-    //status_text << "Save: buffer.txt, " << current_window._textbox_ptr_->Size() << " bytes";
-    status_text << "Save: " << current_window._textbox_ptr_->GetFilename() << ", " << current_window._textbox_ptr_->Size() << " bytes";
-    current_window._status_label_->SetText(status_text.str());
-    //std::cout << "File " << "buffer.txt" << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
-    std::cout << "File " << current_window._textbox_ptr_->GetFilename() << " written, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
+    //status_text << "Save: buffer.txt, " << current_window._guiobject_.at("textbox")->Size() << " bytes";
+    status_text << "Save: " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->GetFilename() << ", " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Size() << " bytes";
+    static_cast<Label*>(current_window._guiobject_.at("status_label"))->SetText(status_text.str());
+    //std::cout << "File " << "buffer.txt" << " written, " << current_window._guiobject_.at("textbox")->Size() << " bytes" << std::endl;
+    std::cout << "File " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->GetFilename() << " written, " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Size() << " bytes" << std::endl;
 }
 
 
 // CTRL-O: open action
 void fc_open(Window& current_window)
 {
+    // TODO: request a filename
+    //current_window.AddGUIObject(new Inputbox());
+
     //open_action
-    if(current_window._textbox_ptr_->NotSaved())
+    if(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->NotSaved())
     {
         std::cout << "The buffer is not saved, cannot open" << std::endl;
     }
     else
     {
         // reset cursor position
-        current_window._textbox_ptr_->ResetCursor();
+        static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->ResetCursor();
 
-        //current_window._textbox_ptr_->Open("buffer.txt");
-        current_window._textbox_ptr_->Open(current_window._textbox_ptr_->GetFilename());
-        //std::cout << "File " << "buffer.txt" << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
-        std::cout << "File " << current_window._textbox_ptr_->GetFilename() << " read, " << current_window._textbox_ptr_->Size() << " bytes" << std::endl;
+        //current_window._guiobject_.at("textbox")->Open("buffer.txt");
+        static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Open(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->GetFilename());
+        //std::cout << "File " << "buffer.txt" << " read, " << current_window._guiobject_.at("textbox")->Size() << " bytes" << std::endl;
+        std::cout << "File " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->GetFilename() << " read, " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Size() << " bytes" << std::endl;
     }
 }
 
@@ -119,7 +122,7 @@ void fc_open(Window& current_window)
 
 void fc_print_buffer(Window& current_window)
 {
-    std::cout << current_window._textbox_ptr_->Get() << std::endl;
+    std::cout << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Get() << std::endl;
 }
 
 
@@ -129,26 +132,22 @@ void fc_print_buffer(Window& current_window)
 
 void fc_scroll_inc(Window& current_window)
 {
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.ScrollDown();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->ScrollDown();
 }
 
 void fc_scroll_dec(Window& current_window)
 {
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.ScrollUp();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->ScrollUp();
 }
 
 void fc_scroll_inc_sub(Window& current_window)
 {
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.ScrollDownSub();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->ScrollDownSub();
 }
 
 void fc_scroll_dec_sub(Window& current_window)
 {
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.ScrollUpSub();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->ScrollUpSub();
 }
 
 
@@ -158,24 +157,20 @@ void fc_scroll_dec_sub(Window& current_window)
 
 void fc_up(Window& current_window)
 { 
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.CursorUp();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->CursorUp();
 }
 
 void fc_down(Window& current_window)
 { 
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.CursorDown();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->CursorDown();
 }
 
 void fc_left(Window& current_window)
 { 
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.CursorLeft();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->CursorLeft();
 }
 
 void fc_right(Window& current_window)
 { 
-    Textbox &textbox{*current_window._textbox_ptr_};
-    textbox.CursorRight();
+    static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->CursorRight();
 }

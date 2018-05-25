@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <fstream>
 #include <memory>
+#include <map>
 
 
 // VIM like editor modes
@@ -146,13 +147,15 @@ class Window
 
             // TODO: do not pass this as an argument, pass a pointer to a resources class
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
-            _textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
+            //_textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
+            _guiobject_.insert({"textbox", new Textbox(_config_, *_ftm_, _WIDTH_, 580)});
             //_textbox_ptr_->SetBackgroundColor();
         
-            _status_label_ = new Label("Worlds Best Text Editor", *_ftm_);
+            Label *status_label = new Label("Worlds Best Text Editor", *_ftm_);
+            _guiobject_.insert({"statuslabel", status_label});
             //_status_label_->SetPosition(0, _size_y_);
-            _status_label_->SetPosition(0, _HEIGHT_);
-            _status_label_->SetAnchor(LabelAnchor::BOTTOM_LEFT);
+            status_label->SetPosition(0, _HEIGHT_);
+            status_label->SetAnchor(LabelAnchor::BOTTOM_LEFT);
 
             // Reset SDL timer after load
             _timer_ = SDL_GetTicks();
@@ -178,9 +181,16 @@ class Window
         delete _ftm_;
     
         //delete _buffer_ptr_;
-        delete _textbox_ptr_;
+        //delete _textbox_ptr_;
 
-        delete _status_label_;
+        //delete _status_label_;
+
+        // delete all GUIObject s
+        std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        for(; it != _guiobject_.end(); ++ it)
+        {
+            delete it->second;
+        }
 
         // clean action key vectors
         {
@@ -344,8 +354,9 @@ class Window
 
     int Run()
     {
-        //Buffer &_buffer_{*_buffer_ptr_};
-        Textbox &textbox{*_textbox_ptr_};
+        // get pointer to GUI objects
+        Textbox *textbox{static_cast<Textbox*>(_guiobject_.at("textbox"))};
+        Label *status_label{static_cast<Label*>(_guiobject_.at("statuslabel"))};
     
         // TODO
         // regarding keyboard input it would be better to have a unified
@@ -391,16 +402,16 @@ class Window
 
                         case SDL_WINDOWEVENT_SIZE_CHANGED:
                             SDL_Log("Window %d size changed to %d x %d", event.window.windowID, event.window.data1, event.window.data2);
-                            _textbox_ptr_->SetSize(event.window.data1, event.window.data2);
+                            textbox->SetSize(event.window.data1, event.window.data2);
                             //_status_label_->SetSize(event.window.data1, _status_label_->Height());
                             
                             // TODO should not be able to call SetWidth on status label, this is auto
                             //_status_label_->SetWidth(event.window.data1);
-                            _status_label_->SetPosition(0, event.window.data2);
+                            status_label->SetPosition(0, event.window.data2);
 
                             std::stringstream status_text;
                             status_text << "Window size " << event.window.data1 << "x" << event.window.data2;
-                            _status_label_->SetText(status_text.str());
+                            status_label->SetText(status_text.str());
                             //draw_window();
                             // NOTE: no point drawing here, because of loop behaviour
                             // where there is a delay at the end
@@ -420,7 +431,7 @@ class Window
                 // user request quit
                 else if(event.type == SDL_QUIT)
                 {
-                    if(_textbox_ptr_->NotSaved())
+                    if(textbox->NotSaved())
                     {
                         std::cout << "cannot quit, not saved" << std::endl;
                     }
@@ -505,22 +516,22 @@ class Window
                             {
                                 // movement keys
                                 case SDLK_UP:
-                                    _textbox_ptr_->CursorUp();        
+                                    textbox->CursorUp();        
                                     break;
 
 
                                 case SDLK_DOWN:
-                                    _textbox_ptr_->CursorDown();
+                                    textbox->CursorDown();
                                     break;
 
 
                                 case SDLK_LEFT:
-                                    _textbox_ptr_->CursorLeft();
+                                    textbox->CursorLeft();
                                     break;
 
 
                                 case SDLK_RIGHT:
-                                    _textbox_ptr_->CursorRight();
+                                    textbox->CursorRight();
                                     break;
 
                             }
@@ -566,9 +577,9 @@ class Window
 
                                     // insert new line
                                     case SDLK_RETURN:
-                                        _textbox_ptr_->ReturnAtCursor();
-                                        _textbox_ptr_->CursorCR();
-                                        _textbox_ptr_->CursorDown();
+                                        textbox->ReturnAtCursor();
+                                        textbox->CursorCR();
+                                        textbox->CursorDown();
                                         break;
 
                                     default:
@@ -594,7 +605,7 @@ class Window
                                         //    std::cout << "moving cursor left" << std::endl;
                                         //    _textbox_ptr_->CursorLeft();
                                         //}
-                                        _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
+                                        textbox->BackspaceAtCursor(); // TODO: change other functions to follow the new format
                                         // see Textbox.hpp for more details (implementation hiding)
                                         break;
 
@@ -619,8 +630,8 @@ class Window
                                 //if(_keyboard_.GetChar(event.key.keysym.sym, ch))
                                 if(_keyboard_.GetChar(ch))
                                 {
-                                    _textbox_ptr_->InsertAtCursor(ch);
-                                    _textbox_ptr_->CursorRight();
+                                    textbox->InsertAtCursor(ch);
+                                    textbox->CursorRight();
                                 }
 
                             }
@@ -672,7 +683,7 @@ class Window
 
     void OpenFile(const std::string& filename)
     {
-        _textbox_ptr_->Open(filename);
+        static_cast<Textbox*>(_guiobject_.at("textbox"))->Open(filename);
     }
 
 
@@ -707,10 +718,17 @@ class Window
 
         // draw the text buffer contents
         //draw_buffer_contents();
-        _textbox_ptr_->Draw(_renderer_, _timer_);
+        //_textbox_ptr_->Draw(_renderer_, _timer_);
     
         // draw the label
-        _status_label_->Draw(_renderer_, _timer_);  
+        //_status_label_->Draw(_renderer_, _timer_);
+        
+        std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        for(; it != _guiobject_.end(); ++ it)
+        {
+            it->second->Draw(_renderer_, _timer_);
+        }
+
 
         //Update screen
         SDL_RenderPresent(_renderer_);
@@ -753,9 +771,10 @@ class Window
     // TODO: change back - this has been done because buffer now requires an argument
     //Buffer _buffer_;
     //Buffer *_buffer_ptr_;
-    Textbox *_textbox_ptr_;
-    Label *_status_label_;
-    
+    //Textbox *_textbox_ptr_;
+    //Label *_status_label_;
+    std::map<const std::string, GUIObject*> _guiobject_;
+
     //Cursor _cursor_;
     // TODO: custom deleter
 
