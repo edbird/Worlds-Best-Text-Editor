@@ -1,117 +1,33 @@
 
 
-#include "Config.hpp"
 #include "Window.hpp"
 
 
-#include "program_arguments.hpp"
 
 
 #include <cstdint>
 #include <cmath>
 
 
-// TODO: implement application
 
-
-void print_help(std::ostream& os)
-{
-    os << "help" << std::endl;
-}
 
 int main(int argc, char* argv[])
 {
-
-    ////////////////////////////////////////////////////////////////////////////
-    // PROCESS PROGRAM ARGUMENTS
-    ////////////////////////////////////////////////////////////////////////////
-
-    ProgramArguments pa;
-    pa.Add("help", "--help", "false");
-    pa.Add("filename", "--filename", "buffer.txt");
-    pa.Print();
-    pa.Process(argc, argv);
-
-    std::string arg_help{pa.Get("help")};
-    //std::string arg_filename{pa.Get("filename")};
-
-    if(arg_help == std::string("true"))
-    {
-        print_help(std::cout);
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    // LOAD CONFIG
-    ////////////////////////////////////////////////////////////////////////////
-
-    Config config;
-    const Config &_config_{config};
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    // LOAD SDL
-    ////////////////////////////////////////////////////////////////////////////
-
-    // font pointer
-    TTF_Font *_font_ = nullptr;
+                       
+    Window window;
     
-    // TODO: should go elsewhere?
-    // TODO: error message
-    if(SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-        std::cerr << SDL_GetError() << std::endl;
-    }
-    else
-    {
-        // initialize SDL_ttf
-        if(TTF_Init() < 0) // TODO check return codes
-        {
-            std::cout << TTF_GetError() << std::endl;
-        }
-        else
-        {
-        
-            // open the font
-            // TODO move elsewhere
-            //TTF_Font *_font_ = nullptr;
-            _font_ = TTF_OpenFont("/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf", _config_.GetInt("fontsize"));
-            
-            if(_font_ == nullptr)
-            {
-                std::cout << TTF_GetError() << std::endl;
-            }
-            else
-            {
-                
-            }
-            
-            // pass the font to the FontTextureManager
-            //FontTextureManager ftm(_font_, color_palette);
-            // window has a FontTextureManager object, should separate?
+    // TODO: remove
+    std::cout << "start tests from inputbox, in main" << std::endl;
+    Inputbox *inputbox = new Inputbox();
+    inputbox->SetPosition(0, 0);
+    std::cout << "INPUTBOX..." << std::endl;
+    inputbox->TestFunc2();
+    inputbox->TestFunc();
+    std::cout << "finished calling from inputbox, in main" << std::endl;
+    std::cin.get();
 
-            // pass the font to the window
-            Window window(config, _font_);
-            if(pa.WasProvided("filename"))
-            {
-                window.OpenFile(pa.Get("filename"));
-            }
-            window.Run();
-
-        }
-
-    } // SDL_Init() failed
-
-
-    // cleanup
-    
-    
-    // close font
-    TTF_CloseFont(_font_);
-
-    TTF_Quit();
-    SDL_Quit();
-
+    std::cout << "calling from main()" << std::endl;
+    fc_open(window);
 
     return 0;
 }
