@@ -1,6 +1,9 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+// TODO; remove
+#include "Inputbox.hpp"
+
 
 #include "Actions.hpp"
 #include "FunctionCallback.hpp"
@@ -24,6 +27,10 @@
 #include <fstream>
 #include <memory>
 #include <map>
+#include <unordered_map>
+
+
+#define unordered_map map
 
 
 // VIM like editor modes
@@ -82,6 +89,11 @@ class Window
 
 
     public:
+
+    std::string TestName() const
+    {
+        return std::string("Window 0");
+    }
 
     Window(const Config& config, const TTF_Font* const font)
         : _quit_{false}
@@ -156,6 +168,14 @@ class Window
             //init_texture_chars();
             _ftm_ = new FontTextureManager(_renderer_, font, _color_palette_); // TODO make font a member var
 
+            // TODO: remove
+            Inputbox *box = new Inputbox(*_ftm_);
+            box->SetPosition(0, 0);
+            box->TestFunc2();
+            box->TestFunc();
+            box->Draw(_renderer_, _timer_);
+            std::cin.get();
+
             //init_cursor();
 
             // TODO: do not pass this as an argument, pass a pointer to a resources class
@@ -199,7 +219,7 @@ class Window
         //delete _status_label_;
 
         // delete all GUIObject s
-        std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        std::unordered_map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
         for(; it != _guiobject_.end(); ++ it)
         {
             delete it->second;
@@ -401,7 +421,7 @@ class Window
                 // GUI OBJECT EVENTS
                 ////////////////////////////////////////////////////////////////
                 
-                std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+                std::unordered_map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
                 for(; it != _guiobject_.end(); ++ it)
                 {
                     it->second->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
@@ -717,6 +737,7 @@ class Window
 
     void AddGUIObject(const std::string& name, GUIObject* const guiobject)
     {
+        std::cout << "add GUIObject, address=" << guiobject << std::endl;
         std::pair<const std::string, GUIObject*> p(name, const_cast<GUIObject*>(guiobject));
         //_guiobject_.insert({name, guiobject});
         _guiobject_.insert(p);
@@ -780,9 +801,10 @@ class Window
         // draw the label
         //_status_label_->Draw(_renderer_, _timer_);
         
-        std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        std::unordered_map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
         for(; it != _guiobject_.end(); ++ it)
         {
+            std::cout << "drawing object: name=" << it->first << " address=" << it->second << std::endl;
             it->second->Draw(_renderer_, _timer_);
         }
 
@@ -830,7 +852,7 @@ class Window
     //Buffer *_buffer_ptr_;
     //Textbox *_textbox_ptr_;
     //Label *_status_label_;
-    std::map<const std::string, GUIObject*> _guiobject_;
+    std::unordered_map<const std::string, GUIObject*> _guiobject_;
 
     //Cursor _cursor_;
     // TODO: custom deleter

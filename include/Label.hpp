@@ -57,6 +57,10 @@ class Label : public GUIObject
         set_size();
     }
 
+    virtual ~Label()
+    {
+    }
+
     /*
     int Width() const
     {
@@ -143,15 +147,19 @@ class Label : public GUIObject
         _anchor_ = anchor;
     }
 
-    void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer)
+    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
     {
         // do nothing
+
+        std::cout << "Label::ProcessEvent()" << std::endl;
 
         // TODO: make label blink ?
     }
 
-    void Draw(SDL_Renderer *const renderer, const Uint32 timer) const
+    virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const override
     {
+
+        std::cout << "Label::Draw()" << std::endl;
 
         // anchor
         int x_off{0};
@@ -217,6 +225,11 @@ class Label : public GUIObject
             dst_rect.x += dst_rect.w;
         }
     
+    }
+
+    virtual void TestFunc() const override
+    {
+        std::cout << "Label::TestFunc()" << std::endl;
     }
 
 

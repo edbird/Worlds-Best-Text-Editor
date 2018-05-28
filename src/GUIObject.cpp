@@ -55,6 +55,7 @@ int GUIObject::Height() const
 
 void GUIObject::SetPosition(const int pos_x, const int pos_y)
 {
+    std::cout << "SetPosition(" << pos_x << ", " << pos_y << ")" << std::endl;
     _pos_x_ = pos_x;
     _pos_y_ = pos_y;
 }

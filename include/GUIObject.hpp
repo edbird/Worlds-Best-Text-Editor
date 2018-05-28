@@ -18,10 +18,15 @@ class GUIObject
     GUIObject();
     GUIObject(const int, const int);
     GUIObject(const int, const int, const int, const int);
+    virtual ~GUIObject()
+    {
+    }
 
     virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) = 0;
 
     virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const = 0;
+
+    virtual void TestFunc() const = 0;
 
     virtual int PosX() const;
     virtual int PosY() const;
@@ -33,6 +38,7 @@ class GUIObject
     virtual void SetWidth(const int);
     virtual void SetHeight(const int);
 
+    // TODO: virtual?
     void SetBackgroundColor(const Uint8 r, const Uint8 g, const Uint8 b);
 
 

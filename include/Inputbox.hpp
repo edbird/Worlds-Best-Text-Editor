@@ -5,10 +5,13 @@
 #include "Keyboard.hpp"
 #include "Actions.hpp"
 #include "FunctionCallback.hpp"
+#include "Label.hpp"
 
 
 #include <SDL.h>
 
+
+#include <vector>
 
 
 // a single line input box
@@ -24,10 +27,15 @@ class Inputbox : public Label
         init_action_keys();
     }
 
-
-
-    void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer)
+    virtual ~Inputbox()
     {
+    }
+
+
+
+    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
+    {
+        std::cout << "Inputbox::ProcessEvent()" << std::endl;
 
         if(event.type == SDL_KEYDOWN)
         {
@@ -53,6 +61,22 @@ class Inputbox : public Label
 
     }
 
+    virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const override
+    {
+        std::cout << "Inputbox::Draw()" << std::endl;
+    }
+
+    virtual void TestFunc() const override
+    {
+        std::cout << "Inputbox::TestFunc()" << std::endl;
+    }
+
+    void TestFunc2() const
+    {
+        std::cout << "Inputbox::TestFunc2()" << std::endl;
+    }
+
+
 
     private:
 
@@ -61,9 +85,9 @@ class Inputbox : public Label
 
         // press RETURN, causes inputbox to send entered data back to host
         // not sure how this will be done yet
-        ActionKey* ak_enter_pressed = new ActionKey(fc_inputbox_enter_pressed, SDLK_RETURN, SCAModState::NONE, SCAModState::NONE);
+        //ActionKey* ak_enter_pressed = new ActionKey(fc_inputbox_enter_pressed, SDLK_RETURN, SCAModState::NONE, SCAModState::NONE);
 
-        _akv_.push_back(ak_enter_pressed);
+        //_akv_.push_back(ak_enter_pressed);
         
     }
 
