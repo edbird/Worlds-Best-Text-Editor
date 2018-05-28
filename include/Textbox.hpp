@@ -143,7 +143,7 @@ class Textbox : public Buffer, public GUIObject
     
 
 
-    void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer)
+    void ProcessEvent(Window *const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer)
     {
         // TODO
     }

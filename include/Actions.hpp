@@ -160,7 +160,7 @@ class ActionKey
     bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &current_keyboard_action);
 
     // type definition for the function pointer type
-    typedef void (*FunctionPointer_t)(Window&);
+    typedef void (*FunctionPointer_t)(Window* const);
 
 
     public:
@@ -186,7 +186,7 @@ class ActionKey
     // TODO: could be auto-called by operator==
     // TODO: or create new external function, TestAndFire()
     // which calls operator==, and then fires if true
-    void Fire(Window& current_window) const
+    void Fire(Window* const current_window) const
     {
         (*_function_pointer_)(current_window);
     }

@@ -18,7 +18,7 @@ void fc_enter_edit_mode(Window&);
 void fc_exit_edit_mode(Window&);
 void fc_quit_request(Window&);
 void fc_quit_force(Window&);
-void fc_open(Window&);
+void fc_open(Window *const);
 void fc_save(Window&);
 
 // for debugging, increment / decrement the scroll index

@@ -116,20 +116,23 @@ void fc_save(Window& current_window)
 
 
 // CTRL-O: open action
-void fc_open(Window& current_window)
+void fc_open(Window *const current_window)
 {
 
     // TODO: request a filename
-    current_window._ftm_->TestFunc();
-    Inputbox *inputbox = new Inputbox(*(current_window._ftm_));
-    inputbox->SetPosition(current_window.Width() / 2, current_window.Height() / 2);
+    std::cout << "Window address: " << current_window << std::endl;
+    std::cout << current_window->TestName() << std::endl;
+    current_window->TestFunc();
+    current_window->_ftm_->TestFunc();
+    std::cout << "current_window->_ftm_ address: " << current_window->_ftm_ << std::endl;
+    Inputbox *inputbox = new Inputbox(current_window->_ftm_);
+    inputbox->SetPosition(current_window->Width() / 2, current_window->Height() / 2);
     std::cout << "INPUTBOX..." << std::endl;
     inputbox->TestFunc2();
     inputbox->TestFunc();
 
-    std::cout << "Window address: " << &current_window << std::endl;
-    std::cout << current_window.TestName() << std::endl;
 
+    /*
     SDL_Event event;
     while(SDL_PollEvent(&event) == 0);
     std::cout << "event.type=" << event.type << std::endl;
@@ -165,6 +168,7 @@ void fc_open(Window& current_window)
 
     Label *l = new Label(*current_window._ftm_);
     current_window.AddGUIObject("0", l);
+    */
 
 }
 

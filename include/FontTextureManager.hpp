@@ -19,6 +19,7 @@ class FontTextureManager
     void TestFunc() const
     {
         std::cout << "FontTextureManager::TestFunc()" << std::endl;
+        std::cout << "this=" << this << std::endl;
     }
 
     FontTextureManager(SDL_Renderer * const _renderer_, const TTF_Font * const font, const ColorPalette& color_palette)

@@ -39,7 +39,7 @@ class Label : public GUIObject
 
     public:
 
-    Label(const FontTextureManager& ftm)
+    Label(const FontTextureManager *const ftm)
         : GUIObject()
         , _ftm_{ftm}
         , _anchor_{LabelAnchor::TOP_LEFT}
@@ -48,7 +48,7 @@ class Label : public GUIObject
     }
 
     
-    Label(const std::string& text, const FontTextureManager& ftm)
+    Label(const std::string& text, const FontTextureManager* const ftm)
         : GUIObject()
         , _text_{text}
         , _ftm_{ftm}
@@ -114,8 +114,8 @@ class Label : public GUIObject
     {
     
         // get reference to texture chars size and texture pointers
-        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
-        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_->GetCharTexture()};
+        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_->GetCharSize()};
         
         int c_w{texture_chars_size.at(' ').w};
         int c_h{texture_chars_size.at(' ').h};
@@ -147,7 +147,7 @@ class Label : public GUIObject
         _anchor_ = anchor;
     }
 
-    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
+    virtual void ProcessEvent(Window* const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
     {
         // do nothing
 
@@ -188,8 +188,8 @@ class Label : public GUIObject
 
 
         // get reference to texture chars size and texture pointers
-        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
-        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_->GetCharTexture()};
+        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_->GetCharSize()};
         
         int c_w{texture_chars_size.at(' ').w};
         int c_h{texture_chars_size.at(' ').h};
@@ -241,7 +241,7 @@ class Label : public GUIObject
     //int _pos_x_;
     //int _pos_y_;
 
-    const FontTextureManager& _ftm_;
+    const FontTextureManager *const _ftm_;
 
     // anchor position
     LabelAnchor _anchor_;

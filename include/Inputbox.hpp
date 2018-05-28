@@ -21,7 +21,7 @@ class Inputbox : public Label
 
     public:
 
-    Inputbox(const FontTextureManager& ftm)
+    Inputbox(const FontTextureManager* const ftm)
         : Label(ftm)
     {
         init_action_keys();
@@ -33,7 +33,7 @@ class Inputbox : public Label
 
 
 
-    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
+    virtual void ProcessEvent(Window* const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
     {
         std::cout << "Inputbox::ProcessEvent()" << std::endl;
 
