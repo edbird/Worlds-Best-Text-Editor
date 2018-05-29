@@ -2,7 +2,6 @@
 #define WINDOW_HPP
 
 // TODO; remove
-#include "Inputbox.hpp"
 
 
 #include "Actions.hpp"
@@ -12,10 +11,12 @@
 //#include "Buffer.hpp"
 #include "Textbox.hpp"
 #include "Label.hpp"
-#include "Cursor.hpp"
+#include "Inputbox.hpp"
 #include "KeyMap.hpp"
 #include "Keyboard.hpp"
 #include "ColorPalette.hpp"
+
+
 
 
 #include <SDL.h>
@@ -26,11 +27,11 @@
 #include <iomanip>
 #include <fstream>
 #include <memory>
-#include <map>
-//#include <unordered_map>
+//#include <map>
+#include <unordered_map>
+#include <utility>
+#include <string>
 
-
-//#define map map
 
 
 // VIM like editor modes
@@ -89,17 +90,6 @@ class Window
 
 
     public:
-
-    std::string TestName() const
-    {
-        return std::string("Window 0");
-    }
-
-    void TestFunc() const
-    {
-        std::cout << "Window::TestFunc()" << std::endl;
-        std::cout << "this=" << this << std::endl;
-    }
 
     Window(const Config& config, const TTF_Font* const font)
         : _quit_{false}
@@ -173,25 +163,15 @@ class Window
             // assumes font is valid (not nullptr)
             //init_texture_chars();
             _ftm_ = new FontTextureManager(_renderer_, font, _color_palette_); // TODO make font a member var
-            std::cout << "_ftm_ address: " << _ftm_ << std::endl;
-
-            // TODO: remove
-            Inputbox *box = new Inputbox(_ftm_);
-            box->SetPosition(0, 0);
-            box->TestFunc2();
-            box->TestFunc();
-            box->Draw(_renderer_, _timer_);
-            std::cin.get();
-
-            //init_cursor();
 
             // TODO: do not pass this as an argument, pass a pointer to a resources class
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
             //_textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
-            _guiobject_.insert({"textbox", new Textbox(_config_, *_ftm_, _WIDTH_, 580)});
+            Textbox *textbox{new Textbox(_config_, *_ftm_, _WIDTH_, 580)};
+            _guiobject_.insert({"textbox", textbox});
             //_textbox_ptr_->SetBackgroundColor();
         
-            Label *status_label = new Label("Worlds Best Text Editor", _ftm_);
+            Label *status_label{new Label("Worlds Best Text Editor", *_ftm_)};
             _guiobject_.insert({"statuslabel", status_label});
             //_status_label_->SetPosition(0, _size_y_);
             status_label->SetPosition(0, _HEIGHT_);
@@ -226,7 +206,7 @@ class Window
         //delete _status_label_;
 
         // delete all GUIObject s
-        std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        std::unordered_map<std::string, GUIObject*>::iterator it{_guiobject_.begin()};
         for(; it != _guiobject_.end(); ++ it)
         {
             delete it->second;
@@ -306,26 +286,26 @@ class Window
         ////////////////////////////////////////////////////////////////////////
 
         // ctrl q
-        //ActionKey* ak_quit_request = new ActionKey(fc_quit_request, SDLK_q, SCAModState::NONE, SCAModState::ANY);
+        ActionKey* ak_quit_request = new ActionKey(fc_quit_request, SDLK_q, SCAModState::NONE, SCAModState::ANY);
 
         // ctrl shift q
-        //ActionKey* ak_quit_force = new ActionKey(fc_quit_force, SDLK_q, SCAModState::ANY, SCAModState::ANY);
+        ActionKey* ak_quit_force = new ActionKey(fc_quit_force, SDLK_q, SCAModState::ANY, SCAModState::ANY);
 
         // ctrl s
-        //ActionKey* ak_save = new ActionKey(fc_save, SDLK_s, SCAModState::NONE, SCAModState::ANY);
+        ActionKey* ak_save = new ActionKey(fc_save, SDLK_s, SCAModState::NONE, SCAModState::ANY);
 
         // ctrl o
         ActionKey* ak_open = new ActionKey(fc_open, SDLK_o, SCAModState::NONE, SCAModState::ANY);
 
         // F12
-        //ActionKey* ak_print_buffer = new ActionKey(fc_print_buffer, SDLK_F12, SCAModState::DONT_CARE, SCAModState::DONT_CARE);
+        ActionKey* ak_print_buffer = new ActionKey(fc_print_buffer, SDLK_F12, SCAModState::DONT_CARE, SCAModState::DONT_CARE);
 
         // TODO: PLUS key maps to same as EQUALS, but with different shift state!
         // TODO: some keys have double maps
-        //ActionKey* ak_scroll_inc = new ActionKey(fc_scroll_inc, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
-        //ActionKey* ak_scroll_dec = new ActionKey(fc_scroll_dec, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
-        //ActionKey* ak_scroll_inc_sub = new ActionKey(fc_scroll_inc_sub, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
-        //ActionKey* ak_scroll_dec_sub = new ActionKey(fc_scroll_dec_sub, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
+        ActionKey* ak_scroll_inc = new ActionKey(fc_scroll_inc, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
+        ActionKey* ak_scroll_dec = new ActionKey(fc_scroll_dec, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::RIGHT_ONLY);
+        ActionKey* ak_scroll_inc_sub = new ActionKey(fc_scroll_inc_sub, SDLK_EQUALS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
+        ActionKey* ak_scroll_dec_sub = new ActionKey(fc_scroll_dec_sub, SDLK_MINUS, SCAModState::DONT_CARE, SCAModState::LEFT_ONLY);
 
         
         ////////////////////////////////////////////////////////////////////////
@@ -333,24 +313,24 @@ class Window
         ////////////////////////////////////////////////////////////////////////
         
         // e
-        //ActionKey* ak_enter_edit_mode = new ActionKey(fc_enter_edit_mode, SDLK_e);
+        ActionKey* ak_enter_edit_mode = new ActionKey(fc_enter_edit_mode, SDLK_e);
         // TODO: change from fixed SDLK_* keys to variables, which can be changed in config?
         // need to check how the key maps worked to figure out what to do here
 
         // esc
-        //ActionKey* ak_exit_edit_mode = new ActionKey(fc_exit_edit_mode, SDLK_ESCAPE);
+        ActionKey* ak_exit_edit_mode = new ActionKey(fc_exit_edit_mode, SDLK_ESCAPE);
         
 
         // ijkl left right up down, edit mode
-        //ActionKey* ak_up_edit = new ActionKey(fc_up, SDLK_i, SCAModState::DONT_CARE, SCAModState::ANY);
-        //ActionKey* ak_down_edit = new ActionKey(fc_down, SDLK_k, SCAModState::DONT_CARE, SCAModState::ANY);
-        //ActionKey* ak_left_edit = new ActionKey(fc_left, SDLK_j, SCAModState::DONT_CARE, SCAModState::ANY);
-        //ActionKey* ak_right_edit = new ActionKey(fc_right, SDLK_l, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey* ak_up_edit = new ActionKey(fc_up, SDLK_i, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey* ak_down_edit = new ActionKey(fc_down, SDLK_k, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey* ak_left_edit = new ActionKey(fc_left, SDLK_j, SCAModState::DONT_CARE, SCAModState::ANY);
+        ActionKey* ak_right_edit = new ActionKey(fc_right, SDLK_l, SCAModState::DONT_CARE, SCAModState::ANY);
         // ijkl left right up down, normal mode
-        //ActionKey* ak_up_normal = new ActionKey(fc_up, SDLK_i);
-        //ActionKey* ak_down_normal = new ActionKey(fc_down, SDLK_k);
-        //ActionKey* ak_left_normal = new ActionKey(fc_left, SDLK_j);
-        //ActionKey* ak_right_normal = new ActionKey(fc_right, SDLK_l);
+        ActionKey* ak_up_normal = new ActionKey(fc_up, SDLK_i);
+        ActionKey* ak_down_normal = new ActionKey(fc_down, SDLK_k);
+        ActionKey* ak_left_normal = new ActionKey(fc_left, SDLK_j);
+        ActionKey* ak_right_normal = new ActionKey(fc_right, SDLK_l);
 
 
         
@@ -360,30 +340,30 @@ class Window
         
         // these trigger regardless of editor mode
         // or only for edit mode ?
-        //_akv_.push_back(ak_quit_request);
-        //_akv_.push_back(ak_quit_force);
-        //_akv_.push_back(ak_save);
+        _akv_.push_back(ak_quit_request);
+        _akv_.push_back(ak_quit_force);
+        _akv_.push_back(ak_save);
         _akv_.push_back(ak_open);
-        //_akv_.push_back(ak_print_buffer);
-        //_akv_.push_back(ak_scroll_inc);
-        //_akv_.push_back(ak_scroll_dec);
-        //_akv_.push_back(ak_scroll_inc_sub);
-        //_akv_.push_back(ak_scroll_dec_sub);
+        _akv_.push_back(ak_print_buffer);
+        _akv_.push_back(ak_scroll_inc);
+        _akv_.push_back(ak_scroll_dec);
+        _akv_.push_back(ak_scroll_inc_sub);
+        _akv_.push_back(ak_scroll_dec_sub);
                     
         
         // this triggers for normal mode only
-        //_akv_editor_mode_specific_.push_back({ak_enter_edit_mode, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_enter_edit_mode, EditorMode::NORMAL});
         // this triggers for editor mode only
-        //_akv_editor_mode_specific_.push_back({ak_exit_edit_mode, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_exit_edit_mode, EditorMode::EDIT});
 
-        //_akv_editor_mode_specific_.push_back({ak_up_edit, EditorMode::EDIT});
-        //_akv_editor_mode_specific_.push_back({ak_down_edit, EditorMode::EDIT});
-        //_akv_editor_mode_specific_.push_back({ak_left_edit, EditorMode::EDIT});
-        //_akv_editor_mode_specific_.push_back({ak_right_edit, EditorMode::EDIT});
-        //_akv_editor_mode_specific_.push_back({ak_up_normal, EditorMode::NORMAL});
-        //_akv_editor_mode_specific_.push_back({ak_down_normal, EditorMode::NORMAL});
-        //_akv_editor_mode_specific_.push_back({ak_left_normal, EditorMode::NORMAL});
-        //_akv_editor_mode_specific_.push_back({ak_right_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_up_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_down_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_left_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_right_edit, EditorMode::EDIT});
+        _akv_editor_mode_specific_.push_back({ak_up_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_down_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_left_normal, EditorMode::NORMAL});
+        _akv_editor_mode_specific_.push_back({ak_right_normal, EditorMode::NORMAL});
 
     }
     
@@ -428,10 +408,10 @@ class Window
                 // GUI OBJECT EVENTS
                 ////////////////////////////////////////////////////////////////
                 
-                std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+                std::unordered_map<std::string, GUIObject*>::iterator it{_guiobject_.begin()};
                 for(; it != _guiobject_.end(); ++ it)
                 {
-                    it->second->ProcessEvent(this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
+                    it->second->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
                 }
 
 
@@ -529,7 +509,7 @@ class Window
                             if(current_keyboard_action == *(it->first))
                             {
                                 std::cout << "FIRE" << std::endl;
-                                it->first->Fire(this);
+                                it->first->Fire(*this);
                                 fired = true;
                                 break;
                             }
@@ -545,7 +525,7 @@ class Window
                             if(current_keyboard_action == **it)
                             {
                                 std::cout << "FIRE" << std::endl;
-                                (*it)->Fire(this);
+                                (*it)->Fire(*this);
                                 fired = true;
                                 break;
                             }
@@ -745,7 +725,7 @@ class Window
     void AddGUIObject(const std::string& name, GUIObject* const guiobject)
     {
         std::cout << "add GUIObject, address=" << guiobject << std::endl;
-        std::pair<const std::string, GUIObject*> p(name, const_cast<GUIObject*>(guiobject));
+        std::pair<std::string, GUIObject*> p(name, const_cast<GUIObject*>(guiobject));
         //_guiobject_.insert({name, guiobject});
         _guiobject_.insert(p);
     }
@@ -753,16 +733,16 @@ class Window
 
     int Width() const
     {
-        int *w;
-        SDL_GetWindowSize(_window_.get(), w, nullptr);
-        return *w;
+        int w = 0;
+        SDL_GetWindowSize(_window_.get(), &w, nullptr);
+        return w;
     }
 
     int Height() const
     {
-        int *h;
-        SDL_GetWindowSize(_window_.get(), nullptr, h);
-        return *h;
+        int h = 0;
+        SDL_GetWindowSize(_window_.get(), nullptr, &h);
+        return h;
     }
 
 
@@ -808,7 +788,7 @@ class Window
         // draw the label
         //_status_label_->Draw(_renderer_, _timer_);
         
-        std::map<const std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        std::unordered_map<std::string, GUIObject*>::iterator it{_guiobject_.begin()};
         for(; it != _guiobject_.end(); ++ it)
         {
             std::cout << "drawing object: name=" << it->first << " address=" << it->second << std::endl;
@@ -834,9 +814,7 @@ class Window
     SDL_Surface *_surface_;
 
     // text renderer
-    public:
     SDL_Renderer *_renderer_ = nullptr; // TODO smart
-    private:
 
     // globally used font
     //const TTF_Font *const _font_ = nullptr;
@@ -861,7 +839,7 @@ class Window
     //Buffer *_buffer_ptr_;
     //Textbox *_textbox_ptr_;
     //Label *_status_label_;
-    std::map<const std::string, GUIObject*> _guiobject_;
+    std::unordered_map<std::string, GUIObject*> _guiobject_;
 
     //Cursor _cursor_;
     // TODO: custom deleter
@@ -876,18 +854,14 @@ class Window
     ColorPalette _color_palette_; // TODO: this is also used by FontTextureManager, move elsewhere?
 
 
-    public:
     Uint32 _timer_;
-    private:
     Uint32 _refresh_delay_;
     //Uint32 _next_refresh_delay_;
 
 
     // configuration options
     const Config &_config_;
-public:
     FontTextureManager *_ftm_;
-private:
     
     // Editor mode
     EditorMode _editor_mode_;

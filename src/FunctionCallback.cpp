@@ -116,42 +116,30 @@ void fc_save(Window& current_window)
 
 
 // CTRL-O: open action
-void fc_open(Window *const current_window)
+void fc_open(Window& current_window)
 {
 
     // TODO: request a filename
-    std::cout << "Window address: " << current_window << std::endl;
-    std::cout << current_window->TestName() << std::endl;
-    current_window->TestFunc();
-    current_window->_ftm_->TestFunc();
-    std::cout << "current_window->_ftm_ address: " << current_window->_ftm_ << std::endl;
-    Inputbox *inputbox = new Inputbox(current_window->_ftm_);
-    inputbox->SetPosition(current_window->Width() / 2, current_window->Height() / 2);
-    std::cout << "INPUTBOX..." << std::endl;
-    inputbox->TestFunc2();
-    inputbox->TestFunc();
+    Inputbox *inputbox = new Inputbox(*current_window._ftm_);
+    inputbox->SetPosition(current_window.Width() / 2, current_window.Height() / 2);
 
+    //SDL_Event event;
+    //while(SDL_PollEvent(&event) == 0);
+    //std::cout << "event.type=" << event.type << std::endl;
 
-    /*
-    SDL_Event event;
-    while(SDL_PollEvent(&event) == 0);
-    std::cout << "event.type=" << event.type << std::endl;
-
-    Label *l2 = new Label(*current_window._ftm_);
-    l2->ProcessEvent(current_window, event, current_window._keyboard_, current_window._timer_);
-    
-    inputbox->ProcessEvent(current_window, event, current_window._keyboard_, current_window._timer_);
-    std::cout << "ProcessEvent" << std::endl;
-    inputbox->Draw(current_window._renderer_, current_window._timer_);
-    inputbox->Draw(current_window._renderer_, current_window._timer_);
+    //inputbox->ProcessEvent(current_window, event, current_window._keyboard_, current_window._timer_);
+    //std::cout << "ProcessEvent" << std::endl;
+    //inputbox->Draw(current_window._renderer_, current_window._timer_);
+    //inputbox->Draw(current_window._renderer_, current_window._timer_);
 
     // TODO: anchor
-    //current_window.AddGUIObject(current_window.GenerateName(), inputbox);
+    current_window.AddGUIObject(current_window.GenerateName(), inputbox);
 
     // TODO: check if valid filename returned in fc_inputbox_enter_pressed
 
     //open_action
-    if(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->NotSaved())
+    /*
+       if(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->NotSaved())
     {
         std::cout << "The buffer is not saved, cannot open" << std::endl;
     }
@@ -165,9 +153,6 @@ void fc_open(Window *const current_window)
         //std::cout << "File " << "buffer.txt" << " read, " << current_window._guiobject_.at("textbox")->Size() << " bytes" << std::endl;
         std::cout << "File " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->GetFilename() << " read, " << static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->Size() << " bytes" << std::endl;
     }
-
-    Label *l = new Label(*current_window._ftm_);
-    current_window.AddGUIObject("0", l);
     */
 
 }
