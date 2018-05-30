@@ -8,6 +8,10 @@
 
 
 #include <iostream>
+#include <map>
+#include <list>
+#include <algorithm>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // INPUTBOX CALLBACKS
@@ -24,6 +28,13 @@ void fc_inputbox_enter_pressed(Window& current_window)
 
     // set textbox filename
     static_cast<Textbox*>(current_window._guiobject_map_.at("textbox"))->SetFilename(filename);
+
+    // TODO: how to delete self?
+    delete current_window._guiobject_map_.at("inputbox");
+    Inputbox *address{static_cast<Inputbox*>(current_window._guiobject_map_.at("inputbox"))};
+    current_window._guiobject_map_.at("inputbox") = nullptr;
+    std::list<GUIObject*>::iterator it_find{std::find(current_window._guiobject_.begin(), current_window._guiobject_.end(), address)};
+    *it_find = nullptr;
 
 }
 
@@ -123,6 +134,8 @@ void fc_open(Window& current_window)
     Inputbox *inputbox = new Inputbox(*current_window._ftm_);
     inputbox->SetPosition(current_window.Width() / 2, current_window.Height() / 2);
     inputbox->SetBackgroundColor(0xFF, 0x00, 0x00);
+    inputbox->SetText("this is an input box");
+    inputbox->Action(fc_inputbox_enter_pressed, SDLK_RETURN, SCAModState::NONE, SCAModState::NONE);
 
     //SDL_Event event;
     //while(SDL_PollEvent(&event) == 0);
@@ -134,7 +147,8 @@ void fc_open(Window& current_window)
     //inputbox->Draw(current_window._renderer_, current_window._timer_);
 
     // TODO: anchor
-    current_window.AddGUIObject(current_window.GenerateName(), inputbox);
+    //current_window.AddGUIObject(current_window.GenerateName(), inputbox);
+    current_window.AddGUIObject("inputbox", inputbox);
 
     // TODO: check if valid filename returned in fc_inputbox_enter_pressed
 

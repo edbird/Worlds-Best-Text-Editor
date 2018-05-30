@@ -143,9 +143,12 @@ class Textbox : public Buffer, public GUIObject
     
 
 
-    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) override
+    virtual int ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) override
     {
         // TODO
+
+
+        return 0;
     }
 
 

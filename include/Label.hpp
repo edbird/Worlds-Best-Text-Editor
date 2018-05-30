@@ -146,13 +146,15 @@ class Label : public GUIObject
         _anchor_ = anchor;
     }
 
-    virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
+    virtual int ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
     {
         // do nothing
 
         //std::cout << "Label::ProcessEvent()" << std::endl;
 
         // TODO: make label blink ?
+
+        return 0;
     }
 
     virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const override
@@ -199,7 +201,6 @@ class Label : public GUIObject
 
         // draw background
         SDL_Rect rect{PosX() + x_off, PosY() + y_off, Width(), Height()};
-        std::cout << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << std::endl;
         SDL_SetRenderDrawColor(renderer, _background_color_r_, _background_color_g_, _background_color_b_, 0xFF);
         SDL_RenderFillRect(renderer, &rect);
 

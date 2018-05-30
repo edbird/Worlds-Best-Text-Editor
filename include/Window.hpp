@@ -407,17 +407,24 @@ class Window
                 // send data to Keyboard class
                 _keyboard_.ProcessEvent(event);
 
+                ////////////////////////////////////////////////////////////////
+                // GARBAGE COLLECTION
+                ////////////////////////////////////////////////////////////////
 
-                ////////////////////////////////////////////////////////////////
-                // GUI OBJECT EVENTS
-                ////////////////////////////////////////////////////////////////
-                
-                std::list<GUIObject*>::iterator it{_guiobject_.begin()};
-                for(; it != _guiobject_.end(); ++ it)
                 {
-                    (*it)->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
+                    std::list<GUIObject*>::iterator it{_guiobject_.begin()};
+                    std::map<const std::string, GUIObject*>::iterator it2{_guiobject_map_.begin()};
+                    for(; it != _guiobject_.end(); ++ it, ++ it2)
+                    {
+                        if(*it == nullptr)
+                        {
+                            _guiobject_.erase(it);
+                            _guiobject_map_.erase(it2);
+                        }
+                    }
                 }
 
+                
 
                 ////////////////////////////////////////////////////////////////
                 // WINDOW EVENTS
@@ -501,25 +508,56 @@ class Window
                     CurrentKeyboardAction current_keyboard_action(_keyboard_);
 
 
-
+                    // keep track of whether an event was processed
                     bool fired{false};
-                    std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{_akv_editor_mode_specific_.begin()};
-                    for(; it != _akv_editor_mode_specific_.end(); ++ it)
+
+                    
+                    ////////////////////////////////////////////////////////////
+                    // GUI OBJECT EVENTS
+                    ////////////////////////////////////////////////////////////
+                    
+                    std::list<GUIObject*>::iterator it{_guiobject_.begin()};
+                    for(; it != _guiobject_.end(); ++ it)
                     {
-                        // check correct editor mode
-                        if(it->second == _editor_mode_)
+                        if((*it)->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_) == 1)
                         {
-                            // check keyboard action key matches
-                            if(current_keyboard_action == *(it->first))
+                            fired = true;
+                            break;
+                        }
+                    }
+
+
+                    ////////////////////////////////////////////////////////////
+                    // EDITOR MODE SPECIFIC EVENTS
+                    ////////////////////////////////////////////////////////////
+
+                    // TODO: these should be moved to Textbox class
+                    if(!fired)
+                    {
+                        std::vector<std::pair<ActionKey*, EditorMode>>::iterator it{_akv_editor_mode_specific_.begin()};
+                        for(; it != _akv_editor_mode_specific_.end(); ++ it)
+                        {
+                            // check correct editor mode
+                            if(it->second == _editor_mode_)
                             {
-                                std::cout << "FIRE" << std::endl;
-                                it->first->Fire(*this);
-                                fired = true;
-                                break;
+                                // check keyboard action key matches
+                                if(current_keyboard_action == *(it->first))
+                                {
+                                    std::cout << "FIRE" << std::endl;
+                                    it->first->Fire(*this);
+                                    fired = true;
+                                    break;
+                                }
                             }
                         }
                     }
 
+
+                    ////////////////////////////////////////////////////////////
+                    // NON EDITOR MODE SPECIFIC EVENTS
+                    ////////////////////////////////////////////////////////////
+
+                    // TODO: these should be moved to Textbox class
                     // iterate through _akv_
                     if(!fired)
                     {

@@ -159,6 +159,8 @@ class ActionKey
     friend
     bool operator==(const ActionKey &action_key, const CurrentKeyboardAction &current_keyboard_action);
 
+    public:
+
     // type definition for the function pointer type
     typedef void (*FunctionPointer_t)(Window&);
 
