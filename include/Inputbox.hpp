@@ -25,6 +25,8 @@ class Inputbox : public Label
         : Label(ftm)
     {
         init_action_keys();
+
+        SetText("This is an inputbox");
     }
 
     virtual ~Inputbox()
@@ -35,7 +37,7 @@ class Inputbox : public Label
 
     virtual void ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
     {
-        std::cout << "Inputbox::ProcessEvent()" << std::endl;
+        //std::cout << "Inputbox::ProcessEvent()" << std::endl;
 
         if(event.type == SDL_KEYDOWN)
         {
@@ -64,6 +66,9 @@ class Inputbox : public Label
     virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const override
     {
         std::cout << "Inputbox::Draw()" << std::endl;
+        std::cout << PosX() << " " << PosY() << " " << Width() << " " << Height() << std::endl;
+
+        Label::Draw(renderer, timer);
     }
 
 

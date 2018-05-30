@@ -28,7 +28,8 @@
 #include <fstream>
 #include <memory>
 //#include <map>
-#include <unordered_map>
+//#include <unordered_map>
+#include <list>
 #include <utility>
 #include <string>
 
@@ -168,11 +169,13 @@ class Window
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
             //_textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
             Textbox *textbox{new Textbox(_config_, *_ftm_, _WIDTH_, 580)};
-            _guiobject_.insert({"textbox", textbox});
+            _guiobject_map_.insert({"textbox", textbox});
+            _guiobject_.push_back(textbox);
             //_textbox_ptr_->SetBackgroundColor();
         
             Label *status_label{new Label("Worlds Best Text Editor", *_ftm_)};
-            _guiobject_.insert({"statuslabel", status_label});
+            _guiobject_map_.insert({"statuslabel", status_label});
+            _guiobject_.push_back(status_label);
             //_status_label_->SetPosition(0, _size_y_);
             status_label->SetPosition(0, _HEIGHT_);
             status_label->SetAnchor(LabelAnchor::BOTTOM_LEFT);
@@ -206,10 +209,10 @@ class Window
         //delete _status_label_;
 
         // delete all GUIObject s
-        std::unordered_map<std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        std::list<GUIObject*>::iterator it{_guiobject_.begin()};
         for(; it != _guiobject_.end(); ++ it)
         {
-            delete it->second;
+            delete *it;
         }
 
         // clean action key vectors
@@ -375,8 +378,9 @@ class Window
     int Run()
     {
         // get pointer to GUI objects
-        Textbox *textbox{static_cast<Textbox*>(_guiobject_.at("textbox"))};
-        Label *status_label{static_cast<Label*>(_guiobject_.at("statuslabel"))};
+        // TODO: remove?
+        Textbox *textbox{static_cast<Textbox*>(_guiobject_map_.at("textbox"))};
+        Label *status_label{static_cast<Label*>(_guiobject_map_.at("statuslabel"))};
     
         // TODO
         // regarding keyboard input it would be better to have a unified
@@ -408,10 +412,10 @@ class Window
                 // GUI OBJECT EVENTS
                 ////////////////////////////////////////////////////////////////
                 
-                std::unordered_map<std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+                std::list<GUIObject*>::iterator it{_guiobject_.begin()};
                 for(; it != _guiobject_.end(); ++ it)
                 {
-                    it->second->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
+                    (*it)->ProcessEvent(*this, event, _keyboard_, /*current_keyboard_action,*/ _timer_);
                 }
 
 
@@ -727,7 +731,8 @@ class Window
         std::cout << "add GUIObject, address=" << guiobject << std::endl;
         std::pair<std::string, GUIObject*> p(name, const_cast<GUIObject*>(guiobject));
         //_guiobject_.insert({name, guiobject});
-        _guiobject_.insert(p);
+        _guiobject_map_.insert(p);
+        _guiobject_.push_back(guiobject);
     }
 
 
@@ -748,7 +753,7 @@ class Window
 
     void OpenFile(const std::string& filename)
     {
-        static_cast<Textbox*>(_guiobject_.at("textbox"))->Open(filename);
+        static_cast<Textbox*>(_guiobject_map_.at("textbox"))->Open(filename);
     }
 
 
@@ -788,11 +793,12 @@ class Window
         // draw the label
         //_status_label_->Draw(_renderer_, _timer_);
         
-        std::unordered_map<std::string, GUIObject*>::iterator it{_guiobject_.begin()};
+        // TODO order
+        std::list<GUIObject*>::iterator it{_guiobject_.begin()};
         for(; it != _guiobject_.end(); ++ it)
         {
-            std::cout << "drawing object: name=" << it->first << " address=" << it->second << std::endl;
-            it->second->Draw(_renderer_, _timer_);
+            //std::cout << "drawing object: name=" << it->first << " address=" << it->second << std::endl;
+            (*it)->Draw(_renderer_, _timer_);
         }
 
 
@@ -839,7 +845,12 @@ class Window
     //Buffer *_buffer_ptr_;
     //Textbox *_textbox_ptr_;
     //Label *_status_label_;
-    std::unordered_map<std::string, GUIObject*> _guiobject_;
+    // guiobject organized by name`
+    std::map<const std::string, GUIObject*> _guiobject_map_;
+    // event process and draw order dictated by list
+    // should be GUIObject* const?
+    // TODO
+    std::list<GUIObject*> _guiobject_;
 
     //Cursor _cursor_;
     // TODO: custom deleter
