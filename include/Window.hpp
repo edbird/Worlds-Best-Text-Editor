@@ -168,7 +168,30 @@ class Window
             // TODO: do not pass this as an argument, pass a pointer to a resources class
             //_buffer_ptr_ = new Buffer(_config_, _texture_chars_size_);
             //_textbox_ptr_ = new Textbox(_config_, *_ftm_, _WIDTH_, 580);
-            Textbox *textbox{new Textbox(_config_, *_ftm_, _WIDTH_, 580)};
+            Textbox *textbox{new Textbox(*_ftm_, _WIDTH_, 580)};
+            ////////////////////////////////////////////////////////////////////
+            // READ CONFIG
+            ////////////////////////////////////////////////////////////////////
+
+            //bool line_number_enabled{false};
+            //int line_number_width{0};
+            // Note: only 1 is true, any other integer is false
+            if(_config_.GetInt("linenumber") == 1)
+            {
+                textbox->SetLineNumber(true);
+            }
+            // TODO: textbox->SetFontSize
+            // and remove ftm& from all object
+            // maybe?
+            // ftm should load all fonts, font sizes, font colors, in structure
+            // of maps, when required
+
+            if(_config_.HasKey("cursorblinkdelay"))
+            {
+                textbox->MutableCursor().SetBlinkDelay(_config_.GetInt("cursorblinkdelay"));
+            }
+
+            // insert textbox into guiobject list and map
             _guiobject_map_.insert({"textbox", textbox});
             _guiobject_.push_back(textbox);
             //_textbox_ptr_->SetBackgroundColor();
