@@ -45,6 +45,16 @@ class Inputbox : public Label
         {
             std::cout << "Event type was SDL_KEYDOWN" << std::endl;
 
+            // get the modifier state
+            // split into different modifier constants
+            //const SDL_Keymod MOD{SDL_GetModState()};
+            const bool MOD_SHIFT{keyboard.ShiftState()};
+            const bool MOD_CTRL{keyboard.CTRLState()};
+            const bool MOD_ALT{keyboard.AltState()};
+            const bool MOD_GUI{keyboard.GUIState()};
+            const bool MOD_LSHIFT{keyboard.LeftShiftState()};
+            const bool MOD_NONE{!keyboard.ModState()};
+
             // store the current key press and keyboard modifier states
             // in an ActionKey2 object
             CurrentKeyboardAction current_keyboard_action(keyboard);
@@ -70,11 +80,19 @@ class Inputbox : public Label
                 if((MOD_NONE || MOD_SHIFT) && !MOD_CTRL)
                 {
                     char ch;
-                    if(_keyboard_.GetChar(ch))
+                    if(keyboard.GetChar(ch))
                     {
-                        inputbox->InsertAtCursor(ch);
-                        inputbox->CursorRight();
+                        // TODO: class Inputbox does not have methods InsertAtCursor and CursorRight, but it SHOULD have these
+                        //this->InsertAtCursor(ch);
+                        //this->CursorRight();
                         // TODO: working here
+                        std::string str(this->GetText());
+                        str.push_back(ch);
+                        this->SetText(str);
+                        // TODO: settext should be only in label class,
+                        // and Inputbox should NOT inherit from label
+
+                        fired = true;
                     }
                 }
                 
