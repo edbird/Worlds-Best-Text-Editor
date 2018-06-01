@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <typeinfo>
 
 
 // TODO: change so that config stores all options as string
@@ -30,7 +31,6 @@ class ConfigOption
         , _string_default_{default_value_string}
     {
     }
-
 
     const T& Get() const
     {
@@ -74,6 +74,13 @@ class ConfigOption
                                     // the option and any associated comment
 };
 
+
+// identify different types of map contained in Config
+enum class MapSpec
+{
+    INTEGER,
+    FLOAT
+};
 
 class Config
 {
@@ -196,35 +203,79 @@ class Config
     }
     */
 
+
+    // this function mainly for internal use
+    template<typename T>
+    //void AddKey(const std::string& name, const MapSpec mapspec)
+    void AddKey(const std::string& name, const T value, const std::string& default_config_string)
+    {
+        if(!HasKey(name))
+        {
+            // TODO :add with default value?
+            //if(mapspec == MapSpec::INTEGER)
+            //{
+
+            //}
+            //else if(mapspec == MapSpec::FLOAT)
+            //{
+
+            //}
+
+
+            if(typeid(T) == typeid(int))
+            {
+                _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type(name, ConfigOption<int>(name, value, default_config_string)));
+            }
+            else
+            {
+                _config_float_option_map_.insert(std::map<const std::string, ConfigOption<double>>::value_type(name, ConfigOption<float>(name, value, default_config_string)));
+            }
+
+        }
+        else
+        {
+            std::cerr << "Key exists in a map" << std::endl;
+            throw "Key exists in a map";
+        }
+    }
+
+        
     // check if parameter exists in config
-    /*
     bool HasKey(const std::string& name) const
     {
-        bool found{false};
+        //bool found{false};
+        ConfigIntOptionSize_t count_int{0};
+        ConfigIntOptionSize_t count_float{0};
 
-        if(found == false)
-        {
-            ConfigIntOptionMapIterator_t it{_config_int_option_map_.find(name)};
-            std::map<const std::string, ConfigOption<int>>::iterator it{_config_int_option_map_.find(name)};
-            _config_int_option_map_.find(name);
+        count_int += _config_int_option_map_.count(name);
+        count_float += _config_float_option_map_.count(name);
+
+        if(count_int + count_float > 0) return true;
+        return false;
+
+
+        //if(found == false)
+        //{
+            //ConfigIntOptionMapIterator_t it{_config_int_option_map_.find(name)};
+            //std::map<const std::string, ConfigOption<int>>::iterator it{_config_int_option_map_.find(name)};
+            //_config_int_option_map_.find(name);
             //if(it != _config_int_option_map_.end())
             //{
             //    found = true;
             //}
-        }
+        //}
         
-        if(found == false)
-        {
+        //if(found == false)
+        //{
             //ConfigFloatOptionMapIterator_t it{_config_float_option_map_.find(name)};
             //if(it != _config_float_option_map_.end())
             //{
             //    found = true;
             //}
-        }
+        //}
 
-        return found;
+        //return found;
     }
-    */
 
 
     // New code
@@ -274,12 +325,25 @@ class Config
         //_config_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkrate", ConfigOption<int>("cursorblinkrate", 500, "set cursorblinkrate 500 # milliseconds")));
 
         // TODO: name appears twice!
-        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
+        
+        //_config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("fontsize", ConfigOption<int>("fontsize", 11, "set fontsize 11")));
+        AddKey("fontsize", 11, "set fontsize 11");
+        
         _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("cursorblinkdelay", ConfigOption<int>("cursorblinkdelay", 500, "set cursorblinkrate 500 # milliseconds")));
-        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("linenumber", ConfigOption<int>("linenumber", 0, "set linenumber 0 # false (off)")));
-        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("targetrefreshrate", ConfigOption<int>("targetrefreshrate", 60, "set targetrefreshrate 60 # 60 Hz")));
-        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("width", ConfigOption<int>("width", 800, "set width 800")));
-        _config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("height", ConfigOption<int>("height", 600, "set height 600")));
+        AddKey("cursorblinkdelay", 500, "set cursorblinkrate 500 # milliseconds");
+        
+        //_config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("linenumber", ConfigOption<int>("linenumber", 0, "set linenumber 0 # false (off)")));
+        AddKey("linenumber", 0, "set linenumber 0 # false (off)");
+        
+        //_config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("targetrefreshrate", ConfigOption<int>("targetrefreshrate", 60, "set targetrefreshrate 60 # 60 Hz")));
+        AddKey("targetrefreshrate", 60, "set targetrefreshrate 60 # 60 Hz");
+        
+        //_config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("width", ConfigOption<int>("width", 800, "set width 800")));
+        AddKey("width", 800, "set width 800");
+        
+        //_config_int_option_map_.insert(std::map<const std::string, ConfigOption<int>>::value_type("height", ConfigOption<int>("height", 600, "set height 600")));
+        AddKey("height", 600, "set height 600");
+        
         //_config_float_option_map_.insert(std::map<const std::string, ConfigOption<double>>::value_type("")); // double not float
         
 
@@ -389,6 +453,8 @@ class Config
     std::map<const std::string, ConfigOption<double>> _config_float_option_map_; // double not float
     typedef std::map<const std::string, ConfigOption<int>>::iterator ConfigIntOptionMapIterator_t;
     typedef std::map<const std::string, ConfigOption<double>>::iterator ConfigFloatOptionMapIterator_t;
+    typedef std::map<const std::string, ConfigOption<int>>::size_type ConfigIntOptionSize_t;
+    typedef std::map<const std::string, ConfigOption<double>>::size_type ConfigFloatOptionSize_t;
 
 };
 
