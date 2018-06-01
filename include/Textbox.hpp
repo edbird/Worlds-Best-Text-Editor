@@ -4,9 +4,9 @@
 
 #include "Functions.hpp"
 #include "FunctionCallback.hpp"
-#include "GUIObject.hpp"
-#include "Buffer.hpp"
+#include "FileBuffer.hpp"
 #include "FontTextureManager.hpp"
+#include "GUITextEntry.hpp"
 //#include "CharMatrix.hpp"
 
 
@@ -18,15 +18,15 @@
 #include <sstream>
 
 
-class Textbox : public Buffer, public GUIObject
+class Textbox : public GUITextEntry
 {
 
     public:
     
-    Textbox(const Config& config, const FontTextureManager& ftm, const int width, const int height)
-        : GUIObject(width, height)
-        , _config_{config}
+    Textbox(const FontTextureManager& ftm, const int width, const int height)
+        : GUITextEntry(ftm, width, height)
         , _ftm_{ftm}
+    // TODO: don't need ftm reference in any functions which inherit
         //, _size_x_{width}
         //, _size_y_{height}
         //, _pos_x_{0} // TODO: test with/out line number
@@ -40,55 +40,21 @@ class Textbox : public Buffer, public GUIObject
         //const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
         const std::map<const char, SDL_Rect>& texture_chars_size{ftm.GetCharSize()};
         
-        int size_x{texture_chars_size.at(' ').w};
-        int size_y{texture_chars_size.at(' ').h};
-        _cursor_.reset(new Cursor(size_x, size_y, /*2 * size_x, 0,*/ config));
-        
-        // TODO: implement
-        _cursor_->SetPos(0, 0);  // the cursor is always drawn in the location where the next
-                                // character will be inserted: the buffer starts with zero
-                                // size however the cursor will be drawn at position 0
-                                // even though the buffer is not of size 1
        
         //_charmatrix_ptr_ = new CharMatrix(_pos_x_, _pos_y_, _size_x_, _size_y_, *_cursor_, _config_, _ftm_);
         
         
-        ////////////////////////////////////////////////////////////////////////////
-        // READ CONFIG
-        ////////////////////////////////////////////////////////////////////////////
 
-        //bool line_number_enabled{false};
-        //int line_number_width{0};
-        // Note: only 1 is true, any other integer is false
-        if(_config_.GetInt("linenumber") == 1)
-        {
-            _line_number_enabled_ = true;
-        }
+    }
 
+
+    void SetLineNumber(const bool enabled)
+    {
+        _line_number_enabled_ = enabled;
     }
     
     
     
-    // TODO: change to get cursor not subfunctions of cursor class
-    //Cursor::CursorPos_t GetCursorLine() const;
-    //Cursor::CursorPos_t GetCursorCol() const;
-
-    const Cursor& GetCursor() const;
-
-    // TODO: should the buffer be responsible for setting the cursor
-    // position or should the cursor be responsible for setting its own
-    // bounds ?
-    void CursorLeft();
-
-    void CursorRight();
-
-    // TODO: remember target line position
-    // TODO: config: set rememberlineposition
-    void CursorUp();
-
-    void CursorDown();
-
-    void CursorCR();
     
     private:
 
@@ -105,11 +71,9 @@ class Textbox : public Buffer, public GUIObject
 
     public:
 
-    void InsertAtCursor(const char ch);
 
     void ReturnAtCursor();
 
-    void BackspaceAtCursor();
 
 
     //void ResetCursorLastBlinkTime();
@@ -176,23 +140,9 @@ class Textbox : public Buffer, public GUIObject
         
     //}
     
-    // get const buffer reference
-    //const Buffer& GetBuffer() const
-    //{
-    //    return _buffer_;
-    //}
-    
-    //Buffer& MutableBuffer()
-    //{
-    //    return _buffer_;
-    //}
     
 
-    void ResetCursor() // used when opening new file
-    {
-        _cursor_->SetPos(0, 0);
-    }
-
+    
     void ScrollDown();
     void ScrollUp();
     void ScrollDownSub();
@@ -207,15 +157,9 @@ class Textbox : public Buffer, public GUIObject
     ////////////////////////////////////////////////////////////////////////////
 
 
-    // cursor
-    std::unique_ptr<Cursor> _cursor_;
-    //std::size_t _cursor_x_;
-    //std::size_t _cursor_y_;
 
     
     
-    const Config& _config_;
-    const FontTextureManager& _ftm_;
     
     
 
@@ -255,6 +199,9 @@ class Textbox : public Buffer, public GUIObject
 
     std::vector<unsigned int> wrap_count;
 
+    // buffer
+    FileBuffer _filebuffer_;
+
 };
 
 
@@ -266,13 +213,7 @@ class ActionBuffer : Buffer
 };
 
 
-/*
-Cursor& MutableCursor()
-{
-    return _cursor_;
 
-}
-*/
 
 
 /*
