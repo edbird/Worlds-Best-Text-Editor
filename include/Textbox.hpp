@@ -143,14 +143,17 @@ class Textbox : public Buffer, public GUIObject
     
 
 
-    void ProcessEvent(Window *const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer)
+    virtual int ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) override
     {
         // TODO
+
+
+        return 0;
     }
 
 
     // TODO: the buffer object should know its own WIDTH and HEIGHT
-    void Draw(SDL_Renderer *const renderer, const Uint32 timer) const;
+    virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const override;
     
     //{
         //const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
@@ -172,14 +175,6 @@ class Textbox : public Buffer, public GUIObject
         //_charmatrix_ptr_->Draw(renderer, _timer_);
         
     //}
-    
-    /*
-    virtual void TestFunc() const override
-    {
-        std::cout << "Inputbox::TestFunc()" << std::endl;
-    }
-    */
-
     
     // get const buffer reference
     //const Buffer& GetBuffer() const

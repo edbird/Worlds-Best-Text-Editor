@@ -22,12 +22,9 @@ class GUIObject
     {
     }
 
-    //virtual void ProcessEvent(Window* const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) = 0;
+    virtual int ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ const Uint32 timer) = 0;
 
-    //virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const = 0;
-
-    //virtual void TestFunc() const = 0;
-    //virtual void TestFunc2() const = 0;
+    virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const = 0;
 
     virtual int PosX() const;
     virtual int PosY() const;

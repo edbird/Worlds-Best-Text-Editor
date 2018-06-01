@@ -39,6 +39,7 @@ std::string Buffer::GetFilename() const
 
 void Buffer::SetFilename(const std::string& filename)
 {
+    std::cout << "Buffer::SetFilename(" << filename << ")" << std::endl;
     _filename_ = filename;
 }
 

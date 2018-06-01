@@ -39,7 +39,7 @@ class Label : public GUIObject
 
     public:
 
-    Label(const FontTextureManager *const ftm)
+    Label(const FontTextureManager& ftm)
         : GUIObject()
         , _ftm_{ftm}
         , _anchor_{LabelAnchor::TOP_LEFT}
@@ -48,7 +48,7 @@ class Label : public GUIObject
     }
 
     
-    Label(const std::string& text, const FontTextureManager* const ftm)
+    Label(const std::string& text, const FontTextureManager& ftm)
         : GUIObject()
         , _text_{text}
         , _ftm_{ftm}
@@ -114,8 +114,8 @@ class Label : public GUIObject
     {
     
         // get reference to texture chars size and texture pointers
-        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_->GetCharTexture()};
-        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_->GetCharSize()};
+        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
+        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
         
         int c_w{texture_chars_size.at(' ').w};
         int c_h{texture_chars_size.at(' ').h};
@@ -124,7 +124,6 @@ class Label : public GUIObject
         //GUIObject::_size_y_ = c_h;
 
         SetSize(c_w * _text_.size(), c_h);
-
     }
 
     public:
@@ -147,19 +146,21 @@ class Label : public GUIObject
         _anchor_ = anchor;
     }
 
-    /*virtual*/ void ProcessEvent(Window* const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) //override
+    virtual int ProcessEvent(Window& current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
     {
         // do nothing
 
-        std::cout << "Label::ProcessEvent()" << std::endl;
+        //std::cout << "Label::ProcessEvent()" << std::endl;
 
         // TODO: make label blink ?
+
+        return 0;
     }
 
     /*virtual*/ void Draw(SDL_Renderer *const renderer, const Uint32 timer) const //override
     {
 
-        std::cout << "Label::Draw()" << std::endl;
+        //std::cout << "Label::Draw()" << std::endl;
 
         // anchor
         int x_off{0};
@@ -188,8 +189,8 @@ class Label : public GUIObject
 
 
         // get reference to texture chars size and texture pointers
-        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_->GetCharTexture()};
-        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_->GetCharSize()};
+        const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
+        const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
         
         int c_w{texture_chars_size.at(' ').w};
         int c_h{texture_chars_size.at(' ').h};
@@ -227,28 +228,13 @@ class Label : public GUIObject
     
     }
 
-    /*virtual*/ void TestFunc() const //override
-    {
-        std::cout << "Label::TestFunc()" << std::endl;
-    }
-
-    /*
-    virtual void TestFunc2() const
-    {
-        std::cout << "Label::TestFunc2()" << std::endl;
-    }
-    */
-
-
-
-
     private:
 
     std::string _text_;
     //int _pos_x_;
     //int _pos_y_;
 
-    const FontTextureManager *const _ftm_;
+    const FontTextureManager& _ftm_;
 
     // anchor position
     LabelAnchor _anchor_;

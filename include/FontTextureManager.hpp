@@ -16,19 +16,12 @@ class FontTextureManager
 
     public:
 
-    void TestFunc() const
-    {
-        std::cout << "FontTextureManager::TestFunc()" << std::endl;
-        std::cout << "this=" << this << std::endl;
-    }
-
     FontTextureManager(SDL_Renderer * const _renderer_, const TTF_Font * const font, const ColorPalette& color_palette)
         //: _font_{nullptr}
         //: _color_palette_{color_palette}
     {
         init(_renderer_, font, color_palette);
     }
-
 
     void init(SDL_Renderer * const _renderer_, const TTF_Font * const font, const ColorPalette& color_palette)
     {
@@ -133,7 +126,7 @@ class FontTextureManager
 
     ~FontTextureManager()
     {
-        
+
         // Delete cursor textures
         std::map<const char, SDL_Texture*>::iterator it{_texture_chars_.begin()};
         for(; it != _texture_chars_.end(); ++ it)
