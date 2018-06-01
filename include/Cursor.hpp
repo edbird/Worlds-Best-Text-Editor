@@ -25,7 +25,7 @@ class Cursor
     typedef uint32_t CursorPos_t;
 
 
-    Cursor(const int size_x, const int size_y, /*const int buffer_origin_x, const int buffer_origin_y,*/ const Config& config)
+    Cursor(const int size_x, const int size_y, /*const int buffer_origin_x, const int buffer_origin_y,*/ /*const Config& config*/)
         : _config_{config}
         , _line_{0}
         , _col_{0}
@@ -41,11 +41,21 @@ class Cursor
         // TODO: remove "has key" method - don't need it since a default value
         // is always given
         //if(_config_.HasKey("cursorblinkrate"))
-        {
-            _blink_delay_time_ = _config_.GetInt("cursorblinkdelay"); 
-        }
+        //{
+        //    _blink_delay_time_ = _config_.GetInt("cursorblinkdelay"); 
+        //}
         
         //init_cursor();
+    }
+
+    void SetBlinkDelay(const Uint32 milliseconds)
+    {
+        _blink_delay_time_ = milliseconds
+    }
+
+    void SetBlinkRate(const double hz)
+    {
+        _blink_delay_time_ = std::round(1.0 / hz);
     }
     
     /*
