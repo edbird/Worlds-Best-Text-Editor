@@ -25,9 +25,10 @@ class Cursor
     typedef uint32_t CursorPos_t;
 
 
-    Cursor(const int size_x, const int size_y, /*const int buffer_origin_x, const int buffer_origin_y,*/ /*const Config& config*/)
-        : _config_{config}
-        , _line_{0}
+    Cursor(const int size_x, const int size_y/*,*/ /*const int buffer_origin_x, const int buffer_origin_y,*/ /*const Config& config*/)
+        //: _config_{config}
+        //,
+        : _line_{0}
         , _col_{0}
         , _remember_col_{0}
         , _cursor_size_x_{size_x}
@@ -50,7 +51,7 @@ class Cursor
 
     void SetBlinkDelay(const Uint32 milliseconds)
     {
-        _blink_delay_time_ = milliseconds
+        _blink_delay_time_ = milliseconds;
     }
 
     void SetBlinkRate(const double hz)
@@ -432,7 +433,7 @@ class Cursor
     private:
     
     // reference to config
-    const Config& _config_;
+    //const Config& _config_;
 
     CursorPos_t _line_;
     CursorPos_t _col_;
