@@ -5,15 +5,13 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <iomanip>
-#include <fstream>
 #include <memory>
 
 
-#include "Cursor.hpp"
+//#include "Cursor.hpp"
 
 
-#define DEBUG 1
+//#define DEBUG 1
 
 
 // TODO: seperate size and drawing code to new class BufferWindow
@@ -26,25 +24,10 @@ class Buffer
     //Buffer(const Config& config);
     Buffer();
     
-    ~Buffer();
+    virtual ~Buffer();
 
     std::size_t Size() const;
 
-    std::string GetFilename() const;
-    void SetFilename(const std::string& filename);
-
-    void Save() const;
-    void Open();
-
-    // save to text file
-    void Save(const std::string& filename) const;
-
-    // this open method overwrites the buffer
-    // and sets the _not_saved_ flag to FALSE
-    void Open(const std::string& filename);
-
-    // 
-    bool NotSaved() const;
 
     // is the buffer in the "default" state - contains nothing, empty
     bool IsEmpty() const;
@@ -68,10 +51,26 @@ class Buffer
 
     // these functions do not check if line, col are valid
     // error will be thrown if invalid
+
+    // insert single char at position specified by line and col
     void Insert(const char ch, const std::size_t line, const std::size_t col);
+    // insert new line at position specified by line
     void InsertNewLine(const std::size_t line, const std::size_t col);
+    // delete single char / newline at position specified by line and col
     bool Delete(const std::size_t line, const std::size_t col);
 
+    // copy len characters
+    void Copy(const std::size_t line_to, const std::size_t col_to, const std::size_t line_from, const std::size_t col_from, const std::size_t len);
+    // move len characters
+    void Move(const std::size_t line_to, const std::size_t col_to, const std::size_t line_from, const std::size_t col_from, const std::size_t len);
+    // insert len characters
+    void Insert(const char ch, const std::size_t line, const std::size_t col, const std::size_t len = 1);
+    // insert len characters pointed at by ch
+    void Insert(const char *ch, const std::size_t line, const std::size_t col, const std::size_t len = 1);
+    // insert std::string
+    void Insert(const std::string &str, const std::size_t line, const std::size_t col);
+    // delete len characters
+    void Delete(const std::size_t line, const std::size_t col, const std::size_t len = 1);
     
     private:
     
@@ -79,9 +78,6 @@ class Buffer
     ////////////////////////////////////////////////////////////////////////////
     // Private functions
     ////////////////////////////////////////////////////////////////////////////
-
-    // compile lines into complete buffer object inside std::string
-    void create_data() const;
 
     ////////////////////////////////////////////////////////////////////////////
     // Data members
@@ -100,16 +96,8 @@ class Buffer
     // before Get()
     mutable bool _modified_;
 
-    // not saved flag
-    // this flag is set to true when the buffer is modified but not saved
-    // when the buffer is saved, this flag is set to false
-    mutable bool _not_saved_;
-
     // const
-    const std::string _new_line_string_{std::string("\n")};
-
-    // filename associated with buffer
-    mutable std::string _filename_;
+    static const std::string _new_line_string_; //("\n");
 
 };
 
