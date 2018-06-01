@@ -120,16 +120,16 @@ void fc_open(Window *const current_window)
 {
 
     // TODO: request a filename
-    std::cout << "Window address: " << current_window << std::endl;
-    std::cout << current_window->TestName() << std::endl;
-    current_window->TestFunc();
-    current_window->_ftm_->TestFunc();
-    std::cout << "current_window->_ftm_ address: " << current_window->_ftm_ << std::endl;
+    //std::cout << "Window address: " << current_window << std::endl;
+    //std::cout << current_window->TestName() << std::endl;
+    //current_window->TestFunc();
+    //current_window->_ftm_->TestFunc();
+    //std::cout << "current_window->_ftm_ address: " << current_window->_ftm_ << std::endl;
     Inputbox *inputbox = new Inputbox(current_window->_ftm_);
     inputbox->SetPosition(current_window->Width() / 2, current_window->Height() / 2);
-    std::cout << "INPUTBOX..." << std::endl;
-    inputbox->TestFunc2();
-    inputbox->TestFunc();
+    //std::cout << "INPUTBOX..." << std::endl;
+    //inputbox->TestFunc2();
+    //inputbox->TestFunc();
 
 
     /*
@@ -144,12 +144,14 @@ void fc_open(Window *const current_window)
     std::cout << "ProcessEvent" << std::endl;
     inputbox->Draw(current_window._renderer_, current_window._timer_);
     inputbox->Draw(current_window._renderer_, current_window._timer_);
+    */
 
     // TODO: anchor
-    //current_window.AddGUIObject(current_window.GenerateName(), inputbox);
+    current_window->AddGUIObject(current_window->GenerateName(), inputbox);
 
     // TODO: check if valid filename returned in fc_inputbox_enter_pressed
 
+    /*
     //open_action
     if(static_cast<Textbox*>(current_window._guiobject_.at("textbox"))->NotSaved())
     {

@@ -173,10 +173,12 @@ class Textbox : public Buffer, public GUIObject
         
     //}
     
+    /*
     virtual void TestFunc() const override
     {
         std::cout << "Inputbox::TestFunc()" << std::endl;
     }
+    */
 
     
     // get const buffer reference

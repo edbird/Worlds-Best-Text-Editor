@@ -94,19 +94,20 @@ int main(int argc, char* argv[])
             Window window(config, _font_);
 
 
+            /*
             std::cout << "ENTERED MAIN" << std::endl;
             Inputbox *box = new Inputbox(window._ftm_);
             box->SetPosition(0, 0);
             box->TestFunc2();
             box->TestFunc();
             box->Draw(window._renderer_, window._timer_);
-
+            */
 
             if(pa.WasProvided("filename"))
             {
                 window.OpenFile(pa.Get("filename"));
             }
-            fc_open(&window);
+            //fc_open(&window);
             window.Run();
 
         }

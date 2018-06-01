@@ -147,7 +147,7 @@ class Label : public GUIObject
         _anchor_ = anchor;
     }
 
-    virtual void ProcessEvent(Window* const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) override
+    /*virtual*/ void ProcessEvent(Window* const current_window, const SDL_Event& event, const Keyboard& keyboard, /*const CurrentKeyboardAction& ka_current,*/ Uint32 timer) //override
     {
         // do nothing
 
@@ -156,7 +156,7 @@ class Label : public GUIObject
         // TODO: make label blink ?
     }
 
-    virtual void Draw(SDL_Renderer *const renderer, const Uint32 timer) const override
+    /*virtual*/ void Draw(SDL_Renderer *const renderer, const Uint32 timer) const //override
     {
 
         std::cout << "Label::Draw()" << std::endl;
@@ -227,10 +227,17 @@ class Label : public GUIObject
     
     }
 
-    virtual void TestFunc() const override
+    /*virtual*/ void TestFunc() const //override
     {
         std::cout << "Label::TestFunc()" << std::endl;
     }
+
+    /*
+    virtual void TestFunc2() const
+    {
+        std::cout << "Label::TestFunc2()" << std::endl;
+    }
+    */
 
 
 

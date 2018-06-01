@@ -83,3 +83,10 @@ void GUIObject::SetBackgroundColor(const Uint8 r, const Uint8 g, const Uint8 b)
     _background_color_b_ = b;
 }
 
+/*
+void GUIObject::TestFunc2() const
+{
+    std::cout << "GUIObject::TestFunc2()" << std::endl;
+}
+*/
+
